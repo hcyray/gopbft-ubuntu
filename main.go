@@ -36,7 +36,7 @@ func main() {
 		theserver := server.CreateServer(i, inittotalserver, ck.Clientpubkstrs)
 		go theserver.Start()
 	}
-	lateserver := 1 // 机制1测试
+	lateserver := 0 // 机制1测试
 	for i:=0; i<lateserver; i++ {
 		theserver := server.CreateLateServer(inittotalserver+i)
 		go theserver.LateStart(ck.Clientpubkstrs, 5+2*i) // new nodes join serially
