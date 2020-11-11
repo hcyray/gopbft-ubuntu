@@ -309,7 +309,7 @@ func (pbft *PBFT) Run() {
 	pbft.starttime = time.Now()
 	go pbft.statetransfermonitor()
 	go pbft.computeTps()
-	go pbft.delaySelfMonitor()
+	//go pbft.delaySelfMonitor()
 
 
 	starttime := time.Now()
@@ -964,9 +964,9 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			//if pbft.Id==0 {
 			//	fmt.Println("consensus delay when instance", pbft.Id, "as leader is", consensusdelay)
 			//}
-			if pbft.Id==0 {
-				pbft.cdedata.PrintResult()
-			}
+			//if pbft.Id==0 {
+			//	pbft.cdedata.PrintResult()
+			//}
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 			commqc := datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, pbft.currentHeight, pbft.quorumsize)}
 			pbft.cachedb.UpdateAfterCommit(pbft.currentHeight, pbft.curblock, pbft.accountbalance, commqc)
@@ -1352,7 +1352,7 @@ func (pbft *PBFT) computeTps() {
 		pbft.tps = append(pbft.tps, int(tps))
 		le := len(pbft.tps)
 		if le%10==0 {
-			//fmt.Println("instance", pbft.Id, "tps at", elapsedtime, "s is", pbft.tps[le-1])
+			fmt.Println("instance", pbft.Id, "tps at", elapsedtime, "s is", pbft.tps[le-1])
 		}
 		pbft.mu.Unlock()
 		time.Sleep(time.Millisecond * 250)

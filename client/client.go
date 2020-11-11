@@ -11,7 +11,6 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	"strconv"
 	"time"
 )
 
@@ -34,6 +33,7 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey) *Client {
 	client.miners = make([]int, servernum)
 	client.minerIPAddress = make(map[int]string)
 	client.generateServerOrderIp(servernum)
+	fmt.Println("client ", id, "will send tx to the following ips", client.minerIPAddress)
 	client.sendtxCh = make(chan datastruc.Datatosend)
 
 	publicKey := &privateKey.PublicKey
@@ -46,35 +46,37 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey) *Client {
 }
 
 func (client *Client) generateServerOrderIp(servnum int) {
-	id := client.id
+	//id := client.id
 	for i:=0; i<servnum; i++ {
 		var theip string
-		if id<10 {
-			theip = ipprefix + strconv.Itoa(i) + "0" + strconv.Itoa(id)
-		} else {
-			theip = ipprefix + strconv.Itoa(i) + strconv.Itoa(id)
-		}
+		//if id<10 {
+		//	theip = ipprefix + strconv.Itoa(i)
+		//} else {
+		//	theip = ipprefix + strconv.Itoa(i)
+		//}
+		theip = ipprefix + datastruc.GenerateTwoBitId(i) + "1"
 		client.miners = append(client.miners, i)
 		client.minerIPAddress[i] = theip
 	}
 }
 
-func generateServerIPAddress(id int, servnum int) []string {
-	res := []string{}
-	for i:=0; i<servnum; i++ {
-		var theip string
-		if id<10 {
-			theip = ipprefix + strconv.Itoa(i) + "0" + strconv.Itoa(id)
-		} else {
-			theip = ipprefix + strconv.Itoa(i) + strconv.Itoa(id)
-		}
-		res = append(res, theip)
-	}
-	//fmt.Println("client",id,"will sends tx to", res)
-	return res
-}
+//func generateServerIPAddress(id int, servnum int) []string {
+//	res := []string{}
+//	for i:=0; i<servnum; i++ {
+//		var theip string
+//		if id<10 {
+//			theip = ipprefix + strconv.Itoa(i) + "0" + strconv.Itoa(id)
+//		} else {
+//			theip = ipprefix + strconv.Itoa(i) + strconv.Itoa(id)
+//		}
+//		res = append(res, theip)
+//	}
+//	//fmt.Println("client",id,"will sends tx to", res)
+//	return res
+//}
 
 func (client *Client) Run() {
+	fmt.Println("client", client.id, "starts")
 	go client.sendloop()
 
 	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))

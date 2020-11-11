@@ -111,3 +111,13 @@ func HashEqualDefault(thehash [32]byte) bool {
 
 	return res
 }
+
+func GenerateTwoBitId(id int) string {
+	res := ""
+	if id<10 {
+		res = "0" + strconv.Itoa(id)
+	} else {
+		res = strconv.Itoa(id)
+	}
+	return res
+}

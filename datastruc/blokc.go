@@ -59,7 +59,7 @@ func NewTxBlock(pubkeystr string, prvkey *ecdsa.PrivateKey, txpool *[]Transactio
 	bloc.PubKey = pubkeystr
 
 	fmt.Println("the tx number of the new packed block at height", height, "is ", len(bloc.TransactionList))
-	fmt.Println("the measurement result of the new packed block at height", height, "is", len(bloc.MeasurementResList))
+	//fmt.Println("the measurement result of the new packed block at height", height, "is", len(bloc.MeasurementResList))
 
 	//fmt.Println("the system hash included in the new packed block at height", height,"is", prevhash)
 

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="6ce3e2ac-ea02-49b9-b204-019ec57babb8" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" path="/snap/go/6715" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/gopbftv2" />
+  </component>
+  <component name="ProjectId" id="1izDU1VBRxTysmjrJB0Pb3H7AoG" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.sdk.automatically.set" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../theoldcorrectgopbft" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="settings.editor.selected.configurable" value="go.sdk" />
+  </component>
+  <component name="RunManager">
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="gopbftv2" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build main.go" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="796" y="483" key="#GOROOT" timestamp="1605095576570">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="-1168" y="455" key="#GOROOT/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1602986047062" />
+    <state x="752" y="455" key="#GOROOT/0.0.1920.1050@0.0.1920.1050" timestamp="1603028675651" />
+    <state x="796" y="483" key="#GOROOT/72.27.1848.1053@72.27.1848.1053" timestamp="1605095576570" />
+    <state x="-1641" y="91" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1604634747182">
+      <screen x="-1920" y="0" width="1920" height="1050" />
+    </state>
+    <state x="-1641" y="91" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604634747182" />
+    <state x="223" y="72" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.834@0.0.1536.834" timestamp="1602917173313" />
+    <state x="-1215" y="325" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1604634692296">
+      <screen x="-1920" y="0" width="1920" height="1050" />
+    </state>
+    <state x="-1215" y="325" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604634692296" />
+    <state x="-1180" y="279" key="FileChooserDialogImpl" timestamp="1604644298543">
+      <screen x="-1920" y="0" width="1920" height="1050" />
+    </state>
+    <state x="-1180" y="279" key="FileChooserDialogImpl/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604644298543" />
+    <state width="1921" height="993" key="GridCell.Tab.0.bottom" timestamp="1605095358581">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1441" height="814" key="GridCell.Tab.0.bottom/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604656424732" />
+    <state width="1921" height="993" key="GridCell.Tab.0.bottom/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1604577441244" />
+    <state width="1493" height="162" key="GridCell.Tab.0.bottom/0.0.1536.834@0.0.1536.834" timestamp="1602927534064" />
+    <state width="1921" height="993" key="GridCell.Tab.0.bottom/0.0.1920.1050/-1920.0.1920.1050@0.0.1920.1050" timestamp="1605095358581" />
+    <state width="1109" height="426" key="GridCell.Tab.0.bottom/0.0.1920.1050@0.0.1920.1050" timestamp="1603036295378" />
+    <state width="1921" height="993" key="GridCell.Tab.0.center" timestamp="1605095358581">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1441" height="814" key="GridCell.Tab.0.center/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604656424732" />
+    <state width="1921" height="993" key="GridCell.Tab.0.center/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1604577441243" />
+    <state width="1493" height="162" key="GridCell.Tab.0.center/0.0.1536.834@0.0.1536.834" timestamp="1602927534064" />
+    <state width="1921" height="993" key="GridCell.Tab.0.center/0.0.1920.1050/-1920.0.1920.1050@0.0.1920.1050" timestamp="1605095358581" />
+    <state width="1109" height="426" key="GridCell.Tab.0.center/0.0.1920.1050@0.0.1920.1050" timestamp="1603036295377" />
+    <state width="1921" height="993" key="GridCell.Tab.0.left" timestamp="1605095358581">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1441" height="814" key="GridCell.Tab.0.left/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604656424732" />
+    <state width="1921" height="993" key="GridCell.Tab.0.left/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1604577441243" />
+    <state width="1493" height="162" key="GridCell.Tab.0.left/0.0.1536.834@0.0.1536.834" timestamp="1602927534064" />
+    <state width="1921" height="993" key="GridCell.Tab.0.left/0.0.1920.1050/-1920.0.1920.1050@0.0.1920.1050" timestamp="1605095358581" />
+    <state width="1109" height="426" key="GridCell.Tab.0.left/0.0.1920.1050@0.0.1920.1050" timestamp="1603036295377" />
+    <state width="1921" height="993" key="GridCell.Tab.0.right" timestamp="1605095358581">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1441" height="814" key="GridCell.Tab.0.right/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604656424732" />
+    <state width="1921" height="993" key="GridCell.Tab.0.right/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1604577441244" />
+    <state width="1493" height="162" key="GridCell.Tab.0.right/0.0.1536.834@0.0.1536.834" timestamp="1602927534064" />
+    <state width="1921" height="993" key="GridCell.Tab.0.right/0.0.1920.1050/-1920.0.1920.1050@0.0.1920.1050" timestamp="1605095358581" />
+    <state width="1109" height="426" key="GridCell.Tab.0.right/0.0.1920.1050@0.0.1920.1050" timestamp="1603036295377" />
+    <state width="1877" height="352" key="GridCell.Tab.1.bottom" timestamp="1603185549306">
+      <screen x="-1920" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1877" height="352" key="GridCell.Tab.1.bottom/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1603185549306" />
+    <state width="1319" height="758" key="GridCell.Tab.1.bottom/0.0.1920.1050@0.0.1920.1050" timestamp="1603034565717" />
+    <state width="1877" height="352" key="GridCell.Tab.1.center" timestamp="1603185549306">
+      <screen x="-1920" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1877" height="352" key="GridCell.Tab.1.center/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1603185549306" />
+    <state width="1319" height="758" key="GridCell.Tab.1.center/0.0.1920.1050@0.0.1920.1050" timestamp="1603034565717" />
+    <state width="1877" height="352" key="GridCell.Tab.1.left" timestamp="1603185549306">
+      <screen x="-1920" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1877" height="352" key="GridCell.Tab.1.left/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1603185549306" />
+    <state width="1319" height="758" key="GridCell.Tab.1.left/0.0.1920.1050@0.0.1920.1050" timestamp="1603034565717" />
+    <state width="1877" height="352" key="GridCell.Tab.1.right" timestamp="1603185549306">
+      <screen x="-1920" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1877" height="352" key="GridCell.Tab.1.right/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1603185549306" />
+    <state width="1319" height="758" key="GridCell.Tab.1.right/0.0.1920.1050@0.0.1920.1050" timestamp="1603034565717" />
+    <state x="295" y="95" key="SettingsEditor" timestamp="1605006927051">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state x="-1625" y="95" key="SettingsEditor/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604578688731" />
+    <state x="221" y="79" key="SettingsEditor/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1604470565712" />
+    <state x="295" y="95" key="SettingsEditor/0.0.1920.1050/-1920.0.1920.1050@0.0.1920.1050" timestamp="1605006927051" />
+    <state x="280" y="32" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1604577330395">
+      <screen x="0" y="0" width="1440" height="870" />
+    </state>
+    <state x="280" y="32" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1604577330395" />
+    <state x="-1536" y="0" width="1175" height="858" key="dock-window-1" timestamp="1603424417556">
+      <screen x="-1920" y="0" width="1920" height="1050" />
+    </state>
+    <state x="-1536" y="0" width="1175" height="858" key="dock-window-1/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1603424417556" />
+    <state x="-1467" y="0" width="1198" height="858" key="dock-window-2" timestamp="1603025674116">
+      <screen x="-1920" y="0" width="1920" height="1050" />
+    </state>
+    <state x="-1467" y="0" width="1198" height="858" key="dock-window-2/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1603025674116" />
+    <state x="634" y="46" width="725" height="1016" key="find.popup" timestamp="1605095564641">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="-1336" y="19" width="753" height="1013" key="find.popup/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604646429011" />
+    <state x="438" y="16" width="566" height="840" key="find.popup/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1604566281735" />
+    <state x="467" y="15" width="602" height="804" key="find.popup/0.0.1536.834@0.0.1536.834" timestamp="1602920337723" />
+    <state x="584" y="19" width="753" height="1013" key="find.popup/0.0.1920.1050/-1920.0.1920.1050@0.0.1920.1050" timestamp="1605094490201" />
+    <state x="634" y="46" width="725" height="1016" key="find.popup/72.27.1848.1053@72.27.1848.1053" timestamp="1605095564641" />
+    <state x="623" y="227" width="672" height="678" key="search.everywhere.popup" timestamp="1604927270829">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state x="-1297" y="227" width="672" height="678" key="search.everywhere.popup/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604582071837" />
+    <state x="467" y="188" width="672" height="562" key="search.everywhere.popup/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1604548334163" />
+    <state x="623" y="227" width="672" height="678" key="search.everywhere.popup/0.0.1920.1050/-1920.0.1920.1050@0.0.1920.1050" timestamp="1604927270829" />
+  </component>
+</project>

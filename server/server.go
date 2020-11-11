@@ -25,7 +25,8 @@ type Server struct {
 
 	id int
 	ipaddr string
-	localallips []string // need to listen on all ips
+	localallipsforserver []string // receives servers' messages from these ports
+	localallipsforclient []string // receives clients' messages from these ports
 
 	totalserver int
 	memberIds []int
@@ -57,7 +58,9 @@ func CreateServer(id int, total int, clientkeys map[int]string) *Server {
 		serv.memberIds = append(serv.memberIds, i)
 	}
 	serv.remoteallips = generateremoteallips(id, serv.memberIds)
-	serv.localallips = generatelocalallip(id)
+	fmt.Println("server", serv.id, "will send consensus messages to", serv.remoteallips)
+	serv.localallipsforserver = generatelocalallipforserver(id)
+	serv.localallipsforclient = generatelocalallipforclient(id)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
 	serv.InitializeMapandChan()
@@ -73,7 +76,8 @@ func CreateLateServer(id int) *Server {
 
 	serv.id = id
 	serv.ipaddr = ipprefix + strconv.Itoa(id) + "01"
-	serv.localallips = generatelocalallip(id)
+	serv.localallipsforserver = generatelocalallipforserver(id)
+	serv.localallipsforclient = generatelocalallipforclient(id)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
 	serv.InitializeMapandChan()
@@ -101,7 +105,7 @@ func (serv *Server) InitializeMapandChan() {
 func (serv *Server) Start() {
 	go serv.Run()
 	serv.pbft.InitialSetup()
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Second * 5)
 	go serv.pbft.Run()
 }
 
@@ -129,12 +133,11 @@ func (serv *Server) LateStart( clientkeys map[int]string, sleeptime int) {
 func (serv *Server) Run() {
 	// a replica/server will listen 70 local ports, the first 10 (for pbft instance) will on normal mode,
 	// the latter 60 (for client) will on long-connection to receive tx from clients
-	for i, localipport := range serv.localallips {
-		if i<10 {
-			go serv.ListenLocalForServer(localipport)
-		} else {
-			go serv.ListenLocalForClient(localipport)
-		}
+	for _, localipport := range serv.localallipsforserver {
+		go serv.ListenLocalForServer(localipport)
+	}
+	for _, localipport := range serv.localallipsforclient {
+		go serv.ListenLocalForClient(localipport)
 	}
 	go serv.BroadcastLoop()
 	go serv.SendLoop()
@@ -311,18 +314,29 @@ func (serv *Server) SendLoop() {
 	}
 }
 
-func generatelocalallip(id int) []string {
+func generatelocalallipforserver(id int) []string {
 	res := []string{}
-	for i:=0; i<MaxListenPort; i++ {
-		var theip string
-		if i<10 {
-			theip = ipprefix + strconv.Itoa(id) + "0" + strconv.Itoa(i)
-		} else {
-			theip = ipprefix + strconv.Itoa(id) + strconv.Itoa(i)
-		}
-		res = append(res, theip)
-	}
-	//fmt.Println("server",id, "will listen on", res)
+	//for i:=0; i<MaxListenPort; i++ {
+	//	var theip string
+	//	if i<10 {
+	//		theip = ipprefix + strconv.Itoa(id) + "0" + strconv.Itoa(i)
+	//	} else {
+	//		theip = ipprefix + strconv.Itoa(id) + strconv.Itoa(i)
+	//	}
+	//	res = append(res, theip)
+	//}
+
+	theip := ipprefix + datastruc.GenerateTwoBitId(id) + "0"
+	res = append(res, theip)
+	fmt.Println("server",id, "will listen on", res, "to receive from servers")
+	return res
+}
+
+func generatelocalallipforclient(id int) []string {
+	res := []string{}
+	theip := ipprefix + datastruc.GenerateTwoBitId(id) + "1"
+	res = append(res, theip)
+	fmt.Println("server",id, "will listen on", res, "to receive from clients")
 	return res
 }
 
@@ -331,11 +345,12 @@ func generateremoteallips(id int, memberIds []int) map[int]string {
 	res := make(map[int]string)
 	for _,i := range memberIds {
 		var theip string
-		if id<10 {
-			theip = ipprefix + strconv.Itoa(i) + "0" + strconv.Itoa(id)
-		} else {
-			theip = ipprefix + strconv.Itoa(i) + strconv.Itoa(id)
-		}
+		//if id<10 {
+		//	theip = ipprefix + strconv.Itoa(i)
+		//} else {
+		//	theip = ipprefix + strconv.Itoa(i)
+		//}
+		theip = ipprefix + datastruc.GenerateTwoBitId(i) + "0"
 		res[i] = theip
 	}
 	//fmt.Println("server", id, "will sends msg to", res)
@@ -509,8 +524,8 @@ func (serv *Server) handleTransaction(request []byte) {
 	if tx.Verify() {
 		serv.msgbuff.Msgbuffmu.Lock()
 		serv.msgbuff.TxPool[tx.GetHash()] = tx
-		//if serv.id==4 && len(serv.msgbuff.TxPool)%100==0 {
-		//	fmt.Println("server 4 has",len(serv.msgbuff.TxPool), "txs")
+		//if serv.id==0 && len(serv.msgbuff.TxPool)%1000==0 {
+		//	fmt.Println("server 0 has",len(serv.msgbuff.TxPool), "txs")
 		//}
 		serv.msgbuff.Msgbuffmu.Unlock()
 	}
