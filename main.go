@@ -31,7 +31,7 @@ func main() {
 		ck.Clientpubkstrs[i] = datastruc.EncodePublic(pubkey)
 	}
 
-	inittotalserver := 4
+	inittotalserver := 2
 	for i:=0; i<inittotalserver; i++ {
 		theserver := server.CreateServer(i, inittotalserver, ck.Clientpubkstrs)
 		go theserver.Start()
@@ -44,7 +44,7 @@ func main() {
 
 	time.Sleep(time.Second * 1)
 
-	for i:=20; i<40; i++ {
+	for i:=20; i<20; i++ {
 		theclient := client.CreateClient(i, inittotalserver+lateserver, ck.Clienprivks[i])
 		go theclient.Run()
 	}
