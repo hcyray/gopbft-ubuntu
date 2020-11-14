@@ -38,7 +38,7 @@ type PBFT struct {
 	mu sync.Mutex
 
 	Id int
-	IpAddr string
+	IpPortAddr string
 	InitialTotalPeer int
 	members []int
 
@@ -119,7 +119,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	RecvInformTestCh chan datastruc.RequestTestMsg, recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB) *PBFT {
 	pbft := &PBFT{}
 	pbft.Id = id
-	pbft.IpAddr = ipaddr
+	pbft.IpPortAddr = ipaddr
 	pbft.InitialTotalPeer = total
 	pbft.UpdateQuorumSize(total)
 
@@ -172,7 +172,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	//	fmt.Println("instance", pbft.Id, "will leave the system after a while")
 	//} // 机制2测试
 
-	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey)
+	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey)
 
 	return pbft
 }
@@ -1076,7 +1076,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 }
 
 func (pbft *PBFT) broadcastPubkey() {
-	peerid := datastruc.PeerIdentity{pbft.PubKeystr, pbft.Id, pbft.IpAddr}
+	peerid := datastruc.PeerIdentity{pbft.PubKeystr, pbft.Id, pbft.IpPortAddr}
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(peerid)

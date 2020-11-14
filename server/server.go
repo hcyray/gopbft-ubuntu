@@ -23,7 +23,7 @@ type Server struct {
 	mu sync.Mutex
 
 	id int
-	ipaddr string
+	ipportaddr string
 	localallipsforserver []string // receives servers' messages from these ports
 	localallipsforclient []string // receives clients' messages from these ports
 
@@ -51,7 +51,7 @@ func CreateServer(id int, localip string, clientkeys map[int]string, serverips [
 	serv := &Server{}
 
 	serv.id = id
-	serv.ipaddr = localip + ":3" + datastruc.GenerateTwoBitId(id) + "0"
+	serv.ipportaddr = localip + ":3" + datastruc.GenerateTwoBitId(id) + "0"
 	serv.totalserver = len(serverips) * 2
 	for i:=0; i<serv.totalserver; i++ {
 		serv.memberIds = append(serv.memberIds, i)
@@ -64,7 +64,7 @@ func CreateServer(id int, localip string, clientkeys map[int]string, serverips [
 	serv.msgbuff.Initialize()
 	serv.InitializeMapandChan()
 
-	serv.pbft = pbft.CreatePBFTInstance(id, serv.ipaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.sendCh, serv.broadcastCh, serv.memberidchangeCh,
+	serv.pbft = pbft.CreatePBFTInstance(id, serv.ipportaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.sendCh, serv.broadcastCh, serv.memberidchangeCh,
 		serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh, serv.cdetestrecvCh,
 		serv.cderesponserecvCh,	serv.RecvInformTestCh, serv.recvsinglemeasurementCh)
 	return serv
@@ -74,7 +74,7 @@ func CreateLateServer(id int, localip string) *Server {
 	serv := &Server{}
 
 	serv.id = id
-	serv.ipaddr = localip + ":3" + datastruc.GenerateTwoBitId(id) + "0"
+	serv.ipportaddr = localip + ":3" + datastruc.GenerateTwoBitId(id) + "0"
 	serv.localallipsforserver = generatelistenserverips(id, localip)
 	serv.localallipsforclient = generatelistenclientips(id, localip)
 	serv.msgbuff = datastruc.MessageBuffer{}
@@ -120,9 +120,9 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 		serv.remoteallips[v.Id] = v.IpPortAddr
 	}
 	serv.memberIds = append(serv.memberIds, serv.id)
-	serv.remoteallips[serv.id] = serv.ipaddr
+	serv.remoteallips[serv.id] = serv.ipportaddr
 	fmt.Println("server", serv.id, "remote all ips:", serv.remoteallips)
-	serv.pbft = pbft.CreatePBFTInstance(serv.id, serv.ipaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.sendCh, serv.broadcastCh,
+	serv.pbft = pbft.CreatePBFTInstance(serv.id, serv.ipportaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.sendCh, serv.broadcastCh,
 		serv.memberidchangeCh, serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh,
 		serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh)
 
