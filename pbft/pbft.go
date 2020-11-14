@@ -205,7 +205,7 @@ func (pbft *PBFT) initializeAccountBalance(clientpubkeystr map[int]string) {
 }
 
 func (pbft *PBFT) InitialSetup() {
-	go pbft.censorshipmonitor() // 机制2测试
+	//go pbft.censorshipmonitor() // 机制2测试
 
 	fmt.Println("instance", pbft.Id, "initializes setup")
 
@@ -240,7 +240,6 @@ func (pbft *PBFT) InitialSetup() {
 	pbft.cachedb.UpdateFromGenesisb(genesisb)
 	pbft.persis.executedheight[0] = true
 	datastruc.RecordConfig(pbft.succLine)
-
 
 	pbft.status = stat_consensus
 	pbft.status = stat_consensus

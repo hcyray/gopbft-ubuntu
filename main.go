@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 
@@ -109,7 +110,7 @@ func main() {
 
 	instanceoneachserver := 2
 	initialserver := 2
-	lateserver := 1 // 机制1测试
+	lateserver := 0 // 机制1测试
 	totalserver := initialserver + lateserver
 	// read client pubkeys
 	ck := ReadClientKeys(os.Args[2])
@@ -131,7 +132,7 @@ func main() {
 		}
 	} else {
 		//invoke 60 client
-		for i:=0; i<2; i++ {
+		for i:=0; i<4; i++ {
 			theclient := client.CreateClient(i, totalserver*2, ck.Clienprivks[i], allips[0:totalserver])
 			go theclient.Run()
 			fmt.Print("the ", i, "client starts")
@@ -140,6 +141,6 @@ func main() {
 	}
 
 
-	//time.Sleep(time.Second * 30)
+	time.Sleep(time.Second * 30)
 	fmt.Println("main thread completes")
 }
