@@ -75,7 +75,7 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []
 	for i:=0; i<servernum; i++ {
 		client.miners = append(client.miners, i)
 		order := i/2
-		client.minerIPAddress[i] = allips[order] + ":3" + datastruc.GenerateTwoBitId(i) + "1"
+		client.minerIPAddress[i] = allips[order] + ":4" + datastruc.GenerateTwoBitId(i) + "1"
 	}
 	//client.generateServerOrderIp(servernum)
 	fmt.Println("client ", id, "will send tx to the following address", client.minerIPAddress)

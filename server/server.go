@@ -51,7 +51,7 @@ func CreateServer(id int, localip string, clientkeys map[int]string, serverips [
 	serv := &Server{}
 
 	serv.id = id
-	serv.ipportaddr = localip + ":3" + datastruc.GenerateTwoBitId(id) + "0"
+	serv.ipportaddr = localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
 	serv.totalserver = len(serverips) * 2
 	for i:=0; i<serv.totalserver; i++ {
 		serv.memberIds = append(serv.memberIds, i)
@@ -74,7 +74,7 @@ func CreateLateServer(id int, localip string) *Server {
 	serv := &Server{}
 
 	serv.id = id
-	serv.ipportaddr = localip + ":3" + datastruc.GenerateTwoBitId(id) + "0"
+	serv.ipportaddr = localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
 	serv.localallipsforserver = generatelistenserverips(id, localip)
 	serv.localallipsforclient = generatelistenclientips(id, localip)
 	serv.msgbuff = datastruc.MessageBuffer{}
@@ -326,7 +326,7 @@ func generatelistenserverips(id int, localip string) []string {
 	//	res = append(res, theip)
 	//}
 
-	theip := localip + ":3" + datastruc.GenerateTwoBitId(id) + "0"
+	theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
 	res = append(res, theip)
 	fmt.Println("server",id, "will listen on", res, "to receive from servers")
 	return res
@@ -334,7 +334,7 @@ func generatelistenserverips(id int, localip string) []string {
 
 func generatelistenclientips(id int, localip string) []string {
 	res := []string{}
-	theip := localip + ":3" + datastruc.GenerateTwoBitId(id) + "1"
+	theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + "1"
 	res = append(res, theip)
 	fmt.Println("server",id, "will listen on", res, "to receive from clients")
 	return res
@@ -352,7 +352,7 @@ func generateremoteallips(memberIds []int, serverips []string) map[int]string {
 		//}
 		var order int
 		order = i/2
-		theip = serverips[order] + ":3" + datastruc.GenerateTwoBitId(i) + "0"
+		theip = serverips[order] + ":4" + datastruc.GenerateTwoBitId(i) + "0"
 		res[i] = theip
 	}
 	//fmt.Println("server", id, "will sends msg to", res)
@@ -547,7 +547,7 @@ func (serv *Server) handleBlock(content []byte) {
 	pubkey := datastruc.DecodePublic(bloc.PubKey)
 	datatoverify := bloc.GetHash()
 	if !bloc.Sig.Verify(datatoverify[:], pubkey) {
-		fmt.Println("the block signature is wrong!")
+		fmt.Println("server", serv.id, "verifies a block, but the signature is wrong!")
 		return
 	}
 
