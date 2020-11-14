@@ -14,7 +14,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -48,36 +47,36 @@ type Server struct {
 	recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB
 }
 
-func CreateServer(id int, total int, clientkeys map[int]string) *Server {
+func CreateServer(id int, localip string, clientkeys map[int]string, serverips []string) *Server {
 	serv := &Server{}
 
 	serv.id = id
-	serv.ipaddr = ipprefix + strconv.Itoa(id) + "01"
-	serv.totalserver = total
-	for i:=0; i<total; i++ {
+	serv.ipaddr = localip + ":3" + datastruc.GenerateTwoBitId(id) + "0"
+	serv.totalserver = len(serverips) * 2
+	for i:=0; i<serv.totalserver; i++ {
 		serv.memberIds = append(serv.memberIds, i)
 	}
-	serv.remoteallips = generateremoteallips(id, serv.memberIds)
+	serv.remoteallips = generateremoteallips(serv.memberIds, serverips)
 	fmt.Println("server", serv.id, "will send consensus messages to", serv.remoteallips)
-	serv.localallipsforserver = generatelocalallipforserver(id)
-	serv.localallipsforclient = generatelocalallipforclient(id)
+	serv.localallipsforserver = generatelistenserverips(id, localip)
+	serv.localallipsforclient = generatelistenclientips(id, localip)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
 	serv.InitializeMapandChan()
 
-	serv.pbft = pbft.CreatePBFTInstance(id, serv.ipaddr, total, clientkeys, &serv.msgbuff, serv.sendCh, serv.broadcastCh, serv.memberidchangeCh,
+	serv.pbft = pbft.CreatePBFTInstance(id, serv.ipaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.sendCh, serv.broadcastCh, serv.memberidchangeCh,
 		serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh, serv.cdetestrecvCh,
 		serv.cderesponserecvCh,	serv.RecvInformTestCh, serv.recvsinglemeasurementCh)
 	return serv
 }
 
-func CreateLateServer(id int) *Server {
+func CreateLateServer(id int, localip string) *Server {
 	serv := &Server{}
 
 	serv.id = id
-	serv.ipaddr = ipprefix + strconv.Itoa(id) + "01"
-	serv.localallipsforserver = generatelocalallipforserver(id)
-	serv.localallipsforclient = generatelocalallipforclient(id)
+	serv.ipaddr = localip + ":3" + datastruc.GenerateTwoBitId(id) + "0"
+	serv.localallipsforserver = generatelistenserverips(id, localip)
+	serv.localallipsforclient = generatelistenclientips(id, localip)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
 	serv.InitializeMapandChan()
@@ -109,7 +108,7 @@ func (serv *Server) Start() {
 	go serv.pbft.Run()
 }
 
-func (serv *Server) LateStart( clientkeys map[int]string, sleeptime int) {
+func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 	go serv.Run()
 
 	time.Sleep(time.Second * time.Duration(sleeptime))
@@ -118,9 +117,10 @@ func (serv *Server) LateStart( clientkeys map[int]string, sleeptime int) {
 	serv.totalserver = len(peerlist)+1
 	for _, v := range peerlist {
 		serv.memberIds = append(serv.memberIds, v.Id)
+		serv.remoteallips[v.Id] = v.IpPortAddr
 	}
 	serv.memberIds = append(serv.memberIds, serv.id)
-	serv.remoteallips = generateremoteallips(serv.id, serv.memberIds)
+	serv.remoteallips[serv.id] = serv.ipaddr
 	fmt.Println("server", serv.id, "remote all ips:", serv.remoteallips)
 	serv.pbft = pbft.CreatePBFTInstance(serv.id, serv.ipaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.sendCh, serv.broadcastCh,
 		serv.memberidchangeCh, serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh,
@@ -151,7 +151,7 @@ func (serv *Server) ModefyVariByPBFT() {
 			serv.mu.Lock()
 			if data.Kind=="join" {
 				serv.memberIds = append(serv.memberIds, data.Id)
-				serv.remoteallips[data.Id] = generateremoteipfornewid(serv.id, data.Id)
+				serv.remoteallips[data.Id] = data.IpPortAddr
 				fmt.Println("server", serv.id,"adds instance", data.Id, "'s ip, now has", len(serv.memberIds), "remote address to communicate")
 			} else if data.Kind=="leave" {
 				tmp := make([]int, 0)
@@ -314,7 +314,7 @@ func (serv *Server) SendLoop() {
 	}
 }
 
-func generatelocalallipforserver(id int) []string {
+func generatelistenserverips(id int, localip string) []string {
 	res := []string{}
 	//for i:=0; i<MaxListenPort; i++ {
 	//	var theip string
@@ -326,21 +326,21 @@ func generatelocalallipforserver(id int) []string {
 	//	res = append(res, theip)
 	//}
 
-	theip := ipprefix + datastruc.GenerateTwoBitId(id) + "0"
+	theip := localip + ":3" + datastruc.GenerateTwoBitId(id) + "0"
 	res = append(res, theip)
 	fmt.Println("server",id, "will listen on", res, "to receive from servers")
 	return res
 }
 
-func generatelocalallipforclient(id int) []string {
+func generatelistenclientips(id int, localip string) []string {
 	res := []string{}
-	theip := ipprefix + datastruc.GenerateTwoBitId(id) + "1"
+	theip := localip + ":3" + datastruc.GenerateTwoBitId(id) + "1"
 	res = append(res, theip)
 	fmt.Println("server",id, "will listen on", res, "to receive from clients")
 	return res
 }
 
-func generateremoteallips(id int, memberIds []int) map[int]string {
+func generateremoteallips(memberIds []int, serverips []string) map[int]string {
 	// generate those ips this server will send messages to
 	res := make(map[int]string)
 	for _,i := range memberIds {
@@ -350,23 +350,25 @@ func generateremoteallips(id int, memberIds []int) map[int]string {
 		//} else {
 		//	theip = ipprefix + strconv.Itoa(i)
 		//}
-		theip = ipprefix + datastruc.GenerateTwoBitId(i) + "0"
+		var order int
+		order = i/2
+		theip = serverips[order] + ":3" + datastruc.GenerateTwoBitId(i) + "0"
 		res[i] = theip
 	}
 	//fmt.Println("server", id, "will sends msg to", res)
 	return res
 }
 
-func generateremoteipfornewid(id int, newid int) string {
-	var theip string
-
-	if id<10 {
-		theip = ipprefix + strconv.Itoa(newid) + "0" + strconv.Itoa(id)
-	} else {
-		theip = ipprefix + strconv.Itoa(newid) + strconv.Itoa(id)
-	}
-	return theip
-}
+//func generateremoteipfornewid(id int, newid int) string {
+//	var theip string
+//
+//	if id<10 {
+//		theip = ipprefix + strconv.Itoa(newid) + "0" + strconv.Itoa(id)
+//	} else {
+//		theip = ipprefix + strconv.Itoa(newid) + strconv.Itoa(id)
+//	}
+//	return theip
+//}
 
 //func (serv *Server) broadcastMsg(msg interface{}, msgtype string, dest []int) {
 //	var buff bytes.Buffer

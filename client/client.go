@@ -11,8 +11,14 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"os"
 	"time"
 )
+
+type ClienKeys struct {
+	Clienprivks map[int]*ecdsa.PrivateKey
+	Clientpubkstrs map[int]string
+}
 
 type Client struct {
 	id int
@@ -27,13 +33,52 @@ type Client struct {
 	nodePrvkeystr string
 }
 
-func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey) *Client {
+func (clk *ClienKeys) GetSerialize() []byte {
+	var buff bytes.Buffer
+	gob.Register(elliptic.P256())
+	enc := gob.NewEncoder(&buff)
+	err := enc.Encode(clk)
+	if err != nil {
+		log.Panic(err)
+	}
+	content := buff.Bytes()
+	return content
+}
+
+func (clk *ClienKeys) GetDeserializeFromFile(fn string) {
+
+	var conten []byte
+	file, err := os.Open(fn)
+	if err!=nil {
+		fmt.Println("open clientkey file error")
+	}
+	dec := gob.NewDecoder(file)
+	err = dec.Decode(&conten)
+	if err!=nil {
+		fmt.Println("read clientkey file error")
+	}
+	var buff bytes.Buffer
+	buff.Write(conten)
+	gob.Register(elliptic.P256())
+	decc := gob.NewDecoder(&buff)
+	err = decc.Decode(clk)
+	if err!=nil {
+		fmt.Println("serialized client key decoding error")
+	}
+}
+
+func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []string) *Client {
 	client := &Client{}
 	client.id = id
 	client.miners = make([]int, servernum)
 	client.minerIPAddress = make(map[int]string)
-	client.generateServerOrderIp(servernum)
-	fmt.Println("client ", id, "will send tx to the following ips", client.minerIPAddress)
+	for i:=0; i<servernum; i++ {
+		client.miners = append(client.miners, i)
+		order := i/2
+		client.minerIPAddress[i] = allips[order] + ":3" + datastruc.GenerateTwoBitId(i) + "1"
+	}
+	//client.generateServerOrderIp(servernum)
+	fmt.Println("client ", id, "will send tx to the following address", client.minerIPAddress)
 	client.sendtxCh = make(chan datastruc.Datatosend)
 
 	publicKey := &privateKey.PublicKey
@@ -45,20 +90,20 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey) *Client {
 	return client
 }
 
-func (client *Client) generateServerOrderIp(servnum int) {
-	//id := client.id
-	for i:=0; i<servnum; i++ {
-		var theip string
-		//if id<10 {
-		//	theip = ipprefix + strconv.Itoa(i)
-		//} else {
-		//	theip = ipprefix + strconv.Itoa(i)
-		//}
-		theip = ipprefix + datastruc.GenerateTwoBitId(i) + "1"
-		client.miners = append(client.miners, i)
-		client.minerIPAddress[i] = theip
-	}
-}
+//func (client *Client) generateServerOrderIp(servnum int) {
+//	//id := client.id
+//	for i:=0; i<servnum; i++ {
+//		var theip string
+//		//if id<10 {
+//		//	theip = ipprefix + strconv.Itoa(i)
+//		//} else {
+//		//	theip = ipprefix + strconv.Itoa(i)
+//		//}
+//		theip = ipprefix + datastruc.GenerateTwoBitId(i) + "1"
+//		client.miners = append(client.miners, i)
+//		client.minerIPAddress[i] = theip
+//	}
+//}
 
 //func generateServerIPAddress(id int, servnum int) []string {
 //	res := []string{}

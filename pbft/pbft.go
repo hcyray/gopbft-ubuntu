@@ -998,7 +998,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 					requestprocessingtime := time.Since(pbft.leaverequeststarttime).Milliseconds()
 					fmt.Println("instance", pbft.Id, "blocks here permanentally, the leaving-tx processing time is", requestprocessingtime, "ms")
 				} else {
-					datatosend := datastruc.DataMemberChange{"leave", theleavingid}
+					datatosend := datastruc.DataMemberChange{"leave", theleavingid, ""}
 					pbft.memberidchangeCh <- datatosend
 					pbft.censorshipnothappenCh <- true
 				}
@@ -1030,7 +1030,8 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.cachedb.UpdateAfterCommit(pbft.currentHeight, pbft.curblock, pbft.accountbalance, commqc)
 
 				thejoinid := pbft.curblock.JoinTxList[0].Id
-				datatosend := datastruc.DataMemberChange{"join", thejoinid}
+				thejoinaddr := pbft.curblock.JoinTxList[0].IpAddr
+				datatosend := datastruc.DataMemberChange{"join", thejoinid, thejoinaddr}
 				pbft.memberidchangeCh <- datatosend // todo, server needs do something
 				pbft.members = append(pbft.members, thejoinid)
 
@@ -1075,7 +1076,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 }
 
 func (pbft *PBFT) broadcastPubkey() {
-	peerid := datastruc.PeerIdentity{pbft.PubKeystr, pbft.Id}
+	peerid := datastruc.PeerIdentity{pbft.PubKeystr, pbft.Id, pbft.IpAddr}
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(peerid)

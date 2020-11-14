@@ -14,6 +14,7 @@ type DataReceived struct {
 type DataMemberChange struct {
 	Kind string
 	Id int
+	IpPortAddr string
 }
 
 type DatatosendWithIp struct {

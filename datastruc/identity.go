@@ -9,6 +9,7 @@ import (
 type PeerIdentity struct {
 	PubKey string
 	Id int
+	IpPortAddr string
 }
 
 func ConstructConfigure(config *[]PeerIdentity, peerid PeerIdentity) {
@@ -41,7 +42,7 @@ func GenerateNewConfigForJoin(originalpeers []PeerIdentity, jtx JoinTx) []PeerId
 	for _, v := range originalpeers {
 		peers = append(peers, v)
 	}
-	peers = append(peers, PeerIdentity{jtx.Pubkey, jtx.Id})
+	peers = append(peers, PeerIdentity{jtx.Pubkey, jtx.Id, jtx.IpAddr})
 	return peers
 }
 
