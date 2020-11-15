@@ -207,7 +207,7 @@ func (pbft *PBFT) initializeAccountBalance(clientpubkeystr map[int]string) {
 func (pbft *PBFT) InitialSetup() {
 	//go pbft.censorshipmonitor() // 机制2测试
 
-	fmt.Println("instance", pbft.Id, "initializes setup")
+	fmt.Println("instance", pbft.Id, "initializes setup, total instance number in the system is", pbft.InitialTotalPeer)
 
 	// peer discovery & build leader succession line
 	go pbft.broadcastPubkey()
@@ -239,7 +239,7 @@ func (pbft *PBFT) InitialSetup() {
 	pbft.persis.blockhashlist[0] = genesisb.GetHash()
 	pbft.cachedb.UpdateFromGenesisb(genesisb)
 	pbft.persis.executedheight[0] = true
-	datastruc.RecordConfig(pbft.succLine)
+	//datastruc.RecordConfig(pbft.succLine)
 
 	pbft.status = stat_consensus
 	pbft.status = stat_consensus
