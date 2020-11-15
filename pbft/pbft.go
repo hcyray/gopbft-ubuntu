@@ -122,6 +122,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.IpPortAddr = ipaddr
 	pbft.InitialTotalPeer = total
 	pbft.UpdateQuorumSize(total)
+	fmt.Println("instance", id, "thinks the quorum size should be", pbft.quorumsize)
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), crand.Reader)
 	if err != nil {
