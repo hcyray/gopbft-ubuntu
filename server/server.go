@@ -528,7 +528,7 @@ func (serv *Server) handleTransaction(request []byte) {
 	if tx.Verify() {
 		serv.msgbuff.Msgbuffmu.Lock()
 		serv.msgbuff.TxPool[tx.GetHash()] = tx
-		if len(serv.msgbuff.TxPool)%1000==0 {
+		if len(serv.msgbuff.TxPool)%4000==0 {
 			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
 		}
 		serv.msgbuff.Msgbuffmu.Unlock()
@@ -587,7 +587,7 @@ func (serv *Server) handleBlock(content []byte) {
 
 	serv.msgbuff.Msgbuffmu.Lock()
 	serv.msgbuff.BlockPool = append(serv.msgbuff.BlockPool, bloc)
-	//fmt.Println("server", serv.id, "receives a block at height", bloc.Blockhead.Height)
+	fmt.Println("server", serv.id, "receives a block at height", bloc.Blockhead.Height)
 	//fmt.Println("server", serv.id, "receives a block with", len(bloc.TransactionList), "txs in it")
 	serv.msgbuff.Msgbuffmu.Unlock()
 
