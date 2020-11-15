@@ -522,19 +522,20 @@ func (serv *Server) handleTransaction(request []byte) {
 		log.Panic(err)
 		fmt.Println("tx decoding error")
 	}
-	fmt.Println("server", serv.id, "receives a tx:\n")
-	fmt.Println(tx)
-	//if tx.Verify() {
-	//	serv.msgbuff.Msgbuffmu.Lock()
-	//	serv.msgbuff.TxPool[tx.GetHash()] = tx
-	//	//if serv.id==0 && len(serv.msgbuff.TxPool)%1000==0 {
-	//	//	fmt.Println("server 0 has",len(serv.msgbuff.TxPool), "txs")
-	//	//}
-	//	serv.msgbuff.Msgbuffmu.Unlock()
-	//}
-	serv.msgbuff.Msgbuffmu.Lock()
-	serv.msgbuff.TxPool[tx.GetHash()] = tx
-	serv.msgbuff.Msgbuffmu.Unlock()
+
+	//fmt.Println(tx)
+	if tx.Verify() {
+		serv.msgbuff.Msgbuffmu.Lock()
+		fmt.Println("server", serv.id, "receives a tx:\n")
+		serv.msgbuff.TxPool[tx.GetHash()] = tx
+		//if serv.id==0 && len(serv.msgbuff.TxPool)%1000==0 {
+		//	fmt.Println("server 0 has",len(serv.msgbuff.TxPool), "txs")
+		//}
+		serv.msgbuff.Msgbuffmu.Unlock()
+	}
+	//serv.msgbuff.Msgbuffmu.Lock()
+	//serv.msgbuff.TxPool[tx.GetHash()] = tx
+	//serv.msgbuff.Msgbuffmu.Unlock()
 
 }
 

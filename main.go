@@ -3,6 +3,7 @@ package main
 import (
 	"./client"
 	"./server"
+	"./datastruc"
 	"bufio"
 	"encoding/gob"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"net"
 	"os"
 	"time"
+
 )
 
 
@@ -93,14 +95,14 @@ func main() {
 
 	// ***************************************generate client keys and save
 	//ck := client.ClienKeys{}
-	//ck.Clienprivks = make(map[int]*ecdsa.PrivateKey)
+	//ck.Clienprivks = make(map[int]string)
 	//ck.Clientpubkstrs = make(map[int]string)
 	//for i:=0; i<100; i++ {
 	//	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), crand.Reader)
 	//	if err != nil {
 	//		log.Fatalln(err)
 	//	}
-	//	ck.Clienprivks[i] = privateKey
+	//	ck.Clienprivks[i] = datastruc.EncodePrivate(privateKey)
 	//	pubkey := &privateKey.PublicKey
 	//	ck.Clientpubkstrs[i] = datastruc.EncodePublic(pubkey)
 	//}
@@ -114,7 +116,6 @@ func main() {
 	totalserver := initialserver + lateserver
 	// read client pubkeys
 	ck := ReadClientKeys(os.Args[2])
-
 	if localid<initialserver {
 		// invoke two server
 		for i:=0; i<instanceoneachserver; i++ {
@@ -133,13 +134,13 @@ func main() {
 	} else {
 		//invoke 60 client
 		for i:=0; i<1; i++ {
-			theclient := client.CreateClient(i, totalserver*2, ck.Clienprivks[i], allips[0:totalserver])
+			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
+			theclient := client.CreateClient(i, totalserver*2, privatekey, allips[0:totalserver])
 			go theclient.Run()
 			fmt.Print("the ", i, "client starts")
 		}
 
 	}
-
 
 	time.Sleep(time.Second * 30)
 	fmt.Println("main thread completes")

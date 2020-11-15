@@ -16,7 +16,7 @@ import (
 )
 
 type ClienKeys struct {
-	Clienprivks map[int]*ecdsa.PrivateKey
+	Clienprivks map[int]string
 	Clientpubkstrs map[int]string
 }
 
@@ -86,7 +86,8 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []
 	client.nodePubKey = publicKey
 	client.nodePrvkeystr = datastruc.EncodePrivate(privateKey)
 	client.nodePubkeystr = datastruc.EncodePublic(publicKey)
-	//fmt.Println("client", client.id, "pubkey length is", len(client.nodePubkeystr))
+	//fmt.Println("client", client.id, "privatekey is", client.nodePrvKey)
+	fmt.Println("client", client.id, "pubkey string is", client.nodePubkeystr)
 	return client
 }
 
