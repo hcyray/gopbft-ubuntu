@@ -527,7 +527,7 @@ func (serv *Server) handleTransaction(request []byte) {
 		serv.msgbuff.Msgbuffmu.Lock()
 		serv.msgbuff.TxPool[tx.GetHash()] = tx
 		if len(serv.msgbuff.TxPool)%1000==0 {
-			fmt.Println("server 0 has",len(serv.msgbuff.TxPool), "txs")
+			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
 		}
 		serv.msgbuff.Msgbuffmu.Unlock()
 	}
