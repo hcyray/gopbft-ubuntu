@@ -132,7 +132,7 @@ func main() {
 		}
 	} else {
 		//invoke 60 client
-		for i:=0; i<4; i++ {
+		for i:=0; i<1; i++ {
 			theclient := client.CreateClient(i, totalserver*2, ck.Clienprivks[i], allips[0:totalserver])
 			go theclient.Run()
 			fmt.Print("the ", i, "client starts")
