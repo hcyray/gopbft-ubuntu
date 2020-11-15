@@ -720,7 +720,7 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 	delete(serv.msgbuff.Vcmsg, theterm)
 	serv.msgbuff.Vcmsg[theterm] = make([]datastruc.ViewChangeMsg, len(tmp))
 	copy(serv.msgbuff.Vcmsg[theterm], tmp)
-	fmt.Println("serve", serv.id, "now has", len(serv.msgbuff.Vcmsg[theterm]), "view-change msg")
+	fmt.Println("serve", serv.id, "now has", len(serv.msgbuff.Vcmsg[theterm]), "view-change msg, the latest one from", vcmsg.Pubkey)
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 

@@ -224,12 +224,14 @@ func (pbft *PBFT) InitialSetup() {
 
 	// print leader succession line
 	tmpid := make([]int, 0)
+	tmppubk := make([]string, 0)
 	p := pbft.succLine.Tail.Next
 	for i:=0; i<pbft.succLine.Leng; i++ {
 		tmpid = append(tmpid, p.Member.Id)
+		tmppubk = append(tmppubk, p.Member.PubKey)
 		p = p.Next
 	}
-	fmt.Println("instace", pbft.Id, "thinks the leader succession line is", tmpid)
+	fmt.Println("instace", pbft.Id, "thinks the leader succession line is", tmpid, "pubkey list is", tmppubk)
 
 	// construct genesis block
 	confighash := pbft.succLine.GetHash()
