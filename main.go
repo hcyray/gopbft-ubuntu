@@ -133,7 +133,7 @@ func main() {
 		}
 	} else {
 		//invoke 60 client
-		for i:=0; i<20; i++ {
+		for i:=0; i<25; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*2, privatekey, allips[0:totalserver])
 			go theclient.Run()
@@ -142,6 +142,6 @@ func main() {
 
 	}
 
-	time.Sleep(time.Second * 20)
+	time.Sleep(time.Second * 40)
 	fmt.Println("main thread completes")
 }
