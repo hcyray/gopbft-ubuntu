@@ -338,7 +338,7 @@ func (pbft *PBFT) Run() {
 				elapsed := time.Since(starttime).Milliseconds()
 				pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
 				starttime = time.Now()
-				if pbft.currentHeight%10==0 {
+				if pbft.currentHeight%LeaderLease==0 {
 					fmt.Println("consensustime =", pbft.consensustimelog)
 				}
 			}
@@ -755,6 +755,7 @@ func (pbft *PBFT) scanCommit(ver, view, heigh int, digest [32]byte, quorumsize i
 					pbft.persis.commitlock = datastruc.CommitedLock{heigh, thepreprepare,
 						thepreprepare.Digest,datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, heigh, quorumsize)}}
 					pbft.mu.Unlock()
+					fmt.Println("instance", pbft.Id, "got", quorumsize, "commit-vote at height", heigh)
 					pbft.committedCh<-theprog
 					return
 				}
@@ -1203,7 +1204,7 @@ func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.Leav
 	}
 	content := buff.Bytes()
 	datatosend := datastruc.Datatosend{pbft.members, "viewchangemsg", content}
-	fmt.Println("instance",pbft.Id, "will broadcast messages to", pbft.members)
+	fmt.Println("instance",pbft.Id, "will broadcast view-change messages to", pbft.members)
 	pbft.broadcdataCh <- datatosend
 }
 
