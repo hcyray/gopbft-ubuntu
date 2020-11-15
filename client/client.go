@@ -128,13 +128,13 @@ func (client *Client) Run() {
 
 	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))
 	//var hval [32]byte
-	for i:=0; i<1; i++ {
+	for i:=0; i<10000; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
 		}
-		val := rand.Intn(2) + 1
+		val := rand.Intn(20) + 10
 		//val := 1
 		time.Sleep(time.Millisecond*time.Duration(val))
 	}
