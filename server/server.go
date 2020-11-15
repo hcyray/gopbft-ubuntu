@@ -522,7 +522,7 @@ func (serv *Server) handleTransaction(request []byte) {
 		log.Panic(err)
 		fmt.Println("tx decoding error")
 	}
-
+	fmt.Println("server", serv.id, "receives a tx")
 	if tx.Verify() {
 		serv.msgbuff.Msgbuffmu.Lock()
 		serv.msgbuff.TxPool[tx.GetHash()] = tx
