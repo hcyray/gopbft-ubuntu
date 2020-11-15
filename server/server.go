@@ -103,9 +103,9 @@ func (serv *Server) InitializeMapandChan() {
 
 func (serv *Server) Start() {
 	go serv.Run()
-	serv.pbft.InitialSetup()
-	time.Sleep(time.Second * 5)
-	go serv.pbft.Run()
+	//serv.pbft.InitialSetup()
+	//time.Sleep(time.Second * 5)
+	//go serv.pbft.Run()
 }
 
 func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
@@ -523,14 +523,18 @@ func (serv *Server) handleTransaction(request []byte) {
 		fmt.Println("tx decoding error")
 	}
 	fmt.Println("server", serv.id, "receives a tx")
-	if tx.Verify() {
-		serv.msgbuff.Msgbuffmu.Lock()
-		serv.msgbuff.TxPool[tx.GetHash()] = tx
-		//if serv.id==0 && len(serv.msgbuff.TxPool)%1000==0 {
-		//	fmt.Println("server 0 has",len(serv.msgbuff.TxPool), "txs")
-		//}
-		serv.msgbuff.Msgbuffmu.Unlock()
-	}
+	//if tx.Verify() {
+	//	serv.msgbuff.Msgbuffmu.Lock()
+	//	serv.msgbuff.TxPool[tx.GetHash()] = tx
+	//	//if serv.id==0 && len(serv.msgbuff.TxPool)%1000==0 {
+	//	//	fmt.Println("server 0 has",len(serv.msgbuff.TxPool), "txs")
+	//	//}
+	//	serv.msgbuff.Msgbuffmu.Unlock()
+	//}
+	serv.msgbuff.Msgbuffmu.Lock()
+	serv.msgbuff.TxPool[tx.GetHash()] = tx
+	serv.msgbuff.Msgbuffmu.Unlock()
+
 }
 
 func (serv *Server) handleBlock(content []byte) {
