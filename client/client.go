@@ -70,7 +70,7 @@ func (clk *ClienKeys) GetDeserializeFromFile(fn string) {
 func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []string) *Client {
 	client := &Client{}
 	client.id = id
-	client.miners = make([]int, servernum)
+	client.miners = make([]int, 0)
 	client.minerIPAddress = make(map[int]string)
 	for i:=0; i<servernum; i++ {
 		client.miners = append(client.miners, i)
