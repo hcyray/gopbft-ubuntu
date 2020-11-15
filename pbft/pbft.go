@@ -1084,7 +1084,7 @@ func (pbft *PBFT) broadcastPubkey() {
 	}
 	content := buff.Bytes()
 	pbft.mu.Lock()
-	datatosend := datastruc.Datatosend{pbft.members, "idpubkey", content}
+	datatosend := datastruc.Datatosend{pbft.members, "idportpubkey", content}
 	pbft.mu.Unlock()
 	pbft.broadcdataCh <- datatosend
 }

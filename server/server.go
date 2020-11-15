@@ -103,9 +103,9 @@ func (serv *Server) InitializeMapandChan() {
 
 func (serv *Server) Start() {
 	go serv.Run()
-	//serv.pbft.InitialSetup()
-	//time.Sleep(time.Second * 5)
-	//go serv.pbft.Run()
+	serv.pbft.InitialSetup()
+	time.Sleep(time.Second * 5)
+	go serv.pbft.Run()
 }
 
 func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
@@ -193,8 +193,8 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 			log.Panic(err)
 		}
 		switch commanType {
-		case "idpubkey":
-			go serv.handleIdPubkey(request[commandLength:])
+		case "idportpubkey":
+			go serv.handleIdPortPubkey(request[commandLength:])
 		//case "mintedtx":
 		//	go serv.handleTransaction(request[commandLength:])
 		case "jointx":
@@ -495,7 +495,7 @@ func (serv *Server) handleLeaveTx(conten []byte) {
 	serv.censorshipmonitorCh <- leavetx.GetHash()
 }
 
-func (serv *Server) handleIdPubkey(conten []byte) {
+func (serv *Server) handleIdPortPubkey(conten []byte) {
 	var buff bytes.Buffer
 	var peerid datastruc.PeerIdentity
 	buff.Write(conten)
@@ -504,6 +504,7 @@ func (serv *Server) handleIdPubkey(conten []byte) {
 	if err != nil {
 		fmt.Println("addrpubkey decoding error")
 	}
+	fmt.Println("server", serv.id, "receives a ipportpubkey msg")
 	serv.msgbuff.Msgbuffmu.Lock()
 	serv.msgbuff.InitialConfig = append(serv.msgbuff.InitialConfig, peerid)
 	serv.msgbuff.Msgbuffmu.Unlock()
@@ -526,7 +527,7 @@ func (serv *Server) handleTransaction(request []byte) {
 	if tx.Verify() {
 		serv.msgbuff.Msgbuffmu.Lock()
 		serv.msgbuff.TxPool[tx.GetHash()] = tx
-		if len(serv.msgbuff.TxPool)%1000==0 {
+		if len(serv.msgbuff.TxPool)%50==0 {
 			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
 		}
 		serv.msgbuff.Msgbuffmu.Unlock()
