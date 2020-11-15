@@ -711,8 +711,7 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 	if !vcmsg.Sig.Verify(datatoverify[:], pub) {
 		return
 	}
-
-	//fmt.Println("serve", serv.id, "receives a view-change msg")
+	fmt.Println("serve", serv.id, "receives a view-change msg")
 	serv.msgbuff.Msgbuffmu.Lock()
 	theterm := datastruc.Term{vcmsg.Ver, vcmsg.View}
 	tmp := make([]datastruc.ViewChangeMsg, len(serv.msgbuff.Vcmsg[theterm]))
