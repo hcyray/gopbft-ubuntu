@@ -1202,6 +1202,7 @@ func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.Leav
 	}
 	content := buff.Bytes()
 	datatosend := datastruc.Datatosend{pbft.members, "viewchangemsg", content}
+	fmt.Println("instance",pbft.Id, "will broadcast messages to", pbft.members)
 	pbft.broadcdataCh <- datatosend
 }
 
