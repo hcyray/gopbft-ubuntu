@@ -232,7 +232,7 @@ func (pbft *PBFT) InitialSetup() {
 		tmppubk = append(tmppubk, p.Member.PubKey)
 		p = p.Next
 	}
-	fmt.Println("instace", pbft.Id, "thinks the leader succession line is", tmpid, "pubkey list is", tmppubk)
+	fmt.Println("instace", pbft.Id, "thinks the leader succession line is", tmpid, "pubkey list not show")
 
 	// construct genesis block
 	confighash := pbft.succLine.GetHash()
@@ -316,10 +316,6 @@ func (pbft *PBFT) Run() {
 
 	starttime := time.Now()
 	for {
-		//if pbft.currentHeight>1 {
-		//	fmt.Println("the first block consensus completes")
-		//	break
-		//}
 		if pbft.currentHeight > 600 {
 			fmt.Println("instance", pbft.Id, "completes consensus, stops")
 			return
