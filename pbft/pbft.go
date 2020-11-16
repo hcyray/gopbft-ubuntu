@@ -309,8 +309,8 @@ func (pbft *PBFT) LateSetup() {
 func (pbft *PBFT) Run() {
 	fmt.Println("instance", pbft.Id, "starts running")
 	pbft.starttime = time.Now()
-	go pbft.statetransfermonitor()
-	go pbft.computeTps()
+	//go pbft.statetransfermonitor()
+	//go pbft.computeTps()
 	//go pbft.delaySelfMonitor()
 
 
