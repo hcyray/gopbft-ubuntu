@@ -633,6 +633,7 @@ func (serv *Server) handlePreprepareMsg(content []byte) {
 	datatoverify := string(prepreparemsg.Ver) + "," + string(prepreparemsg.View) + "," + string(prepreparemsg.Order) + "," + string(prepreparemsg.Digest[:])
 	pub := datastruc.DecodePublic(prepreparemsg.Pubkey)
 	if !prepreparemsg.Sig.Verify([]byte(datatoverify), pub) {
+		fmt.Println("server", serv.id, "receives an pre-prepare msg at height", prepreparemsg.Order, "but the signature is wrong")
 		return
 	}
 	serv.msgbuff.Msgbuffmu.Lock()
@@ -655,6 +656,7 @@ func (serv *Server) handlePrepareMsg(content []byte) {
 	datatoverify := string(preparemsg.Ver) + "," + string(preparemsg.View) + "," + string(preparemsg.Order) + "," + string(preparemsg.Digest[:])
 	pub := datastruc.DecodePublic(preparemsg.Pubkey)
 	if !preparemsg.Sig.Verify([]byte(datatoverify), pub) {
+		fmt.Println("server", serv.id, "receives an prepare msg at height", preparemsg.Order, "but the signature is wrong")
 		return
 	}
 
