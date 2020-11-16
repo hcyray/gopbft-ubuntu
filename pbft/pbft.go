@@ -402,7 +402,6 @@ func (pbft *PBFT) Run() {
 					var hval [32]byte
 					pbft.mu.Lock()
 					hval = pbft.systemhash[pbft.currentHeight-1]
-					//fmt.Println("instance",pbft.Id,"scan pre-prepare msg at height", pbft.currentHeight)
 					go pbft.scanPreprepare(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.curleaderPubKeystr, hval)
 					pbft.mu.Unlock()
 
