@@ -716,6 +716,7 @@ func (pbft *PBFT) scanPrepare(ver, view, heigh int, digest [32]byte, quorumsize 
 			return
 		default:
 			acc := pbft.MsgBuff.CountPrepareVote(theterm, heigh, digest)
+			fmt.Println("instance", pbft.Id, "got", acc, "prepare-vote at height", heigh)
 			if acc>=quorumsize {
 				//fmt.Println("instance", pbft.Id, "finds", acc,"prepare-vote in height", heigh)
 				theprog := datastruc.Progres{ver, view, heigh}
