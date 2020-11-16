@@ -153,7 +153,7 @@ func (msgbuf *MessageBuffer) CountPrepareVote(theterm Term, heigh int, digest [3
 		if TwoHashEqual(digest,vote.Digest) {
 			acc += 1
 		} else {
-			fmt.Print("prepare vote digest not match, the expected digest is", digest, " vote digest is ", vote.Digest)
+			fmt.Print("prepare vote digest not match, vote digest is ", vote.Digest[0:8])
 		}
 	}
 	return acc
