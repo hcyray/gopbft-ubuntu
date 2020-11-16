@@ -1193,9 +1193,9 @@ func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.Leav
 	plock datastruc.PreparedLock, clock datastruc.CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) {
 	vcmsg := datastruc.NewViewChangeMsg(ver, view, ltxset, ckpheigh, ckpqc, plock, clock, pubkey, prvkey)
 	if clock.LockedHeight >0 {
-		fmt.Println("instance",pbft.Id, "creates a view-change msg at ver", ver, "view", view, "with commit-lock at height", vcmsg.Clock.LockedHeight, "with digest", vcmsg.Clock.LockedHash)
+		fmt.Println("instance",pbft.Id, "creates a view-change msg at ver", ver, "view", view, "with commit-lock at height", vcmsg.Clock.LockedHeight, "with digest", vcmsg.Clock.LockedHash[0:6])
 	} else {
-		fmt.Println("instance",pbft.Id, "creates a view-change msg at ver", ver, "view", view, "with prepare-lock at height", vcmsg.Plock.LockedHeight, "with digest", vcmsg.Plock.LockedHash[0:10])
+		fmt.Println("instance",pbft.Id, "creates a view-change msg at ver", ver, "view", view, "with prepare-lock at height", vcmsg.Plock.LockedHeight, "with digest", vcmsg.Plock.LockedHash[0:6])
 	}
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)
