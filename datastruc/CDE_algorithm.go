@@ -291,7 +291,7 @@ func (cdedata *CDEdata) CDEInformTestMonitor() {
 }
 
 func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
-	//fmt.Print("instance ", cdedata.Id, " starts full testing for new instance", reqtest.Testee)
+	//fmt.Println("instance ", cdedata.Id, " starts full testing for new instance", reqtest.Testee)
 	testee := reqtest.Testee
 	testeeip := reqtest.IpAddr
 	delays := make([]int, 0)

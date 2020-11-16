@@ -329,7 +329,7 @@ func (pbft *PBFT) Run() {
 		}
 		switch pbft.status {
 		case stat_consensus:
-			//fmt.Print("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
+			//fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
 			if pbft.currentHeight>1 {
 				elapsed := time.Since(starttime).Milliseconds()
 				pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
@@ -344,7 +344,7 @@ func (pbft *PBFT) Run() {
 					pbft.remainblocknuminnewview -= 1
 					pbft.leaderlease -= 1
 				} else {
-					fmt.Print("leader ", pbft.Id," now starts driving consensus in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
+					fmt.Println("leader ", pbft.Id," now starts driving consensus in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
 					pbft.mu.Lock()
 					var bloc datastruc.Block
 					var blockhash [32]byte
@@ -476,7 +476,7 @@ func (pbft *PBFT) Run() {
 						pbft.persis.commitlock.LockedHeight = pbft.currentHeight
 						pbft.CommitCurConsensOb()
 						pbft.curleaderlease -= 1
-						fmt.Print("instance ", pbft.Id," now finishes height ", pbft.currentHeight-1, "\n")
+						fmt.Println("instance ", pbft.Id," now finishes height ", pbft.currentHeight-1, "\n")
 					}
 					pbft.mu.Unlock()
 					if pbft.reconfighappen {
@@ -507,7 +507,7 @@ func (pbft *PBFT) Run() {
 				}
 			}
 		case stat_viewchange:
-			fmt.Print("instance ", pbft.Id, " now enters view-change in ver ",pbft.vernumber," view ",pbft.viewnumber, " waiting for vcmsg!\n")
+			fmt.Println("instance ", pbft.Id, " now enters view-change in ver ",pbft.vernumber," view ",pbft.viewnumber, " waiting for vcmsg!\n")
 			pbft.mu.Lock()
 			go pbft.scanViewChange(pbft.vernumber, pbft.viewnumber, pbft.quorumsize)
 			pbft.mu.Unlock()
@@ -519,7 +519,7 @@ func (pbft *PBFT) Run() {
 				}
 			}
 		case stat_inaugurate:
-			fmt.Print("instance ", pbft.Id," now enters inauguration stage in ver ",pbft.vernumber, " view ", pbft.viewnumber, "\n")
+			fmt.Println("instance ", pbft.Id," now enters inauguration stage in ver ",pbft.vernumber, " view ", pbft.viewnumber, "\n")
 			pbft.mu.Lock()
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 			if pbft.isleader && pbft.sentnewviewmsg[theterm]==false {
@@ -745,7 +745,7 @@ func (pbft *PBFT) scanCommit(ver, view, heigh int, digest [32]byte, quorumsize i
 		case <- timeouter.C:
 			return
 		default:
-			fmt.Println("instance ", pbft.Id, "counts commit vote, the input is term: ", theterm, " height ", heigh)
+			//fmt.Println("instance ", pbft.Id, "counts commit vote, the input is term: ", theterm, " height ", heigh)
 			acc := pbft.MsgBuff.CountCommitVote(theterm, heigh, digest)
 			fmt.Println("instance", pbft.Id, "got", acc, "commit-vote at height", heigh)
 			if acc>=quorumsize {

@@ -153,7 +153,7 @@ func (msgbuf *MessageBuffer) CountPrepareVote(theterm Term, heigh int, digest [3
 		if TwoHashEqual(digest,vote.Digest) {
 			acc += 1
 		} else {
-			fmt.Print("prepare vote digest not match, vote digest is ", vote.Digest[0:8])
+			fmt.Println("prepare vote digest not match, vote digest is ", vote.Digest[0:8])
 		}
 	}
 	return acc
@@ -171,9 +171,9 @@ func (msgbuf *MessageBuffer) CountCommitVote(theterm Term, heigh int, digest [32
 		for i, vote := range msgbuf.CommitVote[theterm][heigh] {
 			if TwoHashEqual(digest,vote.Digest) {
 				acc += 1
-				fmt.Print("commit vote ", i, " digest matches, vote digest is ", vote.Digest[0:8])
+				fmt.Println("commit vote ", i, " digest matches, vote digest is ", vote.Digest[0:8])
 			} else {
-				fmt.Print("commit vote ", i, " digest not match, vote digest is ", vote.Digest[0:8])
+				fmt.Println("commit vote ", i, " digest not match, vote digest is ", vote.Digest[0:8])
 			}
 		}
 	}
