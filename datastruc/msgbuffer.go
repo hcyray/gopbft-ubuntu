@@ -164,13 +164,18 @@ func (msgbuf *MessageBuffer) CountCommitVote(theterm Term, heigh int, digest [32
 	defer msgbuf.Msgbuffmu.Unlock()
 
 	acc := 0
-	for i, vote := range msgbuf.CommitVote[theterm][heigh] {
-		if TwoHashEqual(digest,vote.Digest) {
-			acc += 1
-		} else {
-			fmt.Print("commit vote ", i, " digest not match, the expected digest is", digest, " vote digest is ", vote.Digest)
+	if len(msgbuf.CommitVote[theterm][heigh])==0 {
+		fmt.Println("commit vote buffer at term ", theterm, " height ", heigh, "is empty")
+	} else {
+		for i, vote := range msgbuf.CommitVote[theterm][heigh] {
+			if TwoHashEqual(digest,vote.Digest) {
+				acc += 1
+			} else {
+				fmt.Print("commit vote ", i, " digest not match, the expected digest is", digest, " vote digest is ", vote.Digest)
+			}
 		}
 	}
+
 	return acc
 }
 
