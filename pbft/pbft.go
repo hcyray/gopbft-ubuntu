@@ -745,6 +745,7 @@ func (pbft *PBFT) scanCommit(ver, view, heigh int, digest [32]byte, quorumsize i
 		case <- timeouter.C:
 			return
 		default:
+			fmt.Println("instance ", pbft.Id, "counts commit vote, the input is term: ", theterm, " height ", heigh)
 			acc := pbft.MsgBuff.CountCommitVote(theterm, heigh, digest)
 			fmt.Println("instance", pbft.Id, "got", acc, "commit-vote at height", heigh)
 			if acc>=quorumsize {
