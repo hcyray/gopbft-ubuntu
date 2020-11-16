@@ -167,6 +167,7 @@ func (msgbuf *MessageBuffer) CountCommitVote(theterm Term, heigh int, digest [32
 	if len(msgbuf.CommitVote[theterm][heigh])==0 {
 		fmt.Println("commit vote buffer at term ", theterm, " height ", heigh, "is empty")
 	} else {
+		fmt.Println("commit vote buffer at term ", theterm, " height ", heigh, "has ", len(msgbuf.CommitVote[theterm][heigh]), "commit vote")
 		for i, vote := range msgbuf.CommitVote[theterm][heigh] {
 			if TwoHashEqual(digest,vote.Digest) {
 				acc += 1
