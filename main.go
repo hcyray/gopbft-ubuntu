@@ -142,7 +142,6 @@ func main() {
 			go theclient.Run()
 			fmt.Print("the ", i, "client starts")
 		}
-
 	}
 
 	time.Sleep(time.Second * 40)
