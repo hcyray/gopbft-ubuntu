@@ -702,7 +702,7 @@ func (serv *Server) handleCommitMsg(content []byte) {
 	delete(serv.msgbuff.CommitVote[theterm], theorder)
 	serv.msgbuff.CommitVote[theterm][theorder] = make([]datastruc.CommitMsg, len(tmp))
 	copy(serv.msgbuff.CommitVote[theterm][theorder], tmp)
-	fmt.Println("server", serv.id, "has ", len(serv.msgbuff.CommitVote[theterm][theorder]), "commit-vote at height", commitmsg.Order)
+	fmt.Println("server", serv.id, "has ", len(serv.msgbuff.CommitVote[theterm][theorder]), "commit-vote at height", commitmsg.Order, "the digest is ", commitmsg.Digest)
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
