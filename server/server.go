@@ -664,7 +664,13 @@ func (serv *Server) handlePrepareMsg(content []byte) {
 	if _, ok := serv.msgbuff.PrepareVote[theterm]; ! ok {
 		serv.msgbuff.PrepareVote[theterm] = make(map[int][]datastruc.PrepareMsg)
 	}
-	serv.msgbuff.PrepareVote[theterm][theorder] = append(serv.msgbuff.PrepareVote[theterm][theorder], preparemsg)
+	//serv.msgbuff.PrepareVote[theterm][theorder] = append(serv.msgbuff.PrepareVote[theterm][theorder], preparemsg)
+	tmp := make([]datastruc.PrepareMsg, len(serv.msgbuff.PrepareVote[theterm][theorder]))
+	copy(tmp, serv.msgbuff.PrepareVote[theterm][theorder])
+	datastruc.AddPreparemsg(&tmp, preparemsg)
+	delete(serv.msgbuff.PrepareVote[theterm], theorder)
+	serv.msgbuff.PrepareVote[theterm][theorder] = make([]datastruc.PrepareMsg, len(tmp))
+	copy(serv.msgbuff.PrepareVote[theterm][theorder], tmp)
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
@@ -688,7 +694,12 @@ func (serv *Server) handleCommitMsg(content []byte) {
 	if _, ok := serv.msgbuff.CommitVote[theterm]; !ok {
 		serv.msgbuff.CommitVote[theterm] = make(map[int][]datastruc.CommitMsg)
 	}
-	serv.msgbuff.CommitVote[theterm][theorder] = append(serv.msgbuff.CommitVote[theterm][theorder], commitmsg)
+	//serv.msgbuff.CommitVote[theterm][theorder] = append(serv.msgbuff.CommitVote[theterm][theorder], commitmsg)
+	tmp := make([]datastruc.CommitMsg, len(serv.msgbuff.CommitVote[theterm][theorder]))
+	datastruc.AddCommitmsg(&tmp, commitmsg)
+	delete(serv.msgbuff.CommitVote[theterm], theorder)
+	serv.msgbuff.CommitVote[theterm][theorder] = make([]datastruc.CommitMsg, len(tmp))
+	copy(serv.msgbuff.CommitVote[theterm][theorder], tmp)
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 

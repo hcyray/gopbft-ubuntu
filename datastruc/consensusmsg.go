@@ -265,6 +265,34 @@ func NewNewViewMsgWithoutBlock(ver int, view int, pubkey string, vcset []ViewCha
 	return nvmsg
 }
 
+func AddPreparemsg(ppmset *[]PrepareMsg, ppmsg PrepareMsg) {
+	needappend := true
+	for i:=0; i<len(*ppmset); i++ {
+		if (*ppmset)[i].Pubkey==ppmsg.Pubkey {
+			(*ppmset)[i] = ppmsg
+			needappend = false
+			break
+		}
+	}
+	if needappend {
+		*ppmset = append(*ppmset, ppmsg)
+	}
+}
+
+func AddCommitmsg(cmmset *[]CommitMsg, cmmsg CommitMsg) {
+	needappend := true
+	for i:=0; i<len(*cmmset); i++ {
+		if (*cmmset)[i].Pubkey==cmmsg.Pubkey {
+			(*cmmset)[i] = cmmsg
+			needappend = false
+			break
+		}
+	}
+	if needappend {
+		*cmmset = append(*cmmset, cmmsg)
+	}
+}
+
 func AddVcmsg(vcmset *[]ViewChangeMsg, vcmsg ViewChangeMsg) {
 	needappend := true
 	for i:=0; i<len(*vcmset); i++ {
