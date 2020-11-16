@@ -8,6 +8,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"time"
@@ -136,6 +137,8 @@ func main() {
 		for i:=0; i<10; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*2, privatekey, allips[0:totalserver])
+			val := rand.Intn(200)
+			time.Sleep(time.Millisecond*time.Duration(val))
 			go theclient.Run()
 			fmt.Print("the ", i, "client starts")
 		}
