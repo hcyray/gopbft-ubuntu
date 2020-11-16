@@ -91,7 +91,7 @@ func main() {
 		fmt.Println(x)
 	}
 	localid := DetermineId(allips, localip)
-	fmt.Println("local id is", localid)
+	fmt.Println("local id is", localid, "\n")
 
 
 	// ***************************************generate client keys and save
