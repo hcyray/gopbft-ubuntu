@@ -1,9 +1,9 @@
 package pbft
 
-const ConsensusTimer = 2000
-const InauguratTimer = 2000
+const ConsensusTimer = 5000
+const InauguratTimer = 5000
 const ScanInterval = 10
-const ThreadExit = 4
+const ThreadExit = 5
 const LeaderLease = 5
 
 const BlockVolume = 2048
