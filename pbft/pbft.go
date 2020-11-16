@@ -713,7 +713,7 @@ func (pbft *PBFT) scanPrepare(ver, view, heigh int, digest [32]byte, quorumsize 
 			return
 		default:
 			acc := pbft.MsgBuff.CountPrepareVote(theterm, heigh, digest)
-			fmt.Println("instance", pbft.Id, "got", acc, "prepare-vote at height", heigh)
+			//fmt.Println("instance", pbft.Id, "got", acc, "prepare-vote at height", heigh)
 			if acc>=quorumsize {
 				//fmt.Println("instance", pbft.Id, "finds", acc,"prepare-vote in height", heigh)
 				theprog := datastruc.Progres{ver, view, heigh}
@@ -747,7 +747,7 @@ func (pbft *PBFT) scanCommit(ver, view, heigh int, digest [32]byte, quorumsize i
 		default:
 			//fmt.Println("instance ", pbft.Id, "counts commit vote, the input is term: ", theterm, " height ", heigh)
 			acc := pbft.MsgBuff.CountCommitVote(theterm, heigh, digest)
-			fmt.Println("instance", pbft.Id, "got", acc, "commit-vote at height", heigh)
+			//fmt.Println("instance", pbft.Id, "got", acc, "commit-vote at height", heigh)
 			if acc>=quorumsize {
 				theprog := datastruc.Progres{ver, view, heigh}
 				pbft.mu.Lock()
