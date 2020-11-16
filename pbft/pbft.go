@@ -748,6 +748,7 @@ func (pbft *PBFT) scanCommit(ver, view, heigh int, digest [32]byte, quorumsize i
 			return
 		default:
 			acc := pbft.MsgBuff.CountCommitVote(theterm, heigh, digest)
+			fmt.Println("instance", pbft.Id, "got", acc, "commit-vote at height", heigh)
 			if acc>=quorumsize {
 				theprog := datastruc.Progres{ver, view, heigh}
 				pbft.mu.Lock()
