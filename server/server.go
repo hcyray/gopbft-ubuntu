@@ -698,6 +698,7 @@ func (serv *Server) handleCommitMsg(content []byte) {
 	}
 	//serv.msgbuff.CommitVote[theterm][theorder] = append(serv.msgbuff.CommitVote[theterm][theorder], commitmsg)
 	tmp := make([]datastruc.CommitMsg, len(serv.msgbuff.CommitVote[theterm][theorder]))
+	copy(tmp, serv.msgbuff.CommitVote[theterm][theorder])
 	tmpdigests := make([][]byte, 0)
 	for _, v := range tmp {
 		tmpdigests = append(tmpdigests, v.Digest[0:6])
