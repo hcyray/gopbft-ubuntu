@@ -165,15 +165,15 @@ func (msgbuf *MessageBuffer) CountCommitVote(theterm Term, heigh int, digest [32
 
 	acc := 0
 	if len(msgbuf.CommitVote[theterm][heigh])==0 {
-		fmt.Println("commit vote buffer at term ", theterm, " height ", heigh, "is empty")
+		//fmt.Println("commit vote buffer at term ", theterm, " height ", heigh, "is empty")
 	} else {
-		fmt.Println("commit vote buffer at term ", theterm, " height ", heigh, "has ", len(msgbuf.CommitVote[theterm][heigh]), "commit vote")
-		for i, vote := range msgbuf.CommitVote[theterm][heigh] {
+		//fmt.Println("commit vote buffer at term ", theterm, " height ", heigh, "has ", len(msgbuf.CommitVote[theterm][heigh]), "commit vote")
+		for _, vote := range msgbuf.CommitVote[theterm][heigh] {
 			if TwoHashEqual(digest,vote.Digest) {
 				acc += 1
-				fmt.Println("commit vote ", i, " digest matches, vote digest is ", vote.Digest[0:6], " vote ver ", vote.Ver, " vote view ", vote.View, " vote order ", vote.Order)
+				//fmt.Println("commit vote ", i, " digest matches, vote digest is ", vote.Digest[0:6], " vote ver ", vote.Ver, " vote view ", vote.View, " vote order ", vote.Order)
 			} else {
-				fmt.Println("commit vote ", i, " digest not match, vote digest is ", vote.Digest[0:6], " vote ver ", vote.Ver, " vote view ", vote.View, " vote order ", vote.Order)
+				//fmt.Println("commit vote ", i, " digest not match, vote digest is ", vote.Digest[0:6], " vote ver ", vote.Ver, " vote view ", vote.View, " vote order ", vote.Order)
 			}
 		}
 	}
