@@ -700,11 +700,16 @@ func (serv *Server) handleCommitMsg(content []byte) {
 	tmp := make([]datastruc.CommitMsg, len(serv.msgbuff.CommitVote[theterm][theorder]))
 	datastruc.AddCommitmsg(&tmp, commitmsg)
 	delete(serv.msgbuff.CommitVote[theterm], theorder)
+	tmpdigests := make([][]byte, 0)
+	for _, v := range tmp {
+		tmpdigests = append(tmpdigests, v.Digest[0:6])
+	}
+	fmt.Println("server", serv.id, " tmp has ", len(tmp), "commit vote, tmpdigests ", tmpdigests)
 	serv.msgbuff.CommitVote[theterm][theorder] = make([]datastruc.CommitMsg, len(tmp))
 	copy(serv.msgbuff.CommitVote[theterm][theorder], tmp)
 	digests := make([][]byte, 0)
 	for _, v := range serv.msgbuff.CommitVote[theterm][theorder] {
-		digests = append(digests, v.Digest[0:8])
+		digests = append(digests, v.Digest[0:6])
 	}
 	fmt.Println("server", serv.id, "has ", len(serv.msgbuff.CommitVote[theterm][theorder]), "commit-vote at term ", theterm," height", commitmsg.Order, "the digest is ", digests)
 	serv.msgbuff.Msgbuffmu.Unlock()

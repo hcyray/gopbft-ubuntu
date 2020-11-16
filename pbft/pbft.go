@@ -463,9 +463,9 @@ func (pbft *PBFT) Run() {
 						pbft.consenstatus = Prepared
 						pbft.persis.preparelock.LockedHeight = pbft.currentHeight
 						//fmt.Println("instance", pbft.Id, "is prepared in ver",pbft.vernumber,"view", pbft.viewnumber, "height", pbft.currentHeight)
-						fmt.Println("instance ", pbft.Id, "broadcast commit msg with digest ", pbft.curblockhash)
+						//fmt.Println("instance ", pbft.Id, "broadcast commit msg with digest ", pbft.curblockhash)
 						go pbft.broadcastCommit(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.curblockhash)
-						fmt.Println("instance ", pbft.Id, "scan commit msg expect digest ", pbft.curblockhash)
+						//fmt.Println("instance ", pbft.Id, "scan commit msg expect digest ", pbft.curblockhash)
 						go pbft.scanCommit(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.curblockhash, pbft.quorumsize)
 					}
 					pbft.mu.Unlock()
