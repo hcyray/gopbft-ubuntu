@@ -1,6 +1,7 @@
 package datastruc
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -163,6 +164,7 @@ func (msgbuf *MessageBuffer) CountCommitVote(theterm Term, heigh int, digest [32
 	acc := 0
 	for _, vote := range msgbuf.CommitVote[theterm][heigh] {
 		if TwoHashEqual(digest,vote.Digest) {
+			fmt.Print("commit vote digest not match")
 			acc += 1
 		}
 	}

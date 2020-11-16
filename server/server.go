@@ -687,6 +687,7 @@ func (serv *Server) handleCommitMsg(content []byte) {
 	datatoverify := string(commitmsg.Ver) + "," + string(commitmsg.View) + "," + string(commitmsg.Order) + "," + string(commitmsg.Digest[:])
 	pub := datastruc.DecodePublic(commitmsg.Pubkey)
 	if !commitmsg.Sig.Verify([]byte(datatoverify), pub) {
+		fmt.Println("server", serv.id, "receives an commit msg at height", commitmsg.Order, "but the signature is wrong")
 		return
 	}
 	serv.msgbuff.Msgbuffmu.Lock()
