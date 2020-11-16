@@ -123,14 +123,14 @@ func main() {
 			instanceid := i+2*localid
 			theserver := server.CreateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver])
 			go theserver.Start()
-			fmt.Println("the ", instanceid, "server instance starts")
+			fmt.Println("server", instanceid, "starts")
 		}
 	} else if localid>=initialserver && localid<totalserver {
 		for i:=0; i<instanceoneachserver-1; i++ {
 			instanceid := i+2*localid
 			theserver := server.CreateLateServer(instanceid, localip)
 			go theserver.LateStart(ck.Clientpubkstrs, 5+10*i) // new nodes join serially
-			fmt.Println("the ", instanceid, "server instance starts, it is a late server")
+			fmt.Println("server", instanceid, "starts, it is a late server")
 		}
 	} else {
 		//invoke cliients
