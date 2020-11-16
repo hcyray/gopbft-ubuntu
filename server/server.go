@@ -505,7 +505,7 @@ func (serv *Server) handleIdPortPubkey(conten []byte) {
 	if err != nil {
 		fmt.Println("addrpubkey decoding error")
 	}
-	fmt.Println("server", serv.id, "receives a ipportpubkey msg")
+	//fmt.Println("server", serv.id, "receives a ipportpubkey msg")
 	serv.msgbuff.Msgbuffmu.Lock()
 	serv.msgbuff.InitialConfig = append(serv.msgbuff.InitialConfig, peerid)
 	serv.msgbuff.Msgbuffmu.Unlock()
@@ -671,6 +671,7 @@ func (serv *Server) handlePrepareMsg(content []byte) {
 	delete(serv.msgbuff.PrepareVote[theterm], theorder)
 	serv.msgbuff.PrepareVote[theterm][theorder] = make([]datastruc.PrepareMsg, len(tmp))
 	copy(serv.msgbuff.PrepareVote[theterm][theorder], tmp)
+	fmt.Println("server", serv.id, "has ", len(serv.msgbuff.PrepareVote[theterm][theorder]), "commit-vote at height", preparemsg.Order)
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
@@ -700,6 +701,7 @@ func (serv *Server) handleCommitMsg(content []byte) {
 	delete(serv.msgbuff.CommitVote[theterm], theorder)
 	serv.msgbuff.CommitVote[theterm][theorder] = make([]datastruc.CommitMsg, len(tmp))
 	copy(serv.msgbuff.CommitVote[theterm][theorder], tmp)
+	fmt.Println("server", serv.id, "has ", len(serv.msgbuff.CommitVote[theterm][theorder]), "commit-vote at height", commitmsg.Order)
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
