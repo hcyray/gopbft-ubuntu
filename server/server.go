@@ -671,7 +671,7 @@ func (serv *Server) handlePrepareMsg(content []byte) {
 	delete(serv.msgbuff.PrepareVote[theterm], theorder)
 	serv.msgbuff.PrepareVote[theterm][theorder] = make([]datastruc.PrepareMsg, len(tmp))
 	copy(serv.msgbuff.PrepareVote[theterm][theorder], tmp)
-	fmt.Println("server", serv.id, "has ", len(serv.msgbuff.PrepareVote[theterm][theorder]), "commit-vote at height", preparemsg.Order)
+	fmt.Println("server", serv.id, "has ", len(serv.msgbuff.PrepareVote[theterm][theorder]), "prepare-vote at term", theterm, "height", preparemsg.Order)
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
