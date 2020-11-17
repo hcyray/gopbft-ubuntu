@@ -569,7 +569,7 @@ func (pbft *PBFT) Run() {
 						}
 						pbft.currentHeight = theprog.Height
 						pbft.curleaderlease = LeaderLease
-						//fmt.Println("instance",pbft.Id, "got new-view signal in ver", theprog.Ver, "view", theprog.View)
+						fmt.Println("instance",pbft.Id, "got new-view signal in ver", theprog.Ver, "view", theprog.View)
 						pbft.mu.Unlock()
 						break inaugurate_loop
 					}
