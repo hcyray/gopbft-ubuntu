@@ -27,6 +27,9 @@ type CDEdata struct {
 	ProposeDelayMatrix map[int]map[int]int
 	WriteDelayMatrix map[int]map[int]int
 	ValidationDelayMatrix map[int]map[int]int
+
+	sanitizationflag map[int]bool
+
 	SendCh chan DatatosendWithIp
 	BroadcastCh chan Datatosend
 	RecvTestCh chan DataReceived
@@ -71,6 +74,7 @@ func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp,
 	cde.ProposeDelayMatrix = make(map[int]map[int]int)
 	cde.WriteDelayMatrix = make(map[int]map[int]int)
 	cde.ValidationDelayMatrix = make(map[int]map[int]int)
+	cde.sanitizationflag = make(map[int]bool)
 	le := len(peers)
 	for _,v := range peers {
 		cde.Peers = append(cde.Peers, v)
@@ -413,15 +417,24 @@ func (cdedata *CDEdata) UpdateUsingNewMeasurementRes(mrrlist []MeasurementResult
 		if !PeersMatch(cdedata.Peers, mrr.Peers) {
 			log.Panic("the current config does not match measurement result's config")
 		}
-		testee := mrr.Id
+		tester := mrr.Id
 		if mrr.ProposeFlag {
-			cdedata.ProposeDelayMatrix[testee] = mrr.ProposeDealy
-			cdedata.ValidationDelayMatrix[testee] = mrr.ValidateDelay
+			cdedata.ProposeDelayMatrix[tester] = mrr.ProposeDealy
+			cdedata.ValidationDelayMatrix[tester] = mrr.ValidateDelay
 		}
-		cdedata.WriteDelayMatrix[testee] = mrr.WriteDelay
+		cdedata.WriteDelayMatrix[tester] = mrr.WriteDelay
+		cdedata.sanitizationflag[tester] = true
 	}
 
-	//cdedata.Sanitization()
+	sanitize := false
+	for _, id := range cdedata.Peers {
+		if cdedata.sanitizationflag[id] == false {
+			break
+		}
+	}
+	if sanitize {
+		cdedata.Sanitization()
+	}
 }
 
 func (cdedata *CDEdata) ProposeDelayConvertToMatrix() [][]int {

@@ -493,7 +493,7 @@ func (pbft *PBFT) Run() {
 						pbft.mu.Unlock()
 					} else {
 						if pbft.curleaderlease==0 {
-							fmt.Println("instance",pbft.Id,"finds the current leader expires, launches a view chagne at height",pbft.currentHeight)
+							fmt.Println("instance",pbft.Id,"finds the current leader expires, launches a view change at height",pbft.currentHeight)
 							pbft.mu.Lock()
 							if pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber, pbft.viewnumber+1}]==false{
 								ckpqc, plock, clock := pbft.GenerateQCandLockForVC()
@@ -1437,10 +1437,11 @@ func (pbft *PBFT) delaySelfMonitor() {
 		closech := make(chan bool)
 		pbft.cdedata.Recvmu.Lock()
 		go pbft.cdedata.CDEResponseMonitor(closech)
-		if cdedatap.Round%1==0 {
+		if cdedatap.Round%1==0 && !pbft.isleader {
 			delayv.Update("both")
 			mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
 		} else {
+			// this will not execute, i. e., always update both delays
 			delayv.Update("write")
 			// copy propose-delay and validate-delay
 			mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, false, cdedatap.Pubkeystr, cdedatap.Prvkey)
@@ -1482,7 +1483,7 @@ func EvaluateCapacity(res1 []int, res2 []int, q int) bool {
 		}
 	}
 	coun2 := 0
-	for _, v := range res1 {
+	for _, v := range res2 {
 		if v < ConsensusTimer {
 			coun2 += 1
 		}
