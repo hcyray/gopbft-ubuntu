@@ -134,7 +134,7 @@ func main() {
 		}
 	} else {
 		//invoke cliients
-		for i:=0; i<0; i++ {
+		for i:=0; i<10; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*2, privatekey, allips[0:totalserver])
 			val := rand.Intn(200)
