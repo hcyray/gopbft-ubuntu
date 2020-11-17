@@ -311,7 +311,7 @@ func (pbft *PBFT) Run() {
 	fmt.Println("instance", pbft.Id, "starts running")
 	pbft.starttime = time.Now()
 	//go pbft.statetransfermonitor()
-	//go pbft.computeTps()
+	go pbft.computeTps()
 	//go pbft.delaySelfMonitor()
 
 
@@ -1362,7 +1362,7 @@ func (pbft *PBFT) computeTps() {
 			fmt.Println("instance", pbft.Id, "tps at", elapsedtime, "s is", pbft.tps[le-1])
 		}
 		pbft.mu.Unlock()
-		time.Sleep(time.Millisecond * 250)
+		time.Sleep(time.Millisecond * 500)
 	}
 }
 
