@@ -101,17 +101,17 @@ func (msgbuf *MessageBuffer) ReadTxBatch(volume int) []Transaction {
 	}
 	i := 0
 	for _, tx := range msgbuf.TxPool {
-		if tx.Verify() {
-			if currbalance[tx.Source]>= tx.Value {
-				thetxpool = append(thetxpool, tx)
-				i += 1
-				if i>=volume{
-					break
-				}
-				currbalance[tx.Source] -= tx.Value
-				currbalance[tx.Recipient] += tx.Value
+
+		if currbalance[tx.Source]>= tx.Value {
+			thetxpool = append(thetxpool, tx)
+			i += 1
+			if i>=volume{
+				break
 			}
+			currbalance[tx.Source] -= tx.Value
+			currbalance[tx.Recipient] += tx.Value
 		}
+
 	}
 	elapsed := time.Since(starttime).Milliseconds()
 	fmt.Println("read tx from buffer costs", elapsed, "ms")
