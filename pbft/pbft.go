@@ -727,7 +727,7 @@ func (pbft *PBFT) scanPrepare(ver, view, heigh int, digest [32]byte, quorumsize 
 					pbft.persis.accountbalance = pbft.accountbalance
 				}
 				pbft.mu.Unlock()
-				fmt.Println("instance", pbft.Id, "got", acc, "prepare-vote at height", heigh)
+				//fmt.Println("instance", pbft.Id, "got", acc, "prepare-vote at height", heigh)
 				pbft.cachedb.UpdateAfterPrepare(heigh, digest, pbft.persis.preparelock.LockedQC)
 				pbft.preparedCh<-theprog
 				return
@@ -757,7 +757,7 @@ func (pbft *PBFT) scanCommit(ver, view, heigh int, digest [32]byte, quorumsize i
 					pbft.persis.commitlock = datastruc.CommitedLock{heigh, thepreprepare,
 						thepreprepare.Digest,datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, heigh, quorumsize)}}
 					pbft.mu.Unlock()
-					fmt.Println("instance", pbft.Id, "got", acc, "commit-vote at height", heigh)
+					//fmt.Println("instance", pbft.Id, "got", acc, "commit-vote at height", heigh)
 					pbft.committedCh<-theprog
 					return
 				}

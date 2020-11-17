@@ -2,7 +2,7 @@ package pbft
 
 const ConsensusTimer = 5000
 const InauguratTimer = 5000
-const ScanInterval = 10
+const ScanInterval = 2
 const ThreadExit = 5
 const LeaderLease = 10
 
