@@ -729,19 +729,9 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 		log.Panic(err)
 	}
 
-	vccmsg := datastruc.ViewChangeMsg{}
-	vccmsg.Ver = vcmsg.Ver
-	vccmsg.View = vcmsg.View
-	vccmsg.SenderId = vcmsg.SenderId
-	vccmsg.Ckpheight = vcmsg.Ckpheight
-	//vccmsg := vcmsg
-	//vccmsg.Pubkey = ""
-	//vccmsg.Sig = datastruc.PariSign{}
-	//vccmsg.Ckpqc = datastruc.CheckPointQC{}
-	//vccmsg.Plock = datastruc.PreparedLock{}
-	//vccmsg.Clock = datastruc.CommitedLock{}
-	//vccmsg.LtxSet = []datastruc.LeaveTx{}
-	datatoverify := sha256.Sum256(vccmsg.Serialize())
+	datatoverify := []byte(string(vcmsg.Ver) + "," + string(vcmsg.View) + "," + string(vcmsg.SenderId) + "," +string(vcmsg.Ckpheight))
+	//vccmsg := datastruc.ViewChangeMsg{}
+	//datatoverify := sha256.Sum256(vccmsg.Serialize())
 	pub := datastruc.DecodePublic(vcmsg.Pubkey)
 	if !vcmsg.Sig.Verify(datatoverify[:], pub) {
 		fmt.Println("serve", serv.id, "receives a view-change msg, but the signature is wrong!")
