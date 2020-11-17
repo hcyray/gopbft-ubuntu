@@ -3,6 +3,7 @@ package datastruc
 import (
 	"fmt"
 	"sync"
+	"time"
 )
 
 type Term struct {
@@ -92,6 +93,7 @@ func (msgbuf *MessageBuffer) ReadTxBatch(volume int) []Transaction {
 	msgbuf.Msgbuffmu.Lock()
 	defer msgbuf.Msgbuffmu.Unlock()
 
+	starttime := time.Now()
 	thetxpool := []Transaction{}
 	currbalance := make(map[string]int)
 	for k, v := range msgbuf.AccountBalance {
@@ -99,16 +101,20 @@ func (msgbuf *MessageBuffer) ReadTxBatch(volume int) []Transaction {
 	}
 	i := 0
 	for _, tx := range msgbuf.TxPool {
-		if currbalance[tx.Source]>= tx.Value {
-			thetxpool = append(thetxpool, tx)
-			i += 1
-			if i>=volume{
-				break
+		if tx.Verify() {
+			if currbalance[tx.Source]>= tx.Value {
+				thetxpool = append(thetxpool, tx)
+				i += 1
+				if i>=volume{
+					break
+				}
+				currbalance[tx.Source] -= tx.Value
+				currbalance[tx.Recipient] += tx.Value
 			}
-			currbalance[tx.Source] -= tx.Value
-			currbalance[tx.Recipient] += tx.Value
 		}
 	}
+	elapsed := time.Since(starttime).Milliseconds()
+	fmt.Println("read tx from buffer costs", elapsed, "ms")
 	return thetxpool
 }
 
