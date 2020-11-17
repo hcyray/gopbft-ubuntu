@@ -524,18 +524,18 @@ func (serv *Server) handleTransaction(request []byte) {
 		fmt.Println("tx decoding error")
 	}
 
-	//if tx.Verify() {
-	//	serv.msgbuff.Msgbuffmu.Lock()
-	//	serv.msgbuff.TxPool[tx.GetHash()] = tx
-	//	//if len(serv.msgbuff.TxPool)%4000==0 {
-	//	//	fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
-	//	//}
-	//	serv.msgbuff.Msgbuffmu.Unlock()
-	//}
+	if tx.Verify() {
+		serv.msgbuff.Msgbuffmu.Lock()
+		serv.msgbuff.TxPool[tx.GetHash()] = tx
+		//if len(serv.msgbuff.TxPool)%4000==0 {
+		//	fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
+		//}
+		serv.msgbuff.Msgbuffmu.Unlock()
+	}
 
-	serv.msgbuff.Msgbuffmu.Lock()
-	serv.msgbuff.TxPool[tx.GetHash()] = tx
-	serv.msgbuff.Msgbuffmu.Unlock()
+	//serv.msgbuff.Msgbuffmu.Lock()
+	//serv.msgbuff.TxPool[tx.GetHash()] = tx
+	//serv.msgbuff.Msgbuffmu.Unlock()
 }
 
 func (serv *Server) handleBlock(content []byte) {
