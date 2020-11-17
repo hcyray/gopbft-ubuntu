@@ -41,6 +41,7 @@ type PBFT struct {
 	IpPortAddr string
 	InitialTotalPeer int
 	members []int
+	membersexceptme []int
 
 
 	PriKey *ecdsa.PrivateKey
@@ -135,8 +136,12 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.PubKeystr = datastruc.EncodePublic(publicKey)
 
 	pbft.members = make([]int, 0)
+	pbft.membersexceptme = make([]int, 0)
 	for i:=0; i<total; i++ {
 		pbft.members = append(pbft.members, i)
+		if i!=pbft.Id {
+			pbft.membersexceptme = append(pbft.membersexceptme, i)
+		}
 	}
 
 	pbft.cachedb = &cachedb.BlockChainCacheDB{}
@@ -1084,9 +1089,14 @@ func (pbft *PBFT) broadcastPubkey() {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	pbft.mu.Lock()
-	datatosend := datastruc.Datatosend{pbft.members, "idportpubkey", content}
-	pbft.mu.Unlock()
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	pbft.MsgBuff.InitialConfig = append(pbft.MsgBuff.InitialConfig, peerid)
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "idportpubkey", content}
+
 	pbft.broadcdataCh <- datatosend
 }
 
@@ -1129,7 +1139,13 @@ func (pbft *PBFT) broadcastTxBlock(bloc *datastruc.Block) {
 	content := buff.Bytes()
 	size := len(content) / (1024)
 	fmt.Println("the block at height", pbft.currentHeight, "has size", size, "KB")
-	datatosend := datastruc.Datatosend{pbft.members, "txblock", content}
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	pbft.MsgBuff.BlockPool = append(pbft.MsgBuff.BlockPool, *bloc)
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "txblock", content}
+
 	pbft.broadcdataCh <- datatosend
 }
 
@@ -1141,7 +1157,12 @@ func (pbft *PBFT) broadcastConfigBlock(bloc *datastruc.Block) {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	datatosend := datastruc.Datatosend{pbft.members, "configblock", content}
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	pbft.MsgBuff.BlockPool = append(pbft.MsgBuff.BlockPool, *bloc)
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "configblock", content}
 	pbft.broadcdataCh <- datatosend
 }
 
@@ -1154,7 +1175,13 @@ func (pbft *PBFT) broadcastPreprepare(ver, view, n int, prk *ecdsa.PrivateKey, h
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	datatosend := datastruc.Datatosend{pbft.members, "prepreparemsg", content}
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	theprog := datastruc.Progres{prepreparemsg.Ver, prepreparemsg.View, prepreparemsg.Order}
+	pbft.MsgBuff.Pre_preparelog[theprog] = prepreparemsg
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "prepreparemsg", content}
 	pbft.broadcdataCh <- datatosend
 }
 
@@ -1167,7 +1194,17 @@ func (pbft *PBFT) broadcastPrepare(ver, view, n int, digest [32]byte) {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	datatosend := datastruc.Datatosend{pbft.members, "preparemsg", content}
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	theterm := datastruc.Term{preparemsg.Ver, preparemsg.View}
+	theorder := preparemsg.Order
+	if _, ok := pbft.MsgBuff.PrepareVote[theterm]; !ok {
+		pbft.MsgBuff.PrepareVote[theterm] = make(map[int][]datastruc.PrepareMsg)
+	}
+	pbft.MsgBuff.PrepareVote[theterm][theorder] = append(pbft.MsgBuff.PrepareVote[theterm][theorder], preparemsg)
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "preparemsg", content}
 	pbft.broadcdataCh <- datatosend
 	//fmt.Println("instance", pbft.Id, "broadcasts prepare-vote in height", n)
 }
@@ -1181,7 +1218,17 @@ func (pbft *PBFT) broadcastCommit(ver, view, n int, digest [32]byte) {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	datatosend := datastruc.Datatosend{pbft.members, "commitmsg", content}
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	theterm := datastruc.Term{commitmsg.Ver, commitmsg.View}
+	theorder := commitmsg.Order
+	if _, ok := pbft.MsgBuff.CommitVote[theterm]; !ok {
+		pbft.MsgBuff.CommitVote[theterm] = make(map[int][]datastruc.CommitMsg)
+	}
+	pbft.MsgBuff.CommitVote[theterm][theorder] = append(pbft.MsgBuff.CommitVote[theterm][theorder], commitmsg)
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "commitmsg", content}
 	pbft.broadcdataCh <- datatosend
 }
 
@@ -1200,8 +1247,13 @@ func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.Leav
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	datatosend := datastruc.Datatosend{pbft.members, "viewchangemsg", content}
-	fmt.Println("instance",pbft.Id, "will broadcast view-change messages to", pbft.members)
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	theterm := datastruc.Term{vcmsg.Ver, vcmsg.View}
+	pbft.MsgBuff.Vcmsg[theterm] = append(pbft.MsgBuff.Vcmsg[theterm], vcmsg)
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "viewchangemsg", content}
 	pbft.broadcdataCh <- datatosend
 }
 
@@ -1260,7 +1312,13 @@ func (pbft *PBFT) broadcastNewViewWithoutBlock(ver int, view int, vcset []datast
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	datatosend := datastruc.Datatosend{pbft.members, "newviewmsg", content}
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	theterm := datastruc.Term{nvmsg.Ver, nvmsg.View}
+	pbft.MsgBuff.Newviewlog[theterm] = nvmsg
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "newviewmsg", content}
 	pbft.broadcdataCh <- datatosend
 }
 
@@ -1275,7 +1333,17 @@ func (pbft *PBFT) broadcastNewViewWithBlock(ver int, view int, vcset []datastruc
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	datatosend := datastruc.Datatosend{pbft.members, "newviewmsg", content}
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	theterm := datastruc.Term{nvmsg.Ver, nvmsg.View}
+	pbft.MsgBuff.Newviewlog[theterm] = nvmsg
+	pbft.MsgBuff.BlockPool = append(pbft.MsgBuff.BlockPool, bloc)
+	thepreprepare := nvmsg.PPMsgSet[0]
+	theprog := datastruc.Progres{thepreprepare.Ver, thepreprepare.View, thepreprepare.Order}
+	pbft.MsgBuff.Pre_preparelog[theprog] = thepreprepare
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "newviewmsg", content}
 	pbft.broadcdataCh <- datatosend
 }
 
@@ -1346,21 +1414,6 @@ func (pbft *PBFT) ReplyStateTransfer(height, id int) {
 	fmt.Println("instance", pbft.Id, "sends state-transfer-reply to instance", id)
 }
 
-func (pbft *PBFT) computeTps() {
-	for {
-		pbft.mu.Lock()
-		elapsedtime := time.Since(pbft.starttime).Seconds()
-		tps := float64(pbft.acctx)/elapsedtime
-		pbft.tps = append(pbft.tps, int(tps))
-		le := len(pbft.tps)
-		if le%10==0 {
-			fmt.Println("instance", pbft.Id, "tps at", elapsedtime, "s is", pbft.tps[le-1])
-		}
-		pbft.mu.Unlock()
-		time.Sleep(time.Millisecond * 500)
-	}
-}
-
 func (pbft *PBFT) delaySelfMonitor() {
 
 	go pbft.cdedata.CDEInformTestMonitor()
@@ -1411,7 +1464,13 @@ func (pbft *PBFT) broadcastMeasurementResult(mrmsg datastruc.MeasurementResultMs
 		log.Panic("measurement msg encode error")
 	}
 	content := buff.Bytes()
-	datatosend := datastruc.Datatosend{pbft.members, "measurement", content}
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	hval := mrmsg.GetHash()
+	pbft.MsgBuff.MeasurementResPool[hval] = mrmsg
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "measurement", content}
 	pbft.broadcdataCh <- datatosend
 }
 
@@ -1429,4 +1488,19 @@ func EvaluateCapacity(res1 []int, res2 []int, q int) bool {
 		}
 	}
 	return (coun1>=q)&&(coun2>=q)
+}
+
+func (pbft *PBFT) computeTps() {
+	for {
+		pbft.mu.Lock()
+		elapsedtime := time.Since(pbft.starttime).Seconds()
+		tps := float64(pbft.acctx)/elapsedtime
+		pbft.tps = append(pbft.tps, int(tps))
+		le := len(pbft.tps)
+		if le%10==0 {
+			fmt.Println("instance", pbft.Id, "tps at", elapsedtime, "s is", pbft.tps[le-1])
+		}
+		pbft.mu.Unlock()
+		time.Sleep(time.Millisecond * 500)
+	}
 }
