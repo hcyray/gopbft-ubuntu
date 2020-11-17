@@ -673,7 +673,7 @@ func (serv *Server) handlePrepareMsg(content []byte) {
 	delete(serv.msgbuff.PrepareVote[theterm], theorder)
 	serv.msgbuff.PrepareVote[theterm][theorder] = make([]datastruc.PrepareMsg, len(tmp))
 	copy(serv.msgbuff.PrepareVote[theterm][theorder], tmp)
-	fmt.Println("server", serv.id, "has ", len(serv.msgbuff.PrepareVote[theterm][theorder]), "prepare-vote at term", theterm, "height", preparemsg.Order)
+	//fmt.Println("server", serv.id, "has ", len(serv.msgbuff.PrepareVote[theterm][theorder]), "prepare-vote at term", theterm, "height", preparemsg.Order)
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
@@ -738,7 +738,7 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 		fmt.Println("sender id is ", vcmsg.SenderId, " singed data is ", datatoverify, "\n")
 		return
 	}
-	fmt.Println("serve", serv.id, "receives a view-change msg")
+	//fmt.Println("serve", serv.id, "receives a view-change msg")
 	serv.msgbuff.Msgbuffmu.Lock()
 	theterm := datastruc.Term{vcmsg.Ver, vcmsg.View}
 	tmp := make([]datastruc.ViewChangeMsg, len(serv.msgbuff.Vcmsg[theterm]))
@@ -747,7 +747,7 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 	delete(serv.msgbuff.Vcmsg, theterm)
 	serv.msgbuff.Vcmsg[theterm] = make([]datastruc.ViewChangeMsg, len(tmp))
 	copy(serv.msgbuff.Vcmsg[theterm], tmp)
-	fmt.Println("serve", serv.id, "now has", len(serv.msgbuff.Vcmsg[theterm]), "view-change msg")
+	//fmt.Println("serve", serv.id, "now has", len(serv.msgbuff.Vcmsg[theterm]), "view-change msg")
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
@@ -770,6 +770,7 @@ func (serv *Server) handleNewViewMsg(conten []byte) {
 	datatoverify := sha256.Sum256(nvvmsg.Serialize())
 	pub := datastruc.DecodePublic(nvmsg.Pubkey)
 	if !nvmsg.Sig.Verify(datatoverify[:], pub) {
+		fmt.Println(fmt.Println("serve", serv.id, "receives a new-view msg, but the signature is wrong!"))
 		return
 	}
 
