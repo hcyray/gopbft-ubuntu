@@ -262,10 +262,10 @@ func NewNewViewMsgWithoutBlock(ver int, view int, pubkey string, vcset []ViewCha
 	//}
 
 
-
-
-	datatosign := sha256.Sum256(nvmsg.Serialize())
-	nvmsg.Sig.Sign(datatosign[:], prvkey)
+	//datatosign := sha256.Sum256(nvmsg.Serialize())
+	//nvmsg.Sig.Sign(datatosign[:], prvkey)
+	datatosign := "newviewmsg," + string(nvmsg.Ver) + "," + string(nvmsg.View)
+	nvmsg.Sig.Sign([]byte(datatosign), prvkey)
 	nvmsg.Pubkey = pubkey
 	return nvmsg
 }

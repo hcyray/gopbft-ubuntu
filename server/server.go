@@ -6,7 +6,6 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/elliptic"
-	"crypto/sha256"
 	"encoding/binary"
 	"encoding/gob"
 	"fmt"
@@ -764,12 +763,13 @@ func (serv *Server) handleNewViewMsg(conten []byte) {
 		log.Panic(err)
 	}
 
-	nvvmsg := nvmsg
-	nvvmsg.Sig = datastruc.PariSign{}
-	nvvmsg.Pubkey = ""
-	datatoverify := sha256.Sum256(nvvmsg.Serialize())
+	//nvvmsg := nvmsg
+	//nvvmsg.Sig = datastruc.PariSign{}
+	//nvvmsg.Pubkey = ""
+	//datatoverify := sha256.Sum256(nvvmsg.Serialize())
+	datatoverify := "newviewmsg," + string(nvmsg.Ver) + "," + string(nvmsg.View)
 	pub := datastruc.DecodePublic(nvmsg.Pubkey)
-	if !nvmsg.Sig.Verify(datatoverify[:], pub) {
+	if !nvmsg.Sig.Verify([]byte(datatoverify), pub) {
 		fmt.Println(fmt.Println("serve", serv.id, "receives a new-view msg, but the signature is wrong!"))
 		return
 	}
