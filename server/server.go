@@ -556,11 +556,11 @@ func (serv *Server) handleBlock(content []byte) {
 		return
 	}
 
-	//starttime := time.Now()
+	starttime := time.Now()
 	if bloc.Blockhead.Kind=="txblock" {
 		//res := serv.BlockTxValidateMultiThread(&bloc)
-		//res := serv.BlockTxValidate(&bloc)
-		res := true
+		res := serv.BlockTxValidate(&bloc)
+		//res := true
 		if !res {
 			fmt.Println("The received block contains unvalid mint-tx")
 			return
@@ -591,8 +591,8 @@ func (serv *Server) handleBlock(content []byte) {
 	//fmt.Println("server", serv.id, "receives a block with", len(bloc.TransactionList), "txs in it")
 	serv.msgbuff.Msgbuffmu.Unlock()
 
-	//elapsed := time.Since(starttime).Milliseconds()
-	//fmt.Println("the block validation costs", elapsed, "ms")
+	elapsed := time.Since(starttime).Milliseconds()
+	fmt.Println("server", serv.id, "the block validation costs", elapsed, "ms")
 	//if serv.id==4 {
 	//	fmt.Println("server 4 receives a block")
 	//}

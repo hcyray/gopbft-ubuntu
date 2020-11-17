@@ -317,13 +317,8 @@ func (pbft *PBFT) Run() {
 
 	starttime := time.Now()
 	for {
-		if pbft.currentHeight > 600 {
-			fmt.Println("instance", pbft.Id, "completes consensus, stops")
-			return
-		}
-
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=220 {
-			// wants to leave
+			// todo, wants to leave, mechanism 2
 			pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
 			pbft.leaverequeststarttime = time.Now()
