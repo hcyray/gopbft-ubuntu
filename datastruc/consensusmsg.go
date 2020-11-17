@@ -40,7 +40,7 @@ type CommitMsg struct {
 type ViewChangeMsg struct {
 	Ver int
 	View int
-
+	SenderId int
 	Ckpheight int
 	Ckpqc CheckPointQC
 	Plock PreparedLock
@@ -133,10 +133,11 @@ func NewCommitMsg(ver int, view int, order int, digest [32]byte, pubkeystr strin
 	return commitmsg
 }
 
-func NewViewChangeMsg(ver int, view int, ltxset []LeaveTx, ckpheigh int, ckpqc CheckPointQC, plock PreparedLock, clock CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) ViewChangeMsg {
+func NewViewChangeMsg(ver int, view int, senderid int, ltxset []LeaveTx, ckpheigh int, ckpqc CheckPointQC, plock PreparedLock, clock CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) ViewChangeMsg {
 	vcmsg := ViewChangeMsg{}
 	vcmsg.Ver = ver
 	vcmsg.View = view
+	vcmsg.SenderId = senderid
 	vcmsg.Ckpheight = ckpheigh
 	vcmsg.Ckpqc = ckpqc
 	vcmsg.Plock = plock
@@ -144,7 +145,7 @@ func NewViewChangeMsg(ver int, view int, ltxset []LeaveTx, ckpheigh int, ckpqc C
 	vcmsg.LtxSet = ltxset
 
 	datatosign := sha256.Sum256(vcmsg.Serialize())
-	fmt.Println("create view-change msg pubkey: ", pubkey, " signs data ", datatosign)
+	fmt.Println("create view-change msg sender id: ", senderid, " signs data ", datatosign)
 	vcmsg.Sig.Sign(datatosign[:], prvkey)
 	vcmsg.Pubkey = pubkey
 

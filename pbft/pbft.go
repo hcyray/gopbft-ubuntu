@@ -1192,7 +1192,7 @@ func (pbft *PBFT) broadcastCommit(ver, view, n int, digest [32]byte) {
 
 func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.LeaveTx, ckpheigh int, ckpqc datastruc.CheckPointQC,
 	plock datastruc.PreparedLock, clock datastruc.CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) {
-	vcmsg := datastruc.NewViewChangeMsg(ver, view, ltxset, ckpheigh, ckpqc, plock, clock, pubkey, prvkey)
+	vcmsg := datastruc.NewViewChangeMsg(ver, view, pbft.Id, ltxset, ckpheigh, ckpqc, plock, clock, pubkey, prvkey)
 	if clock.LockedHeight >0 {
 		fmt.Println("instance",pbft.Id, "creates a view-change msg at ver", ver, "view", view, "with commit-lock at height", vcmsg.Clock.LockedHeight, "with digest", vcmsg.Clock.LockedHash[0:6])
 	} else {
