@@ -144,7 +144,7 @@ func NewViewChangeMsg(ver int, view int, ltxset []LeaveTx, ckpheigh int, ckpqc C
 	vcmsg.LtxSet = ltxset
 
 	datatosign := sha256.Sum256(vcmsg.Serialize())
-	fmt.Println("pubkey: ", pubkey, " signs data ", datatosign)
+	fmt.Println("create view-change msg pubkey: ", pubkey, " signs data ", datatosign)
 	vcmsg.Sig.Sign(datatosign[:], prvkey)
 	vcmsg.Pubkey = pubkey
 
