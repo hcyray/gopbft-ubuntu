@@ -527,9 +527,9 @@ func (serv *Server) handleTransaction(request []byte) {
 	if tx.Verify() {
 		serv.msgbuff.Msgbuffmu.Lock()
 		serv.msgbuff.TxPool[tx.GetHash()] = tx
-		if len(serv.msgbuff.TxPool)%4000==0 {
-			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
-		}
+		//if len(serv.msgbuff.TxPool)%4000==0 {
+		//	fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
+		//}
 		serv.msgbuff.Msgbuffmu.Unlock()
 	}
 	//serv.msgbuff.Msgbuffmu.Lock()
