@@ -732,6 +732,10 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 	vccmsg := vcmsg
 	vccmsg.Pubkey = ""
 	vccmsg.Sig = datastruc.PariSign{}
+	vccmsg.Ckpqc = datastruc.CheckPointQC{}
+	vccmsg.Plock = datastruc.PreparedLock{}
+	vccmsg.Clock = datastruc.CommitedLock{}
+	vccmsg.LtxSet = []datastruc.LeaveTx{}
 	datatoverify := sha256.Sum256(vccmsg.Serialize())
 	pub := datastruc.DecodePublic(vcmsg.Pubkey)
 	if !vcmsg.Sig.Verify(datatoverify[:], pub) {
