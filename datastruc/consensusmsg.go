@@ -141,15 +141,14 @@ func NewViewChangeMsg(ver int, view int, senderid int, ltxset []LeaveTx, ckpheig
 	vcmsg.Ckpheight = ckpheigh
 
 	datatosign := sha256.Sum256(vcmsg.Serialize()) // test if the hash is same in sender and receiver
+	fmt.Println("create view-change msg sender id: ", senderid, " signs data ", datatosign)
+	vcmsg.Sig.Sign(datatosign[:], prvkey)
+	vcmsg.Pubkey = pubkey
+
 	vcmsg.Ckpqc = ckpqc
 	vcmsg.Plock = plock
 	vcmsg.Clock = clock
 	vcmsg.LtxSet = ltxset
-
-
-	fmt.Println("create view-change msg sender id: ", senderid, " signs data ", datatosign)
-	vcmsg.Sig.Sign(datatosign[:], prvkey)
-	vcmsg.Pubkey = pubkey
 
 	return vcmsg
 }
