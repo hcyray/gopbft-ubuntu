@@ -559,8 +559,8 @@ func (serv *Server) handleBlock(content []byte) {
 	starttime := time.Now()
 	if bloc.Blockhead.Kind=="txblock" {
 		//res := serv.BlockTxValidateMultiThread(&bloc)
-		res := serv.BlockTxValidate(&bloc)
-		//res := true
+		//res := serv.BlockTxValidate(&bloc)
+		res := true
 		if !res {
 			fmt.Println("The received block contains unvalid mint-tx")
 			return
