@@ -134,9 +134,9 @@ func (client *Client) Run() {
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
 		}
-		val := rand.Intn(15000)
+		val := rand.Intn(15)
 		//val := 1
-		time.Sleep(time.Nanosecond*time.Duration(val))
+		time.Sleep(time.Millisecond*time.Duration(val))
 	}
 	fmt.Println("client", client.id, "stops")
 }
