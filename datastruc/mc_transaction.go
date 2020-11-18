@@ -102,6 +102,8 @@ func (ltx *LeaveTx) GetHash() [32]byte {
 	lltx := LeaveTx{}
 	lltx.Id = ltx.Id
 	lltx.IpAddr = ltx.IpAddr
+	lltx.Pubkey = ""
+	lltx.Sig = PariSign{}
 
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)
