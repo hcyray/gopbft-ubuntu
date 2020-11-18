@@ -118,9 +118,9 @@ func (client *Client) Run() {
 		}
 		client.BroadcastMintedTransactionBatch(txbatch, client.id, client.miners)
 
-		val := rand.Intn(60000)
-		//val := 1
-		time.Sleep(time.Nanosecond*time.Duration(val))
+		//val := rand.Intn(6000)
+		val := 60 + rand.Intn(60)
+		time.Sleep(time.Millisecond*time.Duration(val))
 	}
 	fmt.Println("client", client.id, "stops")
 }
