@@ -101,7 +101,6 @@ func (ltx *LeaveTx) GetHash() [32]byte {
 
 	lltx := LeaveTx{}
 	lltx.Id = ltx.Id
-	lltx.Pubkey = ltx.Pubkey
 	lltx.IpAddr = ltx.IpAddr
 
 	var buff bytes.Buffer
@@ -111,6 +110,7 @@ func (ltx *LeaveTx) GetHash() [32]byte {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
+	fmt.Print("leave-tx content is ", content[0:32])
 	res = sha256.Sum256(content)
 	fmt.Print("leave-tx hash is ", res)
 
