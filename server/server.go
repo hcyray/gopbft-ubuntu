@@ -195,8 +195,6 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 		switch commanType {
 		case "idportpubkey":
 			go serv.handleIdPortPubkey(request[commandLength:])
-		//case "mintedtx":
-		//	go serv.handleTransaction(request[commandLength:])
 		case "jointx":
 			go serv.handleJoinTx(request[commandLength:])
 		case "leavetx":
@@ -527,9 +525,9 @@ func (serv *Server) handleTransaction(request []byte) {
 	if tx.Verify() {
 		serv.msgbuff.Msgbuffmu.Lock()
 		serv.msgbuff.TxPool[tx.GetHash()] = tx
-		//if len(serv.msgbuff.TxPool)%4000==0 {
-		//	fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
-		//}
+		if len(serv.msgbuff.TxPool)%100==0 {
+			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
+		}
 		serv.msgbuff.Msgbuffmu.Unlock()
 	}
 
