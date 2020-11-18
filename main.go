@@ -115,14 +115,13 @@ func main() {
 	initialserver := 2
 	lateserver := 0 // 机制1测试
 	totalserver := initialserver + lateserver
-	clientserver := 10
 	// read client pubkeys
 	ck := ReadClientKeys(os.Args[2])
 	if localid<initialserver {
 		// invoke two server
 		for i:=0; i<instanceoneachserver; i++ {
 			instanceid := i+2*localid
-			theserver := server.CreateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], clientserver)
+			theserver := server.CreateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver])
 			go theserver.Start()
 			fmt.Println("server", instanceid, "starts")
 		}
@@ -135,7 +134,7 @@ func main() {
 		}
 	} else {
 		//invoke cliients
-		for i:=1; i<=clientserver; i++ {
+		for i:=0; i<10; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*2, privatekey, allips[0:totalserver])
 			val := rand.Intn(400)

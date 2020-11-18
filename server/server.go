@@ -46,7 +46,7 @@ type Server struct {
 	recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB
 }
 
-func CreateServer(id int, localip string, clientkeys map[int]string, serverips []string, clientserver int) *Server {
+func CreateServer(id int, localip string, clientkeys map[int]string, serverips []string) *Server {
 	serv := &Server{}
 
 	serv.id = id
@@ -58,7 +58,7 @@ func CreateServer(id int, localip string, clientkeys map[int]string, serverips [
 	serv.remoteallips = generateremoteallips(serv.memberIds, serverips)
 	fmt.Println("server", serv.id, "will send consensus messages to", serv.remoteallips)
 	serv.localallipsforserver = generatelistenserverips(id, localip)
-	serv.localallipsforclient = generatelistenclientips(id, localip, clientserver)
+	serv.localallipsforclient = generatelistenclientips(id, localip)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
 	serv.InitializeMapandChan()
@@ -75,7 +75,7 @@ func CreateLateServer(id int, localip string) *Server {
 	serv.id = id
 	serv.ipportaddr = localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
 	serv.localallipsforserver = generatelistenserverips(id, localip)
-	//serv.localallipsforclient = generatelistenclientips(id, localip)
+	serv.localallipsforclient = generatelistenclientips(id, localip)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
 	serv.InitializeMapandChan()
@@ -195,6 +195,8 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 		switch commanType {
 		case "idportpubkey":
 			go serv.handleIdPortPubkey(request[commandLength:])
+		//case "mintedtx":
+		//	go serv.handleTransaction(request[commandLength:])
 		case "jointx":
 			go serv.handleJoinTx(request[commandLength:])
 		case "leavetx":
@@ -330,13 +332,10 @@ func generatelistenserverips(id int, localip string) []string {
 	return res
 }
 
-func generatelistenclientips(id int, localip string, clientserver int) []string {
+func generatelistenclientips(id int, localip string) []string {
 	res := []string{}
-	for i:=1; i<=clientserver; i++ {
-		theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + datastruc.GenerateTwoBitId(i)
-		res = append(res, theip)
-	}
-
+	theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + "1"
+	res = append(res, theip)
 	fmt.Println("server",id, "will listen on", res, "to receive from clients")
 	return res
 }
@@ -427,7 +426,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	//fmt.Println("新连接：", conn.RemoteAddr())
 
 	result := bytes.NewBuffer(nil)
-	var buf [20480]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
+	var buf [2048]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
 	for {
 		n, err := conn.Read(buf[0:])
 		//fmt.Println("n =", n)
@@ -444,7 +443,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			scanner.Split(packetSlitFunc)
 			for scanner.Scan() {
 				//fmt.Println("recv:", string(scanner.Bytes()[6:]))
-				go serv.handleTransactionBatch(scanner.Bytes()[6:])
+				go serv.handleTransaction(scanner.Bytes()[6:])
 			}
 		}
 		result.Reset()
@@ -537,27 +536,6 @@ func (serv *Server) handleTransaction(request []byte) {
 	//serv.msgbuff.Msgbuffmu.Lock()
 	//serv.msgbuff.TxPool[tx.GetHash()] = tx
 	//serv.msgbuff.Msgbuffmu.Unlock()
-}
-
-func (serv *Server) handleTransactionBatch(request []byte) {
-	conten := request[commandLength:]
-	var buff bytes.Buffer
-	var txs []datastruc.Transaction
-	buff.Write(conten)
-	gob.Register(elliptic.P256())
-	dec := gob.NewDecoder(&buff)
-	err := dec.Decode(&txs)
-	if err != nil {
-		log.Panic(err)
-		fmt.Println("txbatch decoding error")
-	}
-	for _, tx := range txs {
-		if tx.Verify() {
-			serv.msgbuff.Msgbuffmu.Lock()
-			serv.msgbuff.TxPool[tx.GetHash()] = tx
-			serv.msgbuff.Msgbuffmu.Unlock()
-		}
-	}
 }
 
 func (serv *Server) handleBlock(content []byte) {
