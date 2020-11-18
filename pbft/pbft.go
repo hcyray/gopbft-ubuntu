@@ -169,14 +169,14 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 		fmt.Println("instance", pbft.Id, "is a byzantine guy")
 	}
 
-	if pbft.Id==total-1 {
-		pbft.isjoining = true
-	} // 机制1测试
-
 	//if pbft.Id==total-1 {
-	//	pbft.isleaving = true
-	//	fmt.Println("instance", pbft.Id, "will leave the system after a while")
-	//} // 机制2测试
+	//	pbft.isjoining = true
+	//} // 机制1测试
+
+	if pbft.Id==total-1 {
+		pbft.isleaving = true
+		fmt.Println("instance", pbft.Id, "will leave the system after a while")
+	} // 机制2测试
 
 	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey)
 
@@ -318,11 +318,12 @@ func (pbft *PBFT) Run() {
 	//go pbft.statetransfermonitor()
 	go pbft.computeTps()
 	//go pbft.delaySelfMonitor()
+	go pbft.censorshipmonitor()
 
 
 	starttime := time.Now()
 	for {
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=220 {
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 {
 			// todo, wants to leave, mechanism 2
 			pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
@@ -607,12 +608,12 @@ func (pbft *PBFT) statetransfermonitor() {
 	}
 }
 
-func (pbft *PBFT) UpdateByzantineIdentity() {
-	start := 2
-	if pbft.Id>=start && pbft.Id<start+pbft.fmax {
-		pbft.isbyzantine = true
-	}
-}
+//func (pbft *PBFT) UpdateByzantineIdentity() {
+//	start := 2
+//	if pbft.Id>=start && pbft.Id<start+pbft.fmax {
+//		pbft.isbyzantine = true
+//	}
+//}
 
 func (pbft *PBFT) UpdateQuorumSize(n int) {
 	x := float64(n-1)
@@ -1002,6 +1003,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				if pbft.Id==theleavingid {
 					requestprocessingtime := time.Since(pbft.leaverequeststarttime).Milliseconds()
 					fmt.Println("instance", pbft.Id, "blocks here permanentally, the leaving-tx processing time is", requestprocessingtime, "ms")
+					time.Sleep(time.Second * 100) // block here
 				} else {
 					datatosend := datastruc.DataMemberChange{"leave", theleavingid, ""}
 					pbft.memberidchangeCh <- datatosend
@@ -1011,7 +1013,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				balancehash := pbft.generateaccountbalancehash()
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
-				datastruc.RecordConfig(pbft.succLine)
+				//datastruc.RecordConfig(pbft.succLine)
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
 				//pbft.UpdateByzantineIdentity()
 
@@ -1042,7 +1044,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
-				datastruc.RecordConfig(pbft.succLine)
+				//datastruc.RecordConfig(pbft.succLine)
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
 				//pbft.UpdateByzantineIdentity()
 
@@ -1115,8 +1117,7 @@ func (pbft *PBFT) broadcastJoinTx(jtx datastruc.JoinTx) {
 }
 
 func (pbft *PBFT) broadcastLeavingTx() {
-	ltx := datastruc.NewLeaveTx(pbft.Id, "", pbft.PubKeystr, pbft.PriKey)
-	// todo, the ip is useless now, but will need modefication when running on AWS
+	ltx := datastruc.NewLeaveTx(pbft.Id, pbft.IpPortAddr, pbft.PubKeystr, pbft.PriKey)
 	var buff bytes.Buffer
 	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&buff)
@@ -1125,7 +1126,13 @@ func (pbft *PBFT) broadcastLeavingTx() {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	datatosend := datastruc.Datatosend{pbft.members, "leavetx", content}
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	pbft.MsgBuff.JoinLeavetxSet.LTxSet = append(pbft.MsgBuff.JoinLeavetxSet.LTxSet, ltx)
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+	pbft.censorshipmonitorCh <- ltx.GetHash()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "leavetx", content}
 	pbft.broadcdataCh <- datatosend
 }
 
