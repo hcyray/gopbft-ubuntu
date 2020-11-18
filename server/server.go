@@ -334,8 +334,8 @@ func generatelistenserverips(id int, localip string) []string {
 
 func generatelistenclientips(id int, localip string, clientserver int) []string {
 	res := []string{}
-	for i:=1; i<clientserver; i++ {
-		theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + datastruc.GenerateTwoBitId(id)
+	for i:=1; i<=clientserver; i++ {
+		theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + datastruc.GenerateTwoBitId(i)
 		res = append(res, theip)
 	}
 
