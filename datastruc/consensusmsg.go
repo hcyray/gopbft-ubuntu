@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/sha256"
 	"encoding/gob"
 	"fmt"
 	"log"
@@ -198,8 +197,10 @@ func NewNewViewMsgWithBlock(ver int, view int, pubkey string, vcset []ViewChange
 
 	nvmsg.Bloc = bloc
 
-	datatosign := sha256.Sum256(nvmsg.Serialize())
-	nvmsg.Sig.Sign(datatosign[:], prvkey)
+	//datatosign := sha256.Sum256(nvmsg.Serialize())
+	//nvmsg.Sig.Sign(datatosign[:], prvkey)
+	datatosign := "newviewmsg," + string(nvmsg.Ver) + "," + string(nvmsg.View)
+	nvmsg.Sig.Sign([]byte(datatosign), prvkey)
 	nvmsg.Pubkey = pubkey
 
 	return nvmsg
