@@ -115,7 +115,7 @@ func main() {
 	initialserver := 2
 	lateserver := 0 // 机制1测试
 	totalserver := initialserver + lateserver
-	clientserver := 10
+	clientserver := 100
 	// read client pubkeys
 	ck := ReadClientKeys(os.Args[2])
 	if localid<initialserver {
