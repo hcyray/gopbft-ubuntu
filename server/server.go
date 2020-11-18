@@ -46,7 +46,7 @@ type Server struct {
 	recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB
 }
 
-func CreateServer(id int, localip string, clientkeys map[int]string, serverips []string) *Server {
+func CreateServer(id int, localip string, clientkeys map[int]string, serverips []string, clientserver int) *Server {
 	serv := &Server{}
 
 	serv.id = id
@@ -58,7 +58,7 @@ func CreateServer(id int, localip string, clientkeys map[int]string, serverips [
 	serv.remoteallips = generateremoteallips(serv.memberIds, serverips)
 	fmt.Println("server", serv.id, "will send consensus messages to", serv.remoteallips)
 	serv.localallipsforserver = generatelistenserverips(id, localip)
-	serv.localallipsforclient = generatelistenclientips(id, localip)
+	serv.localallipsforclient = generatelistenclientips(id, localip, clientserver)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
 	serv.InitializeMapandChan()
@@ -75,7 +75,7 @@ func CreateLateServer(id int, localip string) *Server {
 	serv.id = id
 	serv.ipportaddr = localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
 	serv.localallipsforserver = generatelistenserverips(id, localip)
-	serv.localallipsforclient = generatelistenclientips(id, localip)
+	//serv.localallipsforclient = generatelistenclientips(id, localip)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
 	serv.InitializeMapandChan()
@@ -332,10 +332,13 @@ func generatelistenserverips(id int, localip string) []string {
 	return res
 }
 
-func generatelistenclientips(id int, localip string) []string {
+func generatelistenclientips(id int, localip string, clientserver int) []string {
 	res := []string{}
-	theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + "1"
-	res = append(res, theip)
+	for i:=1; i<clientserver; i++ {
+		theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + datastruc.GenerateTwoBitId(id)
+		res = append(res, theip)
+	}
+
 	fmt.Println("server",id, "will listen on", res, "to receive from clients")
 	return res
 }

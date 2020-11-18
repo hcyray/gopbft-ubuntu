@@ -122,7 +122,7 @@ func main() {
 		// invoke two server
 		for i:=0; i<instanceoneachserver; i++ {
 			instanceid := i+2*localid
-			theserver := server.CreateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver])
+			theserver := server.CreateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], clientserver)
 			go theserver.Start()
 			fmt.Println("server", instanceid, "starts")
 		}
@@ -135,7 +135,7 @@ func main() {
 		}
 	} else {
 		//invoke cliients
-		for i:=0; i<clientserver; i++ {
+		for i:=1; i<=clientserver; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*2, privatekey, allips[0:totalserver])
 			val := rand.Intn(400)
