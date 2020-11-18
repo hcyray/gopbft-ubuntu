@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/gob"
-	"fmt"
 	"log"
 )
 
@@ -112,10 +111,10 @@ func (ltx *LeaveTx) GetHash() [32]byte {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	le := len(content)
-	fmt.Println("leave-tx content has length", le, "content head:", content[0:12], "content tail:", content[le-10:le-1])
+	//le := len(content)
+	//fmt.Println("leave-tx content has length", le, "content head:", content[0:12], "content tail:", content[le-10:le-1])
 	res = sha256.Sum256(content)
-	fmt.Println("leave-tx hash is ", res)
+	//fmt.Println("leave-tx hash is ", res)
 
 	return res
 }

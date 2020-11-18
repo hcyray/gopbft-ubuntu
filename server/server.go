@@ -525,9 +525,9 @@ func (serv *Server) handleTransaction(request []byte) {
 	if tx.Verify() {
 		serv.msgbuff.Msgbuffmu.Lock()
 		serv.msgbuff.TxPool[tx.GetHash()] = tx
-		if len(serv.msgbuff.TxPool)%1000==0 {
-			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
-		}
+		//if len(serv.msgbuff.TxPool)%1000==0 {
+		//	fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
+		//}
 		serv.msgbuff.Msgbuffmu.Unlock()
 	}
 
@@ -573,8 +573,10 @@ func (serv *Server) handleBlock(content []byte) {
 		}
 		for _, ltx := range bloc.LeaveTxList {
 			if !ltx.Verify() {
-				fmt.Println("server", serv.id, "receives a block, but contains unvalid leave-tx")
+				fmt.Println("server", serv.id, "receives a block, but contains unvalid leave-tx, its hash", ltx.GetHash())
 				return
+			} else {
+				fmt.Println("server", serv.id, "receives a block, but contains valid leave-tx, its hash", ltx.GetHash())
 			}
 		}
 	} else {
