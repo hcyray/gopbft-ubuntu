@@ -91,7 +91,7 @@ func main() {
 		fmt.Println(x)
 	}
 	localid := DetermineId(allips, localip)
-	fmt.Println("local id is", localid, "this is yesterday's version \n")
+	fmt.Println("local id is", localid, "\n")
 
 
 	// ***************************************generate client keys and save
@@ -111,6 +111,7 @@ func main() {
 	// ***************************************generate client keys and save
 
 
+	clientserver := 6
 	instanceoneachserver := 2
 	initialserver := 2
 	lateserver := 0 // 机制1测试
@@ -134,7 +135,7 @@ func main() {
 		}
 	} else {
 		//invoke cliients
-		for i:=0; i<10; i++ {
+		for i:=0; i<clientserver; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*2, privatekey, allips[0:totalserver])
 			val := rand.Intn(400)
