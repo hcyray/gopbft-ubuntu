@@ -51,7 +51,7 @@ func NewLeaveTx(id int, ipaddr string, pubkey string, prvkey *ecdsa.PrivateKey) 
 	ltx := LeaveTx{}
 	ltx.Id = id
 	ltx.IpAddr = ipaddr
-	
+
 	datatosign := ltx.GetHash()
 	ltx.Sig.Sign(datatosign[:], prvkey)
 	ltx.Pubkey = pubkey
@@ -110,7 +110,8 @@ func (ltx *LeaveTx) GetHash() [32]byte {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	fmt.Print("leave-tx content is ", content[0:32])
+	le := len(content)
+	fmt.Println("leave-tx content has length", le, "content head:", content[0:12], "content tail:", content[le-10:le-1])
 	res = sha256.Sum256(content)
 	fmt.Print("leave-tx hash is ", res)
 
