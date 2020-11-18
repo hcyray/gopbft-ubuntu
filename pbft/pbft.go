@@ -1173,7 +1173,6 @@ func (pbft *PBFT) broadcastConfigBlock(bloc *datastruc.Block) {
 	for _, ltx := range bloc.LeaveTxList {
 		if !ltx.Verify() {
 			fmt.Println("leader", pbft.Id, "receives a block, but contains unvalid leave-tx, its hash", ltx.GetHash())
-			return
 		} else {
 			fmt.Println("leader", pbft.Id, "receives a block, contains valid leave-tx, its hash", ltx.GetHash())
 		}
