@@ -115,6 +115,7 @@ func main() {
 	initialserver := 2
 	lateserver := 0 // 机制1测试
 	totalserver := initialserver + lateserver
+	clientserver := 10
 	// read client pubkeys
 	ck := ReadClientKeys(os.Args[2])
 	if localid<initialserver {
@@ -134,7 +135,7 @@ func main() {
 		}
 	} else {
 		//invoke cliients
-		for i:=0; i<10; i++ {
+		for i:=0; i<clientserver; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*2, privatekey, allips[0:totalserver])
 			val := rand.Intn(400)
