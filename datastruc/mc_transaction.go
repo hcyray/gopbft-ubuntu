@@ -51,10 +51,10 @@ func NewLeaveTx(id int, ipaddr string, pubkey string, prvkey *ecdsa.PrivateKey) 
 	ltx := LeaveTx{}
 	ltx.Id = id
 	ltx.IpAddr = ipaddr
-	ltx.Pubkey = pubkey
-
+	
 	datatosign := ltx.GetHash()
 	ltx.Sig.Sign(datatosign[:], prvkey)
+	ltx.Pubkey = pubkey
 	return ltx
 }
 
