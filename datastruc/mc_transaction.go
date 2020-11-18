@@ -113,7 +113,7 @@ func (ltx *LeaveTx) GetHash() [32]byte {
 	le := len(content)
 	fmt.Println("leave-tx content has length", le, "content head:", content[0:12], "content tail:", content[le-10:le-1])
 	res = sha256.Sum256(content)
-	fmt.Print("leave-tx hash is ", res)
+	fmt.Println("leave-tx hash is ", res)
 
 	return res
 }
