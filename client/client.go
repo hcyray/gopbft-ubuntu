@@ -120,6 +120,7 @@ func (client *Client) Run() {
 
 		//val := rand.Intn(6000)
 		val := 60 + rand.Intn(60)
+		val /= 3
 		time.Sleep(time.Millisecond*time.Duration(val))
 	}
 	fmt.Println("client", client.id, "stops")
