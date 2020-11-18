@@ -1172,10 +1172,10 @@ func (pbft *PBFT) broadcastConfigBlock(bloc *datastruc.Block) {
 	pbft.MsgBuff.BlockPool = append(pbft.MsgBuff.BlockPool, *bloc)
 	for _, ltx := range bloc.LeaveTxList {
 		if !ltx.Verify() {
-			fmt.Println("server", pbft.Id, "receives a block, but contains unvalid leave-tx, its hash", ltx.GetHash())
+			fmt.Println("leader", pbft.Id, "receives a block, but contains unvalid leave-tx, its hash", ltx.GetHash())
 			return
 		} else {
-			fmt.Println("server", pbft.Id, "receives a block, contains valid leave-tx, its hash", ltx.GetHash())
+			fmt.Println("leader", pbft.Id, "receives a block, contains valid leave-tx, its hash", ltx.GetHash())
 		}
 	}
 	pbft.MsgBuff.Msgbuffmu.Unlock()
