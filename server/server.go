@@ -573,7 +573,7 @@ func (serv *Server) handleBlock(content []byte) {
 		}
 		for _, ltx := range bloc.LeaveTxList {
 			if !ltx.Verify() {
-				fmt.Println("The received block contains unvalid leave-tx")
+				fmt.Println("server", serv.id, "receives a block, but contains unvalid leave-tx")
 				return
 			}
 		}
