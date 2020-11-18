@@ -33,6 +33,10 @@ type Client struct {
 	nodePrvkeystr string
 }
 
+type TxPack struct {
+	Txs []datastruc.Transaction
+}
+
 func (clk *ClienKeys) GetSerialize() []byte {
 	var buff bytes.Buffer
 	gob.Register(elliptic.P256())
@@ -92,36 +96,6 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []
 	return client
 }
 
-//func (client *Client) generateServerOrderIp(servnum int) {
-//	//id := client.id
-//	for i:=0; i<servnum; i++ {
-//		var theip string
-//		//if id<10 {
-//		//	theip = ipprefix + strconv.Itoa(i)
-//		//} else {
-//		//	theip = ipprefix + strconv.Itoa(i)
-//		//}
-//		theip = ipprefix + datastruc.GenerateTwoBitId(i) + "1"
-//		client.miners = append(client.miners, i)
-//		client.minerIPAddress[i] = theip
-//	}
-//}
-
-//func generateServerIPAddress(id int, servnum int) []string {
-//	res := []string{}
-//	for i:=0; i<servnum; i++ {
-//		var theip string
-//		if id<10 {
-//			theip = ipprefix + strconv.Itoa(i) + "0" + strconv.Itoa(id)
-//		} else {
-//			theip = ipprefix + strconv.Itoa(i) + strconv.Itoa(id)
-//		}
-//		res = append(res, theip)
-//	}
-//	//fmt.Println("client",id,"will sends tx to", res)
-//	return res
-//}
-
 func (client *Client) Run() {
 	fmt.Println("client", client.id, "starts")
 	go client.sendloop()
@@ -129,12 +103,22 @@ func (client *Client) Run() {
 	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))
 	//var hval [32]byte
 	for i:=0; i<10000000; i++ {
-		rannum := rand.Uint64()
-		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
-		if ok {
-			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
+		txbatch := make([]datastruc.Transaction, 0)
+		coun := 0
+		for {
+			rannum := rand.Uint64()
+			ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
+			if ok {
+				txbatch = append(txbatch, newtx)
+			}
+			coun += 1
+			if coun>=10 {
+				break
+			}
 		}
-		val := rand.Intn(4000)
+		client.BroadcastMintedTransactionBatch(txbatch, client.id, client.miners)
+
+		val := rand.Intn(60000)
 		//val := 1
 		time.Sleep(time.Nanosecond*time.Duration(val))
 	}
@@ -184,6 +168,19 @@ func (client *Client) BroadcastMintedTransaction(newTransaction datastruc.Transa
 	}
 	content := buff.Bytes()
 	datatosend := datastruc.Datatosend{dest, "mintedtx", content}
+	client.sendtxCh <- datatosend
+}
+
+func (client *Client) BroadcastMintedTransactionBatch(txbatch []datastruc.Transaction, id int, dest []int) {
+	var buff bytes.Buffer
+	gob.Register(elliptic.P256())
+	enc := gob.NewEncoder(&buff)
+	err := enc.Encode(txbatch)
+	if err != nil {
+		log.Panic(err)
+	}
+	content := buff.Bytes()
+	datatosend := datastruc.Datatosend{dest, "mintedtxbatch", content}
 	client.sendtxCh <- datatosend
 }
 

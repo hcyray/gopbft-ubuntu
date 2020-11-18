@@ -195,8 +195,6 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 		switch commanType {
 		case "idportpubkey":
 			go serv.handleIdPortPubkey(request[commandLength:])
-		//case "mintedtx":
-		//	go serv.handleTransaction(request[commandLength:])
 		case "jointx":
 			go serv.handleJoinTx(request[commandLength:])
 		case "leavetx":
@@ -429,7 +427,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	//fmt.Println("新连接：", conn.RemoteAddr())
 
 	result := bytes.NewBuffer(nil)
-	var buf [2048]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
+	var buf [20480]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
 	for {
 		n, err := conn.Read(buf[0:])
 		//fmt.Println("n =", n)
@@ -446,7 +444,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			scanner.Split(packetSlitFunc)
 			for scanner.Scan() {
 				//fmt.Println("recv:", string(scanner.Bytes()[6:]))
-				go serv.handleTransaction(scanner.Bytes()[6:])
+				go serv.handleTransactionBatch(scanner.Bytes()[6:])
 			}
 		}
 		result.Reset()
@@ -539,6 +537,27 @@ func (serv *Server) handleTransaction(request []byte) {
 	//serv.msgbuff.Msgbuffmu.Lock()
 	//serv.msgbuff.TxPool[tx.GetHash()] = tx
 	//serv.msgbuff.Msgbuffmu.Unlock()
+}
+
+func (serv *Server) handleTransactionBatch(request []byte) {
+	conten := request[commandLength:]
+	var buff bytes.Buffer
+	var txs []datastruc.Transaction
+	buff.Write(conten)
+	gob.Register(elliptic.P256())
+	dec := gob.NewDecoder(&buff)
+	err := dec.Decode(&txs)
+	if err != nil {
+		log.Panic(err)
+		fmt.Println("txbatch decoding error")
+	}
+	for _, tx := range txs {
+		if tx.Verify() {
+			serv.msgbuff.Msgbuffmu.Lock()
+			serv.msgbuff.TxPool[tx.GetHash()] = tx
+			serv.msgbuff.Msgbuffmu.Unlock()
+		}
+	}
 }
 
 func (serv *Server) handleBlock(content []byte) {
