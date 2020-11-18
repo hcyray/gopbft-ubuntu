@@ -576,7 +576,7 @@ func (serv *Server) handleBlock(content []byte) {
 				fmt.Println("server", serv.id, "receives a block, but contains unvalid leave-tx, its hash", ltx.GetHash())
 				return
 			} else {
-				fmt.Println("server", serv.id, "receives a block, but contains valid leave-tx, its hash", ltx.GetHash())
+				fmt.Println("server", serv.id, "receives a block, contains valid leave-tx, its hash", ltx.GetHash())
 			}
 		}
 	} else {

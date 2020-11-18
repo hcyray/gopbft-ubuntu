@@ -483,6 +483,7 @@ func (pbft *PBFT) Run() {
 					pbft.mu.Unlock()
 					if pbft.reconfighappen {
 						pbft.mu.Lock()
+						pbft.currentHeight -= 1
 						if pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber+1, 0}]==false{
 							ckpqc, plock, clock := pbft.GenerateQCandLockForVC()
 							go pbft.broadcastViewChange(pbft.vernumber+1, 0, pbft.MsgBuff.ReadLeaveTx(), pbft.persis.checkpointheight, ckpqc, plock, clock, pbft.PubKeystr, pbft.PriKey)
@@ -1026,6 +1027,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.persis.executedheight[pbft.currentHeight] = true
 
 				pbft.reconfighappen = true
+				pbft.currentHeight += 1
 			} else if len(pbft.curblock.JoinTxList)>0 {
 				pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 				pbft.MsgBuff.UpdateJoinLeaveTxSetAfterCommitBlock(pbft.curblock)
@@ -1063,6 +1065,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
 				pbft.persis.executedheight[pbft.currentHeight] = true
 				pbft.reconfighappen = true
+				pbft.currentHeight += 1
 
 				theprog := datastruc.Progres{pbft.vernumber, pbft.viewnumber, pbft.currentHeight}
 				pppmsg, _ := pbft.MsgBuff.ReadPrepreparelog(theprog)
