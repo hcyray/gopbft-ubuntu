@@ -118,3 +118,21 @@ func (ltx *LeaveTx) GetHash() [32]byte {
 
 	return res
 }
+
+func (ltx *LeaveTx) Serial() []byte {
+
+	lltx := LeaveTx{}
+	lltx.Id = ltx.Id
+	lltx.IpAddr = ltx.IpAddr
+	lltx.Pubkey = ""
+	lltx.Sig = PariSign{}
+
+	var buff bytes.Buffer
+	enc := gob.NewEncoder(&buff)
+	err := enc.Encode(lltx)
+	if err!=nil {
+		log.Panic(err)
+	}
+	content := buff.Bytes()
+	return content
+}
