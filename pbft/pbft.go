@@ -1172,9 +1172,9 @@ func (pbft *PBFT) broadcastConfigBlock(bloc *datastruc.Block) {
 	pbft.MsgBuff.BlockPool = append(pbft.MsgBuff.BlockPool, *bloc)
 	for _, ltx := range bloc.LeaveTxList {
 		if !ltx.Verify() {
-			fmt.Println("leader", pbft.Id, "receives a block, but contains unvalid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash())
+			fmt.Println("leader", pbft.Id, "receives a block, but contains unvalid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
 		} else {
-			fmt.Println("leader", pbft.Id, "receives a block, contains valid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash())
+			fmt.Println("leader", pbft.Id, "receives a block, contains valid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
 		}
 	}
 	pbft.MsgBuff.Msgbuffmu.Unlock()
