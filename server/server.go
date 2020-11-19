@@ -573,10 +573,10 @@ func (serv *Server) handleBlock(content []byte) {
 		}
 		for _, ltx := range bloc.LeaveTxList {
 			if !ltx.Verify() {
-				fmt.Println("leader", serv.id, "receives a block, but contains unvalid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
+				fmt.Println("server", serv.id, "receives a block, but contains unvalid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
 				return
 			} else {
-				fmt.Println("leader", serv.id, "receives a block, contains valid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
+				fmt.Println("server", serv.id, "receives a block, contains valid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
 			}
 		}
 	} else {
