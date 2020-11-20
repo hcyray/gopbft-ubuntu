@@ -111,9 +111,9 @@ func main() {
 	// ***************************************generate client keys and save
 
 
-	clientserver := 5
+	clientserver := 3
 	instanceoneachserver := 1
-	initialserver := 3
+	initialserver := 5
 	lateserver := 0 // 机制1测试
 	totalserver := initialserver + lateserver
 	// read client pubkeys
