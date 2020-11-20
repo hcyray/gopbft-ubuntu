@@ -113,7 +113,7 @@ func main() {
 
 	clientserver := 1
 	instanceoneachserver := 1
-	initialserver := 5
+	initialserver := 1
 	lateserver := 0 // 机制1测试
 	totalserver := initialserver + lateserver
 	// read client pubkeys
@@ -145,6 +145,6 @@ func main() {
 		}
 	}
 
-	time.Sleep(time.Second * 60)
+	time.Sleep(time.Second * 10)
 	fmt.Println("main thread completes")
 }
