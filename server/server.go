@@ -21,6 +21,7 @@ import (
 type Server struct {
 	mu sync.Mutex
 	starttime time.Time
+	coun int
 
 	id int
 	ipportaddr string
@@ -515,6 +516,8 @@ func (serv *Server) handleIdPortPubkey(conten []byte) {
 }
 
 func (serv *Server) handleTransaction(request []byte) {
+	serv.coun += 1
+	fmt.Println("call handle transaction func time: ", serv.coun)
 	conten := request[commandLength:]
 	//fmt.Println("server", serv.id, " has receives a tx now")
 	var buff bytes.Buffer
