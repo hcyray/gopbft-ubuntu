@@ -418,7 +418,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	//fmt.Println("新连接：", conn.RemoteAddr())
 
 	result := bytes.NewBuffer(nil)
-	var buf [2448]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
+	var buf [1548]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
 	for {
 		n, err := conn.Read(buf[0:])
 		//fmt.Println("n =", n)
@@ -537,7 +537,7 @@ func (serv *Server) handleTransaction(request []byte) {
 		if len(serv.msgbuff.TxPool)==1 {
 			serv.starttime = time.Now()
 		}
-		if len(serv.msgbuff.TxPool)%1==0 {
+		if len(serv.msgbuff.TxPool)%10==0 {
 			fmt.Println("server receive tx with timestamp", tx.Timestamp)
 			elaps := time.Since(serv.starttime).Milliseconds()
 			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs", "time elapsed: ", elaps, "ms")
