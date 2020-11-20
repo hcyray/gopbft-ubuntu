@@ -316,16 +316,6 @@ func (serv *Server) SendLoop() {
 
 func generatelistenserverips(id int, localip string) []string {
 	res := []string{}
-	//for i:=0; i<MaxListenPort; i++ {
-	//	var theip string
-	//	if i<10 {
-	//		theip = ipprefix + strconv.Itoa(id) + "0" + strconv.Itoa(i)
-	//	} else {
-	//		theip = ipprefix + strconv.Itoa(id) + strconv.Itoa(i)
-	//	}
-	//	res = append(res, theip)
-	//}
-
 	theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
 	res = append(res, theip)
 	fmt.Println("server",id, "will listen on", res, "to receive from servers")
@@ -426,7 +416,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	//fmt.Println("新连接：", conn.RemoteAddr())
 
 	result := bytes.NewBuffer(nil)
-	var buf [2048]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
+	var buf [1024]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
 	for {
 		n, err := conn.Read(buf[0:])
 		//fmt.Println("n =", n)
