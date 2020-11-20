@@ -271,6 +271,7 @@ func (serv *Server) ListenLocalForClient(localipport string) {
 
 	for true {
 		conn, err := listener.Accept()
+		fmt.Println("server accepts a new tcp connection dial\n")
 		if err != nil {
 			fmt.Printf("listener.Accept() runs wrongly :%v\n", err)
 			return
