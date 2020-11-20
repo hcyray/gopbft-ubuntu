@@ -134,7 +134,7 @@ func (client *Client) Run() {
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
-			if i%100==0 {
+			if i%1000==0 {
 				//fmt.Println("tx", i, "timestamp is", newtx.Timestamp)
 				elaps := time.Since(startime).Milliseconds()
 				fmt.Println("client sends", i, "txs in", elaps, "ms")
