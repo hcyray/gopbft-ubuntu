@@ -20,6 +20,7 @@ import (
 
 type Server struct {
 	mu sync.Mutex
+	starttime time.Time
 
 	id int
 	ipportaddr string
@@ -102,6 +103,7 @@ func (serv *Server) InitializeMapandChan() {
 
 func (serv *Server) Start() {
 	go serv.Run()
+
 	time.Sleep(time.Second * 1)
 	//serv.pbft.InitialSetup()
 	//time.Sleep(time.Second * 5)
@@ -535,8 +537,12 @@ func (serv *Server) handleTransaction(request []byte) {
 	if tx.Verify() {
 		serv.msgbuff.Msgbuffmu.Lock()
 		serv.msgbuff.TxPool[tx.GetHash()] = tx
-		if len(serv.msgbuff.TxPool)%10==0 {
-			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs")
+		if len(serv.msgbuff.TxPool)==1 {
+			serv.starttime = time.Now()
+		}
+		if len(serv.msgbuff.TxPool)%100==0 {
+			elaps := time.Since(serv.starttime).Milliseconds()
+			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs", "time elapsed: ", elaps, "ms")
 		}
 		serv.msgbuff.Msgbuffmu.Unlock()
 	}
