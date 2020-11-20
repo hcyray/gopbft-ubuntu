@@ -169,8 +169,12 @@ func (client *Client) sendloop() {
 			packetBuf := bytes.NewBuffer(magicNum)
 			packetBuf.Write(lenNum)
 			packetBuf.Write(data)
+			datalen := len(packetBuf.Bytes())
+			blank := make([]byte, 800-datalen)
+			packetBuf.Write(blank)
 			for _, conn := range conns {
 				_, err := conn.Write(packetBuf.Bytes())
+
 				//fmt.Println("client send message length ", len(packetBuf.Bytes()))
 				if err != nil {
 					fmt.Printf("write failed , err : %v\n", err)
