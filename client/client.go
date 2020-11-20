@@ -141,7 +141,7 @@ func (client *Client) Run() {
 			}
 		}
 		//val := rand.Intn(2) + 1
-		val := 10
+		val := 2
 		time.Sleep(time.Millisecond*time.Duration(val))
 	}
 	fmt.Println("client", client.id, "stops")
