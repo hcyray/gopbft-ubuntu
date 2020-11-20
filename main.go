@@ -112,7 +112,7 @@ func main() {
 
 
 	clientserver := 1
-	instanceoneachserver := 2
+	instanceoneachserver := 1
 	initialserver := 3
 	lateserver := 0 // 机制1测试
 	totalserver := initialserver + lateserver
@@ -121,14 +121,14 @@ func main() {
 	if localid<initialserver {
 		// invoke two server
 		for i:=0; i<instanceoneachserver; i++ {
-			instanceid := i+2*localid
-			theserver := server.CreateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver])
+			instanceid := i+instanceoneachserver*localid
+			theserver := server.CreateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
 			go theserver.Start()
 			fmt.Println("server", instanceid, "starts")
 		}
 	} else if localid>=initialserver && localid<totalserver {
-		for i:=0; i<instanceoneachserver-1; i++ {
-			instanceid := i+2*localid
+		for i:=0; i<=0; i++ {
+			instanceid := i+instanceoneachserver*localid
 			theserver := server.CreateLateServer(instanceid, localip)
 			go theserver.LateStart(ck.Clientpubkstrs, 5+10*i) // new nodes join serially
 			fmt.Println("server", instanceid, "starts, it is a late server")
@@ -137,7 +137,7 @@ func main() {
 		//invoke cliients
 		for i:=0; i<clientserver; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
-			theclient := client.CreateClient(i, totalserver*2, privatekey, allips[0:totalserver])
+			theclient := client.CreateClient(i, totalserver*instanceoneachserver, privatekey, allips[0:totalserver], instanceoneachserver)
 			val := rand.Intn(400)
 			time.Sleep(time.Millisecond*time.Duration(val))
 			go theclient.Run()

@@ -67,14 +67,14 @@ func (clk *ClienKeys) GetDeserializeFromFile(fn string) {
 	}
 }
 
-func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []string) *Client {
+func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []string, inseach int) *Client {
 	client := &Client{}
 	client.id = id
 	client.miners = make([]int, 0)
 	client.minerIPAddress = make(map[int]string)
 	for i:=0; i<servernum; i++ {
 		client.miners = append(client.miners, i)
-		order := i/2
+		order := i/inseach
 		client.minerIPAddress[i] = allips[order] + ":4" + datastruc.GenerateTwoBitId(i) + "1"
 	}
 	//client.generateServerOrderIp(servernum)

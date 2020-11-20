@@ -46,16 +46,16 @@ type Server struct {
 	recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB
 }
 
-func CreateServer(id int, localip string, clientkeys map[int]string, serverips []string) *Server {
+func CreateServer(id int, localip string, clientkeys map[int]string, serverips []string, inseach int) *Server {
 	serv := &Server{}
 
 	serv.id = id
 	serv.ipportaddr = localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
-	serv.totalserver = len(serverips) * 2
+	serv.totalserver = len(serverips) * inseach
 	for i:=0; i<serv.totalserver; i++ {
 		serv.memberIds = append(serv.memberIds, i)
 	}
-	serv.remoteallips = generateremoteallips(serv.memberIds, serverips)
+	serv.remoteallips = generateremoteallips(serv.memberIds, serverips, inseach)
 	fmt.Println("server", serv.id, "will send consensus messages to", serv.remoteallips)
 	serv.localallipsforserver = generatelistenserverips(id, localip)
 	serv.localallipsforclient = generatelistenclientips(id, localip)
@@ -338,7 +338,7 @@ func generatelistenclientips(id int, localip string) []string {
 	return res
 }
 
-func generateremoteallips(memberIds []int, serverips []string) map[int]string {
+func generateremoteallips(memberIds []int, serverips []string, inseach int) map[int]string {
 	// generate those ips this server will send messages to
 	res := make(map[int]string)
 	for _,i := range memberIds {
@@ -349,7 +349,7 @@ func generateremoteallips(memberIds []int, serverips []string) map[int]string {
 		//	theip = ipprefix + strconv.Itoa(i)
 		//}
 		var order int
-		order = i/2
+		order = i/inseach
 		theip = serverips[order] + ":4" + datastruc.GenerateTwoBitId(i) + "0"
 		res[i] = theip
 	}
@@ -486,6 +486,16 @@ func (serv *Server) handleLeaveTx(conten []byte) {
 	if err != nil {
 		fmt.Println("leavetx decoding error")
 	}
+
+
+	if !leavetx.Verify() {
+		fmt.Println("**** server", serv.id, "receives an unvalid leave-tx, its content", leavetx.Serial(), "  its hash", leavetx.GetHash(), " its id ", leavetx.Id, " its ip addr ", leavetx.IpAddr, " its pubkey ", leavetx.Pubkey, " its sig ", leavetx.Sig)
+		return
+	} else {
+		fmt.Println("***** server", serv.id, "receives a valid leave-tx, its content", leavetx.Serial(), "  its hash", leavetx.GetHash(), " its id ", leavetx.Id, " its ip addr ", leavetx.IpAddr, " its pubkey ", leavetx.Pubkey, " its sig ", leavetx.Sig)
+	}
+
+
 	serv.msgbuff.Msgbuffmu.Lock()
 	serv.msgbuff.JoinLeavetxSet.LTxSet = append(serv.msgbuff.JoinLeavetxSet.LTxSet, leavetx)
 	//fmt.Println("server", serv.id, "receives a leave-tx")
