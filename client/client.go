@@ -135,7 +135,7 @@ func (client *Client) Run() {
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
 			if i%100==0 {
-				fmt.Println("tx", i, "timestamp is", newtx.Timestamp)
+				//fmt.Println("tx", i, "timestamp is", newtx.Timestamp)
 				elaps := time.Since(startime).Milliseconds()
 				fmt.Println("client sends", i, "txs in", elaps, "ms")
 			}

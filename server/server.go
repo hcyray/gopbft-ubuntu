@@ -418,7 +418,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	//fmt.Println("新连接：", conn.RemoteAddr())
 
 	result := bytes.NewBuffer(nil)
-	var buf [1548]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
+	var buf [2048]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
 	for {
 		n, err := conn.Read(buf[0:])
 		//fmt.Println("n =", n)
@@ -433,12 +433,9 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 		} else {
 			scanner := bufio.NewScanner(result)
 			scanner.Split(packetSlitFunc)
-			scannum := 0
 			for scanner.Scan() {
 				//fmt.Println("recv:", string(scanner.Bytes()[6:]))
 				go serv.handleTransaction(scanner.Bytes()[6:])
-				fmt.Println("scan number is", scannum)
-				scannum += 1
 			}
 		}
 		result.Reset()
