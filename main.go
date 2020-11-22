@@ -80,7 +80,7 @@ func ReadClientKeys(fn string)  client.ClienKeys {
 }
 
 func main() {
-	fmt.Println("version", 2)
+	fmt.Println("this is ultimately correct version")
 	fmt.Println("Get the cluster IPs from", os.Args[1])
 	fmt.Println("Get client keys from", os.Args[2])
 	localip := GetOutboundIP().String()
