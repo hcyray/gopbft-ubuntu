@@ -20,7 +20,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6ce3e2ac-ea02-49b9-b204-019ec57babb8" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/client/client.go" beforeDir="false" afterPath="$PROJECT_DIR$/client/client.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -106,11 +106,11 @@
       <screen x="-1920" y="0" width="1920" height="1050" />
     </state>
     <state x="-1215" y="325" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604634692296" />
-    <state x="784" y="307" width="424" height="491" key="FileChooserDialogImpl" timestamp="1605696617488">
+    <state x="784" y="307" width="424" height="491" key="FileChooserDialogImpl" timestamp="1606050227357">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="-1180" y="279" key="FileChooserDialogImpl/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604644298543" />
-    <state x="784" y="307" width="424" height="491" key="FileChooserDialogImpl/72.27.1848.1053@72.27.1848.1053" timestamp="1605696617488" />
+    <state x="784" y="307" width="424" height="491" key="FileChooserDialogImpl/72.27.1848.1053@72.27.1848.1053" timestamp="1606050227357" />
     <state width="1921" height="993" key="GridCell.Tab.0.bottom" timestamp="1605095358581">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
