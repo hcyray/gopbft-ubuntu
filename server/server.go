@@ -419,7 +419,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	result := bytes.NewBuffer(nil)
 	var buf [9600]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
 	for {
-		time.Sleep(time.Millisecond * 10)
+		time.Sleep(time.Millisecond * 2)
 		n, err := conn.Read(buf[0:])
 		fmt.Println("server read buffer ", n, "bytes")
 		result.Write(buf[0:n])
@@ -534,11 +534,13 @@ func (serv *Server) handleTransaction(request []byte) {
 			serv.starttime = time.Now()
 		}
 		if len(serv.msgbuff.TxPool)%1==0 {
-			fmt.Println("server receive 10 txs, the last one with timestamp", tx.Timestamp)
+			fmt.Println("server receive 1 txs, the last one with timestamp", tx.Timestamp)
 			elaps := time.Since(serv.starttime).Milliseconds()
 			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs", "time elapsed: ", elaps, "ms")
 		}
 		serv.msgbuff.Msgbuffmu.Unlock()
+	} else {
+		fmt.Println("server receives a tx, but the signature is wrong")
 	}
 
 	//serv.msgbuff.Msgbuffmu.Lock()

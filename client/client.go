@@ -99,36 +99,6 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []
 	return client
 }
 
-//func (client *Client) generateServerOrderIp(servnum int) {
-//	//id := client.id
-//	for i:=0; i<servnum; i++ {
-//		var theip string
-//		//if id<10 {
-//		//	theip = ipprefix + strconv.Itoa(i)
-//		//} else {
-//		//	theip = ipprefix + strconv.Itoa(i)
-//		//}
-//		theip = ipprefix + datastruc.GenerateTwoBitId(i) + "1"
-//		client.miners = append(client.miners, i)
-//		client.minerIPAddress[i] = theip
-//	}
-//}
-
-//func generateServerIPAddress(id int, servnum int) []string {
-//	res := []string{}
-//	for i:=0; i<servnum; i++ {
-//		var theip string
-//		if id<10 {
-//			theip = ipprefix + strconv.Itoa(i) + "0" + strconv.Itoa(id)
-//		} else {
-//			theip = ipprefix + strconv.Itoa(i) + strconv.Itoa(id)
-//		}
-//		res = append(res, theip)
-//	}
-//	//fmt.Println("client",id,"will sends tx to", res)
-//	return res
-//}
-
 func (client *Client) Run() {
 	fmt.Println("client", client.id, "starts")
 	go client.sendloop()
@@ -136,7 +106,7 @@ func (client *Client) Run() {
 	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))
 	//var hval [32]byte
 	startime := time.Now()
-	for i:=0; i<10; i++ {
+	for i:=0; i<100; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
 		if ok {
@@ -209,43 +179,6 @@ func (client *Client) sendtooneloop(destid int) {
 		}
 	}
 }
-
-//func (client *Client) sendloop() {
-//	conns := make(map[int]net.Conn)
-//	for i, destip := range client.minerIPAddress {
-//		conn, err := net.Dial("tcp", destip)
-//		if err != nil {
-//			log.Panic("connect failed, err : %v\n", err.Error())
-//		}
-//		conns[i] = conn
-//	}
-//	for {
-//		select {
-//		case datatosend := <-client.sendtxCh:
-//			data := append(datastruc.CommandToBytes(datatosend.MsgType), datatosend.Msg...)
-//			l := len(data)
-//			magicNum := make([]byte, 4)
-//			binary.BigEndian.PutUint32(magicNum, 0x123456)
-//			lenNum := make([]byte, 2)
-//			binary.BigEndian.PutUint16(lenNum, uint16(l))
-//			packetBuf := bytes.NewBuffer(magicNum)
-//			packetBuf.Write(lenNum)
-//			packetBuf.Write(data)
-//			datalen := len(packetBuf.Bytes())
-//			blank := make([]byte, 800-datalen)
-//			packetBuf.Write(blank)
-//			for _, conn := range conns {
-//				_, err := conn.Write(packetBuf.Bytes())
-//
-//				//fmt.Println("client send message length ", len(packetBuf.Bytes()))
-//				if err != nil {
-//					fmt.Printf("write failed , err : %v\n", err)
-//					break
-//				}
-//			}
-//		}
-//	}
-//}
 
 func (client *Client) BroadcastMintedTransaction(newTransaction datastruc.Transaction, id int, dest []int) {
 	var buff bytes.Buffer
