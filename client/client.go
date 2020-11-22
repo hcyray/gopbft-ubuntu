@@ -108,25 +108,25 @@ func (client *Client) Run() {
 	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))
 	//var hval [32]byte
 	startime := time.Now()
-	for i:=0; i<1; i++ {
+	for i:=0; i<100; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
-		fmt.Println("analysing the transaction:")
-		fmt.Println("tx source:", newtx.Source, "length:", len(newtx.Source))
-		fmt.Println("tx recipient:", newtx.Recipient, "length", len(newtx.Recipient))
-		fmt.Println("tx sig:", newtx.Sig)
+		//fmt.Println("analysing the transaction:")
+		//fmt.Println("tx source:", newtx.Source, "length:", len(newtx.Source))
+		//fmt.Println("tx recipient:", newtx.Recipient, "length", len(newtx.Recipient))
+		fmt.Println("tx sig:", newtx.Sig, "length:", len(newtx.Sig.R)+len(newtx.Sig.S))
 		//fmt.Println("tx sig string:", newtx.Sig.ToString(), "length", len(newtx.Sig.ToString()))
 		//fmt.Println("tx sig bytes:", newtx.Sig.ToByteArray(), "length", len(newtx.Sig.ToByteArray()))
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
-			if i%1000==0 {
+			if i%10==0 {
 				//fmt.Println("tx", i, "timestamp is", newtx.Timestamp)
 				elaps := time.Since(startime).Milliseconds()
 				fmt.Println("client", client.id, "sends", i, "txs in", elaps, "ms")
 			}
 		}
 		if i%10==0 {
-			time.Sleep(time.Millisecond* 10)
+			time.Sleep(time.Millisecond* 100)
 		}
 		//val := rand.Intn(2) + 1
 		//val := 10000
