@@ -440,8 +440,8 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			fmt.Println("there is no remaining bytes, buf length without merging is", len(mergedbuf))
 		}
 
-		buff := make([]byte, len(mergedbuf))
-		copy(buff, mergedbuf) // backup buf
+		//buff := make([]byte, len(mergedbuf))
+		//copy(buff, mergedbuf) // backup buf
 
 
 		result.Write(mergedbuf[0:])
@@ -463,9 +463,9 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 				go serv.handleTransaction(scanner.Bytes()[6:])
 			}
 		}
-		remainn = len(buff) - readlen
+		remainn = len(mergedbuf) - readlen
 		remains = make([]byte, remainn)
-		copy(remains, buff[readlen:])
+		copy(remains, mergedbuf[readlen:])
 
 		result.Reset()
 	}
