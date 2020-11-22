@@ -111,12 +111,6 @@ func (client *Client) Run() {
 	for i:=0; i<100; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
-		//fmt.Println("analysing the transaction:")
-		//fmt.Println("tx source:", newtx.Source, "length:", len(newtx.Source))
-		//fmt.Println("tx recipient:", newtx.Recipient, "length", len(newtx.Recipient))
-		fmt.Println("tx sig:", newtx.Sig, "length:", len(newtx.Sig.R)+len(newtx.Sig.S))
-		//fmt.Println("tx sig string:", newtx.Sig.ToString(), "length", len(newtx.Sig.ToString()))
-		//fmt.Println("tx sig bytes:", newtx.Sig.ToByteArray(), "length", len(newtx.Sig.ToByteArray()))
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
 			if i%10==0 {
@@ -203,6 +197,7 @@ func (client *Client) BroadcastMintedTransaction(newTransaction datastruc.Transa
 		log.Panic(err)
 	}
 	content := buff.Bytes()
+	fmt.Println("the tx has size:", len(content))
 	datatosend := datastruc.Datatosend{dest, "mintedtx", content}
 	client.sendtxCh <- datatosend
 }
