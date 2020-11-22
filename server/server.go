@@ -554,6 +554,13 @@ func (serv *Server) handleTransaction(request []byte) {
 		fmt.Println("tx decoding error")
 		return
 	}
+	serv.msgbuff.Msgbuffmu.Lock()
+	if _, ok := serv.msgbuff.TxPool[tx.GetHash()]; ok {
+		fmt.Println("this tx has been added before")
+		serv.msgbuff.Msgbuffmu.Unlock()
+		return
+	}
+	serv.msgbuff.Msgbuffmu.Unlock()
 
 	if tx.Verify() {
 		serv.msgbuff.Msgbuffmu.Lock()
@@ -570,6 +577,7 @@ func (serv *Server) handleTransaction(request []byte) {
 	} else {
 		fmt.Println("server receives a tx, but the signature is wrong")
 	}
+
 
 	//serv.msgbuff.Msgbuffmu.Lock()
 	//serv.msgbuff.TxPool[tx.GetHash()] = tx
