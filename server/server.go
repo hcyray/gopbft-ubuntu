@@ -420,30 +420,30 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	result := bytes.NewBuffer(nil)
 	var readbuf [9600]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
 	remains := make([]byte, 0)
-	//var remainn int
-	//var readlen int
+	var remainn int
+	var readlen int
+	buf := make([]byte, 0)
 	for {
 		n, err := conn.Read(readbuf[0:])
 		serv.recvvolume += n
 		fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
 
-		//if remainn > 0 {
-		//	tmp := append(remains[0:remainn], readbuf[0:n]...)
-		//	buf = make([]byte, len(tmp))
-		//	copy(buf, tmp)
-		//	fmt.Println("merge remaining bytes: ", remainn, "[]len ", len(remains), "buf length after merge is", len(buf))
-		//} else {
-		//	tmp := append(buf, readbuf[0:n]...)
-		//	buf = make([]byte, len(tmp))
-		//	copy(buf, tmp)
-		//	fmt.Println("there is no remaining bytes, buf length without merging is", len(buf))
-		//}
+		if remainn > 0 {
+			tmp := append(remains[0:remainn], readbuf[0:n]...)
+			buf = make([]byte, len(tmp))
+			copy(buf, tmp)
+			fmt.Println("merge remaining bytes: ", remainn, "[]len ", len(remains), "buf length after merge is", len(buf))
+		} else {
+			tmp := append(buf, readbuf[0:n]...)
+			buf = make([]byte, len(tmp))
+			copy(buf, tmp)
+			fmt.Println("there is no remaining bytes, buf length without merging is", len(buf))
+		}
+
+		buff := make([]byte, len(buf))
+		copy(buff, buf) // backup buf
 
 
-		tmp := append(remains, readbuf[0:n]...)
-		buf := make([]byte, len(tmp))
-		copy(buf, tmp)
-		fmt.Println("buf length after merge is", len(buf))
 		result.Write(buf[0:])
 		//readlen = 0
 		if err != nil {
@@ -457,23 +457,15 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			scanner := bufio.NewScanner(result)
 			scanner.Split(packetSlitFunc)
 			for scanner.Scan() {
-				//readlen += len(scanner.Bytes())
+				readlen += len(scanner.Bytes())
 				//fmt.Println("recv:", string(scanner.Bytes()[6:]))
 				//fmt.Println("processing tx []byte")
 				go serv.handleTransaction(scanner.Bytes()[6:])
 			}
 		}
-		//remainn = len(buf) - readlen
-		//le := len(buf)
-		//remains = buf[(le-remainn):le]
-		le := len(buf)
-		if le>800 {
-			remains = make([]byte, 800)
-			copy(remains, buf[le-800:le])
-		} else {
-			remains = make([]byte, le)
-			copy(remains, buf[0:le])
-		}
+		remainn = len(buff) - readlen
+		le := len(buff)
+		copy(remains, buff[(le-remainn):])
 
 		result.Reset()
 	}
