@@ -35,6 +35,13 @@ func (a *PariSign) ToString() string {
 	return s1+s2
 }
 
+func (a *PariSign) ToByteArray() []byte {
+	b1 := a.R.Bytes()
+	b2 := a.S.Bytes()
+	b3 := append(b1, b2...)
+	return b3
+}
+
 func (a *PariSign) Sign(b []byte, prk *ecdsa.PrivateKey) {
 	a.R = new(big.Int)
 	a.S = new(big.Int)
