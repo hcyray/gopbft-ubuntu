@@ -561,7 +561,7 @@ func (serv *Server) handleTransaction(request []byte) {
 		if len(serv.msgbuff.TxPool)==1 {
 			serv.starttime = time.Now()
 		}
-		if len(serv.msgbuff.TxPool)%1==0 {
+		if len(serv.msgbuff.TxPool)%100==0 {
 			//fmt.Println("server receive 1 txs, the last one with timestamp", tx.Timestamp)
 			elaps := time.Since(serv.starttime).Milliseconds()
 			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs", "time elapsed: ", elaps, "ms")
