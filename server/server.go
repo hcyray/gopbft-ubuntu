@@ -420,7 +420,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	//fmt.Println("新连接：", conn.RemoteAddr())
 
 	result := bytes.NewBuffer(nil)
-	var readbuf [12000]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
+	var readbuf [9000]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
 	remains := make([]byte, 0)
 	var remainn int
 	var readlen int
