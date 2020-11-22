@@ -414,7 +414,7 @@ func sendData(data []byte, addr string) {
 
 func (serv *Server) handleclienttx(conn net.Conn) {
 	defer conn.Close()
-	defer fmt.Println("关闭")
+	defer fmt.Println("close!!!")
 	//fmt.Println("新连接：", conn.RemoteAddr())
 
 	result := bytes.NewBuffer(nil)
@@ -445,7 +445,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 
 
 		result.Write(mergedbuf[0:])
-		//readlen = 0
+		readlen = 0
 		if err != nil {
 			if err == io.EOF {
 				continue
