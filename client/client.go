@@ -32,6 +32,8 @@ type Client struct {
 	nodePrvKey *ecdsa.PrivateKey
 	nodePubkeystr string
 	nodePrvkeystr string
+
+	sendvolume int
 }
 
 func (clk *ClienKeys) GetSerialize() []byte {
@@ -163,6 +165,7 @@ func (client *Client) sendtooneloop(destid int) {
 					packetBuf := bytes.NewBuffer(magicNum)
 					packetBuf.Write(lenNum)
 					packetBuf.Write(data)
+					client.sendvolume += len(packetBuf.Bytes())
 					_, err := conn.Write(packetBuf.Bytes())
 					//datalen := len(packetBuf.Bytes())
 					//blank := make([]byte, 1000-datalen)
@@ -173,6 +176,8 @@ func (client *Client) sendtooneloop(destid int) {
 						fmt.Println("will re connect soon")
 						time.Sleep(time.Millisecond * time.Duration(t))
 						break innerloop
+					} else {
+						fmt.Println("client total bytes sent is ", client.sendvolume)
 					}
 				}
 			}

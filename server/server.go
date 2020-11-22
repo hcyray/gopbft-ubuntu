@@ -20,6 +20,7 @@ import (
 
 type Server struct {
 	mu sync.Mutex
+	recvvolume int
 	starttime time.Time
 
 	id int
@@ -418,10 +419,12 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 
 	result := bytes.NewBuffer(nil)
 	var buf [9600]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
+
 	for {
 		time.Sleep(time.Millisecond * 2)
 		n, err := conn.Read(buf[0:])
-		fmt.Println("server read buffer ", n, "bytes")
+		serv.recvvolume += n
+		fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
 		result.Write(buf[0:n])
 		if err != nil {
 			if err == io.EOF {
