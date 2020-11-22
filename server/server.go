@@ -429,7 +429,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			continue
 		}
 		serv.recvvolume += n
-		fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
+		//fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
 
 		if remainn > 0 {
 			mergedbuf = append(remains, readbuf[0:n]...)
@@ -544,7 +544,7 @@ func (serv *Server) handleTransaction(request []byte) {
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(&tx)
 	if err != nil {
-		fmt.Println("tx decoding error")
+		//fmt.Println("tx decoding error")
 		return
 	}
 	serv.msgbuff.Msgbuffmu.Lock()
@@ -561,7 +561,7 @@ func (serv *Server) handleTransaction(request []byte) {
 		if len(serv.msgbuff.TxPool)==1 {
 			serv.starttime = time.Now()
 		}
-		if len(serv.msgbuff.TxPool)%100==0 {
+		if len(serv.msgbuff.TxPool)%1000==0 {
 			//fmt.Println("server receive 1 txs, the last one with timestamp", tx.Timestamp)
 			elaps := time.Since(serv.starttime).Milliseconds()
 			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs", "time elapsed: ", elaps, "ms")
