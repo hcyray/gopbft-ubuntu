@@ -194,9 +194,9 @@ func (client *Client) sendtooneloop(destid int) {
 					packetBuf.Write(lenNum)
 					packetBuf.Write(data)
 					_, err := conn.Write(packetBuf.Bytes())
-					datalen := len(packetBuf.Bytes())
-					blank := make([]byte, 1000-datalen)
-					packetBuf.Write(blank)
+					//datalen := len(packetBuf.Bytes())
+					//blank := make([]byte, 1000-datalen)
+					//packetBuf.Write(blank)
 					if err != nil {
 						fmt.Printf("write failed , err : %v\n", err)
 						t := rand.Intn(100)
