@@ -119,9 +119,6 @@ func (client *Client) Run() {
 				fmt.Println("client", client.id, "sends", i, "txs in", elaps, "ms")
 			}
 		}
-		if i%10==0{
-			time.Sleep(time.Millisecond*90)
-		}
 		//val := rand.Intn(2) + 1
 		//val := 10000
 		//time.Sleep(time.Millisecond*10)
