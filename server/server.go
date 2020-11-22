@@ -432,15 +432,9 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 		fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
 
 		if remainn > 0 {
-			//tmp := append(remains, readbuf[0:n]...)
-			//mergedbuf = make([]byte, len(tmp))
-			//copy(mergedbuf, tmp)
 			mergedbuf = append(remains, readbuf[0:n]...)
 			//fmt.Println("merge remaining bytes: ", remainn, "[]len ", len(remains), "buf length after merge is", len(mergedbuf))
 		} else {
-			//tmp := append([]byte{}, readbuf[0:n]...)
-			//mergedbuf = make([]byte, len(tmp))
-			//copy(mergedbuf, tmp)
 			mergedbuf = append([]byte{}, readbuf[0:n]...)
 			//fmt.Println("there is no remaining bytes, buf length without merging is", len(mergedbuf))
 		}
@@ -462,15 +456,6 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 				go serv.handleTransaction(scanner.Bytes()[6:])
 			}
 		}
-		//if readlen>20 {
-		//	remainn = len(mergedbuf) - readlen + 20
-		//	remains = make([]byte, remainn)
-		//	copy(remains, mergedbuf[readlen-20:])
-		//} else {
-		//	remainn = len(mergedbuf) - readlen
-		//	remains = make([]byte, remainn)
-		//	copy(remains, mergedbuf[readlen:])
-		//}
 		remainn = len(mergedbuf) - readlen
 		remains = make([]byte, remainn)
 		copy(remains, mergedbuf[readlen:])
