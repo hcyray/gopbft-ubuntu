@@ -120,7 +120,7 @@ func (client *Client) Run() {
 			}
 		}
 		if i%10==0{
-			time.Sleep(time.Millisecond*50)
+			time.Sleep(time.Millisecond*150)
 		}
 		//val := rand.Intn(2) + 1
 		//val := 10000
