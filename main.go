@@ -111,7 +111,7 @@ func main() {
 	// ***************************************generate client keys and save
 
 
-	clientserver := 1
+	clientnumber := 2
 	instanceoneachserver := 1
 	initialserver := 1
 	lateserver := 0 // 机制1测试
@@ -135,7 +135,7 @@ func main() {
 		}
 	} else {
 		//invoke cliients
-		for i:=0; i<clientserver; i++ {
+		for i:=0; i<clientnumber; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*instanceoneachserver, privatekey, allips[0:totalserver], instanceoneachserver)
 			val := rand.Intn(400)
