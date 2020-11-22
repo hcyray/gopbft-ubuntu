@@ -20,7 +20,8 @@ import (
 
 type Server struct {
 	mu sync.Mutex
-	recvvolume int
+	decoderrortx int
+	sigwrongtx int
 	starttime time.Time
 
 	id int
@@ -428,7 +429,6 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 		if n==0 {
 			continue
 		}
-		serv.recvvolume += n
 		//fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
 
 		if remainn > 0 {
@@ -544,7 +544,10 @@ func (serv *Server) handleTransaction(request []byte) {
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(&tx)
 	if err != nil {
-		//fmt.Println("tx decoding error")
+		serv.decoderrortx += 1
+		if serv.decoderrortx%1000==0 {
+			fmt.Println("server", serv.id, "tx decoding error time:", serv.decoderrortx)
+		}
 		return
 	}
 	serv.msgbuff.Msgbuffmu.Lock()
@@ -568,13 +571,11 @@ func (serv *Server) handleTransaction(request []byte) {
 		}
 		serv.msgbuff.Msgbuffmu.Unlock()
 	} else {
-		fmt.Println("server receives a tx, but the signature is wrong")
+		serv.sigwrongtx += 1
+		if serv.sigwrongtx%1000==0 {
+			fmt.Println("server", serv.id, "receives a tx with wrong signature time:", serv.sigwrongtx)
+		}
 	}
-
-
-	//serv.msgbuff.Msgbuffmu.Lock()
-	//serv.msgbuff.TxPool[tx.GetHash()] = tx
-	//serv.msgbuff.Msgbuffmu.Unlock()
 }
 
 func (serv *Server) handleBlock(content []byte) {
