@@ -418,33 +418,33 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	//fmt.Println("新连接：", conn.RemoteAddr())
 
 	result := bytes.NewBuffer(nil)
-	var readbuf [9600]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
+	var readbuf [3000]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
 	remains := make([]byte, 0)
 	var remainn int
 	var readlen int
-	buf := make([]byte, 0)
+	mergedbuf := make([]byte, 0)
 	for {
 		n, err := conn.Read(readbuf[0:])
 		serv.recvvolume += n
 		fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
 
 		if remainn > 0 {
-			tmp := append(remains[0:remainn], readbuf[0:n]...)
-			buf = make([]byte, len(tmp))
-			copy(buf, tmp)
-			fmt.Println("merge remaining bytes: ", remainn, "[]len ", len(remains), "buf length after merge is", len(buf))
+			tmp := append(remains, readbuf[0:n]...)
+			mergedbuf = make([]byte, len(tmp))
+			copy(mergedbuf, tmp)
+			fmt.Println("merge remaining bytes: ", remainn, "[]len ", len(remains), "buf length after merge is", len(mergedbuf))
 		} else {
-			tmp := append(buf, readbuf[0:n]...)
-			buf = make([]byte, len(tmp))
-			copy(buf, tmp)
-			fmt.Println("there is no remaining bytes, buf length without merging is", len(buf))
+			tmp := append([]byte{}, readbuf[0:n]...)
+			mergedbuf = make([]byte, len(tmp))
+			copy(mergedbuf, tmp)
+			fmt.Println("there is no remaining bytes, buf length without merging is", len(mergedbuf))
 		}
 
-		buff := make([]byte, len(buf))
-		copy(buff, buf) // backup buf
+		buff := make([]byte, n)
+		copy(buff, readbuf[0:n]) // backup buf
 
 
-		result.Write(buf[0:])
+		result.Write(mergedbuf[0:])
 		//readlen = 0
 		if err != nil {
 			if err == io.EOF {
@@ -464,8 +464,8 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			}
 		}
 		remainn = len(buff) - readlen
-		le := len(buff)
-		copy(remains, buff[(le-remainn):])
+		remains = make([]byte, len(buff))
+		copy(remains, buff[readlen:])
 
 		result.Reset()
 	}
