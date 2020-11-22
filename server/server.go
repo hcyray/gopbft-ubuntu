@@ -462,9 +462,16 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 				go serv.handleTransaction(scanner.Bytes()[6:])
 			}
 		}
-		remainn = len(mergedbuf) - readlen
-		remains = make([]byte, remainn)
-		copy(remains, mergedbuf[readlen:])
+		if readlen>20 {
+			remainn = len(mergedbuf) - readlen + 20
+			remains = make([]byte, remainn)
+			copy(remains, mergedbuf[readlen-20:])
+		} else {
+			remainn = len(mergedbuf) - readlen
+			remains = make([]byte, remainn)
+			copy(remains, mergedbuf[readlen:])
+		}
+
 
 		result.Reset()
 	}
@@ -567,8 +574,8 @@ func (serv *Server) handleTransaction(request []byte) {
 		if len(serv.msgbuff.TxPool)==1 {
 			serv.starttime = time.Now()
 		}
-		if len(serv.msgbuff.TxPool)%1==0 {
-			fmt.Println("server receive 1 txs, the last one with timestamp", tx.Timestamp)
+		if len(serv.msgbuff.TxPool)%100==0 {
+			//fmt.Println("server receive 1 txs, the last one with timestamp", tx.Timestamp)
 			elaps := time.Since(serv.starttime).Milliseconds()
 			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs", "time elapsed: ", elaps, "ms")
 		}
