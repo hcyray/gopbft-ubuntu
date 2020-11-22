@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 	"math/big"
 )
 
@@ -38,6 +39,8 @@ func (a *PariSign) ToString() string {
 func (a *PariSign) ToByteArray() []byte {
 	b1 := a.R.Bytes()
 	b2 := a.S.Bytes()
+	fmt.Println("R bytes:", b1, " length:", len(b1))
+	fmt.Println("S bytes:", b2, " length:", len(b2))
 	b3 := append(b1, b2...)
 	return b3
 }
