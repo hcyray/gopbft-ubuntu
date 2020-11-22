@@ -436,13 +436,13 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			//mergedbuf = make([]byte, len(tmp))
 			//copy(mergedbuf, tmp)
 			mergedbuf = append(remains, readbuf[0:n]...)
-			fmt.Println("merge remaining bytes: ", remainn, "[]len ", len(remains), "buf length after merge is", len(mergedbuf))
+			//fmt.Println("merge remaining bytes: ", remainn, "[]len ", len(remains), "buf length after merge is", len(mergedbuf))
 		} else {
 			//tmp := append([]byte{}, readbuf[0:n]...)
 			//mergedbuf = make([]byte, len(tmp))
 			//copy(mergedbuf, tmp)
 			mergedbuf = append([]byte{}, readbuf[0:n]...)
-			fmt.Println("there is no remaining bytes, buf length without merging is", len(mergedbuf))
+			//fmt.Println("there is no remaining bytes, buf length without merging is", len(mergedbuf))
 		}
 
 		result.Write(mergedbuf[0:])
@@ -574,7 +574,7 @@ func (serv *Server) handleTransaction(request []byte) {
 		if len(serv.msgbuff.TxPool)==1 {
 			serv.starttime = time.Now()
 		}
-		if len(serv.msgbuff.TxPool)%100==0 {
+		if len(serv.msgbuff.TxPool)%1==0 {
 			//fmt.Println("server receive 1 txs, the last one with timestamp", tx.Timestamp)
 			elaps := time.Since(serv.starttime).Milliseconds()
 			fmt.Println("server", serv.id, "has",len(serv.msgbuff.TxPool), "txs", "time elapsed: ", elaps, "ms")
