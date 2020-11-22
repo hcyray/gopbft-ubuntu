@@ -7,6 +7,7 @@ import (
 	"crypto/elliptic"
 	"encoding/binary"
 	"encoding/gob"
+	b64 "encoding/base64"
 	"fmt"
 	"log"
 	"math/rand"
@@ -108,9 +109,11 @@ func (client *Client) Run() {
 	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))
 	//var hval [32]byte
 	startime := time.Now()
-	for i:=0; i<100; i++ {
+	for i:=0; i<10; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
+		bstr := b64.StdEncoding.EncodeToString([]byte(newtx.Source))
+		fmt.Println("base64 string:", bstr)
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
 			if i%10==0 {
