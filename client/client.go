@@ -7,7 +7,7 @@ import (
 	"crypto/elliptic"
 	"encoding/binary"
 	"encoding/gob"
-	b64 "encoding/base64"
+	b64 "encoding/base32"
 	"fmt"
 	"log"
 	"math/rand"
