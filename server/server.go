@@ -20,7 +20,8 @@ import (
 
 type Server struct {
 	mu sync.Mutex
-	recvvolume int
+	wrongsigtx int
+	decodeerrortx int
 	starttime time.Time
 
 	id int
@@ -428,7 +429,6 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 		if n==0 {
 			continue
 		}
-		serv.recvvolume += n
 		//fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
 
 		if remainn > 0 {
@@ -545,6 +545,10 @@ func (serv *Server) handleTransaction(request []byte) {
 	err := dec.Decode(&tx)
 	if err != nil {
 		//fmt.Println("tx decoding error")
+		serv.decodeerrortx += 1
+		if serv.decodeerrortx%100==0 {
+			fmt.Println("server", serv.id, "decoding tx error:", serv.decodeerrortx)
+		}
 		return
 	}
 	serv.msgbuff.Msgbuffmu.Lock()
@@ -568,7 +572,11 @@ func (serv *Server) handleTransaction(request []byte) {
 		}
 		serv.msgbuff.Msgbuffmu.Unlock()
 	} else {
-		fmt.Println("server receives a tx, but the signature is wrong")
+		serv.wrongsigtx += 1
+		if serv.wrongsigtx%100==0 {
+			fmt.Println("server", serv.id, "wrong signature tx:", serv.wrongsigtx)
+		}
+
 	}
 
 
