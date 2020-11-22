@@ -22,6 +22,7 @@ type Server struct {
 	mu sync.Mutex
 	decoderrortx int
 	sigwrongtx int
+	repeattx int
 	starttime time.Time
 
 	id int
@@ -552,7 +553,10 @@ func (serv *Server) handleTransaction(request []byte) {
 	}
 	serv.msgbuff.Msgbuffmu.Lock()
 	if _, ok := serv.msgbuff.TxPool[tx.GetHash()]; ok {
-		fmt.Println("this tx has been added before")
+		serv.repeattx += 1
+		if serv.repeattx%1000==0 {
+			fmt.Println("server", serv.id, "repeat tx time:", serv.repeattx)
+		}
 		serv.msgbuff.Msgbuffmu.Unlock()
 		return
 	}
