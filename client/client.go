@@ -116,7 +116,7 @@ func (client *Client) Run() {
 			if i%1==0 {
 				//fmt.Println("tx", i, "timestamp is", newtx.Timestamp)
 				elaps := time.Since(startime).Milliseconds()
-				fmt.Println("client sends", i, "txs in", elaps, "ms")
+				fmt.Println("client", client.id, "sends", i, "txs in", elaps, "ms")
 			}
 		}
 		//if i%300==0{
@@ -180,7 +180,7 @@ func (client *Client) sendtooneloop(destid int) {
 						time.Sleep(time.Millisecond * time.Duration(t))
 						break innerloop
 					} else {
-						fmt.Println("client total bytes sent is ", client.sendvolume)
+						fmt.Println("client", client.id, "total bytes sent is ", client.sendvolume)
 					}
 				}
 			}
