@@ -426,7 +426,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 		n, err := conn.Read(readbuf[0:])
 		serv.recvvolume += n
 		fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
-		buf := make([]byte, 0)
+
 		//if remainn > 0 {
 		//	tmp := append(remains[0:remainn], readbuf[0:n]...)
 		//	buf = make([]byte, len(tmp))
@@ -441,9 +441,9 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 
 
 		tmp := append(remains, readbuf[0:n]...)
-		buf = make([]byte, len(tmp))
+		buf := make([]byte, len(tmp))
 		copy(buf, tmp)
-
+		fmt.Println("buf length after merge is", len(buf))
 		result.Write(buf[0:])
 		//readlen = 0
 		if err != nil {
@@ -459,7 +459,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			for scanner.Scan() {
 				//readlen += len(scanner.Bytes())
 				//fmt.Println("recv:", string(scanner.Bytes()[6:]))
-				fmt.Println("processing tx []byte")
+				//fmt.Println("processing tx []byte")
 				go serv.handleTransaction(scanner.Bytes()[6:])
 			}
 		}
