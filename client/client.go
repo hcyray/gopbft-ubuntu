@@ -121,7 +121,7 @@ func (client *Client) Run() {
 		}
 		//val := rand.Intn(2) + 1
 		//val := 10000
-		time.Sleep(time.Millisecond*10)
+		//time.Sleep(time.Millisecond*10)
 	}
 	fmt.Println("client", client.id, "stops")
 }

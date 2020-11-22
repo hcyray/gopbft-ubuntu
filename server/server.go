@@ -418,14 +418,23 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	//fmt.Println("新连接：", conn.RemoteAddr())
 
 	result := bytes.NewBuffer(nil)
-	var buf [9600]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
-
+	var readbuf [9600]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
+	remains := make([]byte, 0)
+	var remainn int
+	var readlen int
 	for {
-		time.Sleep(time.Millisecond * 2)
-		n, err := conn.Read(buf[0:])
+		n, err := conn.Read(readbuf[0:])
 		serv.recvvolume += n
 		fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
-		result.Write(buf[0:n])
+		buf := make([]byte, 0)
+		if remainn > 0 {
+			buf = append(remains[0:remainn], readbuf[0:n]...)
+		} else {
+			buf = append(buf, readbuf[0:n]...)
+		}
+
+		result.Write(buf[0:])
+		readlen = 0
 		if err != nil {
 			if err == io.EOF {
 				continue
@@ -437,11 +446,15 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			scanner := bufio.NewScanner(result)
 			scanner.Split(packetSlitFunc)
 			for scanner.Scan() {
+				readlen += len(scanner.Bytes())
 				//fmt.Println("recv:", string(scanner.Bytes()[6:]))
 				fmt.Println("processing tx []byte")
 				go serv.handleTransaction(scanner.Bytes()[6:])
 			}
 		}
+		remainn = len(buf) - readlen
+		le := len(buf)
+		remains = buf[(le-remainn):le]
 		result.Reset()
 	}
 }
