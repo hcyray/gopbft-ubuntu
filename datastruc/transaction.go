@@ -3,6 +3,7 @@ package datastruc
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/sha256"
 	"encoding/gob"
 	"log"
@@ -41,7 +42,7 @@ func (tx *Transaction) GetHash() [32]byte {
 func (tx Transaction) Serialize() []byte {
 	var encoded bytes.Buffer
 
-	//gob.Register(elliptic.P256())
+	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&encoded)
 	err := enc.Encode(tx)
 	if err != nil {
