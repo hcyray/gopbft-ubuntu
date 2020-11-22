@@ -112,8 +112,8 @@ func (client *Client) Run() {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
 		fmt.Println("analysing the transaction:")
-		fmt.Println("tx source:", newtx.Source)
-		fmt.Println("tx recipient:", newtx.Recipient)
+		fmt.Println("tx source:", newtx.Source, "length:", len(newtx.Source))
+		fmt.Println("tx recipient:", newtx.Recipient, "length", len(newtx.Recipient))
 		fmt.Println("tx sig:", newtx.Sig)
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)

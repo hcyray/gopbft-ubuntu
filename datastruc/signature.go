@@ -8,23 +8,37 @@ import (
 	"math/big"
 )
 
+//type PariSign struct {
+//	R big.Int
+//	S big.Int
+//}
+//
+//func (a *PariSign) Sign(b []byte, prk *ecdsa.PrivateKey) {
+//	a.R = big.Int{}
+//	a.S = big.Int{}
+//	r, s, _ := ecdsa.Sign(rand.Reader, prk, b)
+//	a.R = *r
+//	a.S = *s
+//}
+//
+//func (a *PariSign) Verify(b []byte, puk *ecdsa.PublicKey) bool {
+//	return ecdsa.Verify(puk, b, &(a.R), &(a.S))
+//}
 type PariSign struct {
-	R big.Int
-	S big.Int
+	R *big.Int
+	S *big.Int
 }
 
 func (a *PariSign) Sign(b []byte, prk *ecdsa.PrivateKey) {
-	a.R = big.Int{}
-	a.S = big.Int{}
-	r, s, _ := ecdsa.Sign(rand.Reader, prk, b)
-	a.R = *r
-	a.S = *s
+	a.R = new(big.Int)
+	a.S = new(big.Int)
+	a.R, a.S, _ = ecdsa.Sign(rand.Reader, prk, b)
+
 }
 
 func (a *PariSign) Verify(b []byte, puk *ecdsa.PublicKey) bool {
-	return ecdsa.Verify(puk, b, &(a.R), &(a.S))
+	return ecdsa.Verify(puk, b, a.R, a.S)
 }
-
 
 func EncodePrivate(privateKey *ecdsa.PrivateKey) string {
 	x509Encoded, _ := x509.MarshalECPrivateKey(privateKey)
