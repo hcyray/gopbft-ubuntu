@@ -429,7 +429,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 		buf := make([]byte, 0)
 		if remainn > 0 {
 			buf = append(remains[0:remainn], readbuf[0:n]...)
-			fmt.Println("merge remaining bytes")
+			fmt.Println("merge remaining bytes: ", remainn, "[]len ", len(remains))
 		} else {
 			buf = append(buf, readbuf[0:n]...)
 			fmt.Println("there is no remaining bytes")
