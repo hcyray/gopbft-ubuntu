@@ -171,36 +171,40 @@ func (client *Client) sendloop() {
 
 func (client *Client) sendtooneloop(destid int) {
 	for {
+
 		destip := client.minerIPAddress[destid]
 		conn, err := net.Dial("tcp", destip)
 		if err != nil {
-			log.Panic("connect failed, err : %v\n", err.Error())
-		}
+			fmt.Println("connect failed, err : %v , will retry later\n", err.Error())
+			t := rand.Intn(100)
+			fmt.Println("will re connect soon")
+			time.Sleep(time.Millisecond * time.Duration(t))
+		} else {
 		innerloop:
-		for {
-			select {
-			case datatosend := <-client.sendtxtooneCh[destid]:
-				data := append(datastruc.CommandToBytes(datatosend.MsgType), datatosend.Msg...)
-				l := len(data)
-				magicNum := make([]byte, 4)
-				binary.BigEndian.PutUint32(magicNum, 0x123456)
-				lenNum := make([]byte, 2)
-				binary.BigEndian.PutUint16(lenNum, uint16(l))
-				packetBuf := bytes.NewBuffer(magicNum)
-				packetBuf.Write(lenNum)
-				packetBuf.Write(data)
-				_, err := conn.Write(packetBuf.Bytes())
-				if err != nil {
-					fmt.Printf("write failed , err : %v\n", err)
-					t := rand.Intn(100)
-					fmt.Println("will re connect soon")
-					time.Sleep(time.Millisecond * time.Duration(t))
-					break innerloop
+			for {
+				select {
+				case datatosend := <-client.sendtxtooneCh[destid]:
+					data := append(datastruc.CommandToBytes(datatosend.MsgType), datatosend.Msg...)
+					l := len(data)
+					magicNum := make([]byte, 4)
+					binary.BigEndian.PutUint32(magicNum, 0x123456)
+					lenNum := make([]byte, 2)
+					binary.BigEndian.PutUint16(lenNum, uint16(l))
+					packetBuf := bytes.NewBuffer(magicNum)
+					packetBuf.Write(lenNum)
+					packetBuf.Write(data)
+					_, err := conn.Write(packetBuf.Bytes())
+					if err != nil {
+						fmt.Printf("write failed , err : %v\n", err)
+						t := rand.Intn(100)
+						fmt.Println("will re connect soon")
+						time.Sleep(time.Millisecond * time.Duration(t))
+						break innerloop
+					}
 				}
 			}
 		}
 	}
-
 }
 
 //func (client *Client) sendloop() {
