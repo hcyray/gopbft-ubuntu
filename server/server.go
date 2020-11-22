@@ -420,8 +420,8 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	result := bytes.NewBuffer(nil)
 	var readbuf [9600]byte // 由于 标识数据包长度 的只有两个字节 故数据包最大为 2^16+4(魔数)+2(长度标识)
 	remains := make([]byte, 0)
-	var remainn int
-	var readlen int
+	//var remainn int
+	//var readlen int
 	for {
 		n, err := conn.Read(readbuf[0:])
 		serv.recvvolume += n
@@ -440,12 +440,12 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 		//}
 
 
-		tmp := append(remains[0:remainn], readbuf[0:n]...)
+		tmp := append(remains, readbuf[0:n]...)
 		buf = make([]byte, len(tmp))
 		copy(buf, tmp)
 
 		result.Write(buf[0:])
-		readlen = 0
+		//readlen = 0
 		if err != nil {
 			if err == io.EOF {
 				continue
@@ -457,7 +457,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			scanner := bufio.NewScanner(result)
 			scanner.Split(packetSlitFunc)
 			for scanner.Scan() {
-				readlen += len(scanner.Bytes())
+				//readlen += len(scanner.Bytes())
 				//fmt.Println("recv:", string(scanner.Bytes()[6:]))
 				fmt.Println("processing tx []byte")
 				go serv.handleTransaction(scanner.Bytes()[6:])
