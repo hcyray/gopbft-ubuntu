@@ -425,24 +425,25 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	mergedbuf := make([]byte, 0)
 	for {
 		n, err := conn.Read(readbuf[0:])
+		if n==0 {
+			continue
+		}
 		serv.recvvolume += n
 		fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
 
 		if remainn > 0 {
-			tmp := append(remains, readbuf[0:n]...)
-			mergedbuf = make([]byte, len(tmp))
-			copy(mergedbuf, tmp)
+			//tmp := append(remains, readbuf[0:n]...)
+			//mergedbuf = make([]byte, len(tmp))
+			//copy(mergedbuf, tmp)
+			mergedbuf = append(remains, readbuf[0:n]...)
 			fmt.Println("merge remaining bytes: ", remainn, "[]len ", len(remains), "buf length after merge is", len(mergedbuf))
 		} else {
-			tmp := append([]byte{}, readbuf[0:n]...)
-			mergedbuf = make([]byte, len(tmp))
-			copy(mergedbuf, tmp)
+			//tmp := append([]byte{}, readbuf[0:n]...)
+			//mergedbuf = make([]byte, len(tmp))
+			//copy(mergedbuf, tmp)
+			mergedbuf = append([]byte{}, readbuf[0:n]...)
 			fmt.Println("there is no remaining bytes, buf length without merging is", len(mergedbuf))
 		}
-
-		//buff := make([]byte, len(mergedbuf))
-		//copy(buff, mergedbuf) // backup buf
-
 
 		result.Write(mergedbuf[0:])
 		readlen = 0
@@ -458,8 +459,6 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			scanner.Split(packetSlitFunc)
 			for scanner.Scan() {
 				readlen += len(scanner.Bytes())
-				//fmt.Println("recv:", string(scanner.Bytes()[6:]))
-				//fmt.Println("processing tx []byte")
 				go serv.handleTransaction(scanner.Bytes()[6:])
 			}
 		}
