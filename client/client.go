@@ -115,8 +115,8 @@ func (client *Client) Run() {
 		fmt.Println("tx source:", newtx.Source, "length:", len(newtx.Source))
 		fmt.Println("tx recipient:", newtx.Recipient, "length", len(newtx.Recipient))
 		fmt.Println("tx sig:", newtx.Sig)
-		fmt.Println("tx sig string:", newtx.Sig.ToString(), "length", len(newtx.Sig.ToString()))
-		fmt.Println("tx sig bytes:", newtx.Sig.ToByteArray(), "length", len(newtx.Sig.ToByteArray()))
+		//fmt.Println("tx sig string:", newtx.Sig.ToString(), "length", len(newtx.Sig.ToString()))
+		//fmt.Println("tx sig bytes:", newtx.Sig.ToByteArray(), "length", len(newtx.Sig.ToByteArray()))
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
 			if i%1000==0 {

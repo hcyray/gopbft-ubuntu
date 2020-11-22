@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	"math/big"
 )
 
@@ -26,34 +25,41 @@ import (
 //	return ecdsa.Verify(puk, b, &(a.R), &(a.S))
 //}
 type PariSign struct {
-	R *big.Int
-	S *big.Int
+	R []byte
+	S []byte
 }
 
-func (a *PariSign) ToString() string {
-	s1 := a.R.String()
-	s2 := a.S.String()
-	return s1+s2
-}
-
-func (a *PariSign) ToByteArray() []byte {
-	b1 := a.R.Bytes()
-	b2 := a.S.Bytes()
-	fmt.Println("R bytes:", b1, " length:", len(b1))
-	fmt.Println("S bytes:", b2, " length:", len(b2))
-	b3 := append(b1, b2...)
-	return b3
-}
+//func (a *PariSign) ToString() string {
+//	s1 := a.R.String()
+//	s2 := a.S.String()
+//	return s1+s2
+//}
+//
+//func (a *PariSign) ToByteArray() []byte {
+//	b1 := a.R.Bytes()
+//	b2 := a.S.Bytes()
+//	fmt.Println("R bytes:", b1, " length:", len(b1))
+//	fmt.Println("S bytes:", b2, " length:", len(b2))
+//	b3 := append(b1, b2...)
+//	return b3
+//}
 
 func (a *PariSign) Sign(b []byte, prk *ecdsa.PrivateKey) {
-	a.R = new(big.Int)
-	a.S = new(big.Int)
-	a.R, a.S, _ = ecdsa.Sign(rand.Reader, prk, b)
 
+	r, s, _ := ecdsa.Sign(rand.Reader, prk, b)
+	a.R = make([]byte, len(r.Bytes()))
+	a.S = make([]byte, len(s.Bytes()))
+	copy(a.R, r.Bytes())
+	copy(a.S, s.Bytes())
 }
 
 func (a *PariSign) Verify(b []byte, puk *ecdsa.PublicKey) bool {
-	return ecdsa.Verify(puk, b, a.R, a.S)
+	r := new(big.Int)
+	s := new(big.Int)
+	r.SetBytes(a.R)
+	s.SetBytes(a.S)
+
+	return ecdsa.Verify(puk, b, r, s)
 }
 
 func EncodePrivate(privateKey *ecdsa.PrivateKey) string {
