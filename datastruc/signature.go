@@ -29,6 +29,12 @@ type PariSign struct {
 	S *big.Int
 }
 
+func (a *PariSign) ToString() string {
+	s1 := a.R.String()
+	s2 := a.S.String()
+	return s1+s2
+}
+
 func (a *PariSign) Sign(b []byte, prk *ecdsa.PrivateKey) {
 	a.R = new(big.Int)
 	a.S = new(big.Int)
