@@ -434,6 +434,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 			scanner.Split(packetSlitFunc)
 			for scanner.Scan() {
 				//fmt.Println("recv:", string(scanner.Bytes()[6:]))
+				fmt.Println("processing tx []byte")
 				go serv.handleTransaction(scanner.Bytes()[6:])
 			}
 		}
