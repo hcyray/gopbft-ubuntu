@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
+	"crypto/sha256"
 	"encoding/binary"
 	"encoding/gob"
 	b64 "encoding/base32"
@@ -112,7 +113,8 @@ func (client *Client) Run() {
 	for i:=0; i<10; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
-		bstr := b64.StdEncoding.EncodeToString([]byte(newtx.Source))
+		hv := sha256.Sum256([]byte(newtx.Source))
+		bstr := b64.StdEncoding.EncodeToString(hv[:])
 		fmt.Println("base64 string:", bstr)
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
