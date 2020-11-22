@@ -462,16 +462,18 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 				go serv.handleTransaction(scanner.Bytes()[6:])
 			}
 		}
-		if readlen>20 {
-			remainn = len(mergedbuf) - readlen + 20
-			remains = make([]byte, remainn)
-			copy(remains, mergedbuf[readlen-20:])
-		} else {
-			remainn = len(mergedbuf) - readlen
-			remains = make([]byte, remainn)
-			copy(remains, mergedbuf[readlen:])
-		}
-
+		//if readlen>20 {
+		//	remainn = len(mergedbuf) - readlen + 20
+		//	remains = make([]byte, remainn)
+		//	copy(remains, mergedbuf[readlen-20:])
+		//} else {
+		//	remainn = len(mergedbuf) - readlen
+		//	remains = make([]byte, remainn)
+		//	copy(remains, mergedbuf[readlen:])
+		//}
+		remainn = len(mergedbuf) - readlen
+		remains = make([]byte, remainn)
+		copy(remains, mergedbuf[readlen:])
 
 		result.Reset()
 	}
