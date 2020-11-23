@@ -3,6 +3,7 @@ package datastruc
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/sha256"
 	"encoding/gob"
 	"log"
@@ -98,19 +99,20 @@ func (jtx *JoinTx) GetHash() [32]byte {
 func (ltx *LeaveTx) GetHash() [32]byte {
 	var res [32]byte
 
-	lltx := LeaveTx{}
-	lltx.Id = ltx.Id
-	lltx.IpAddr = ltx.IpAddr
-	lltx.Pubkey = ""
-	lltx.Sig = PariSign{}
-
-	var buff bytes.Buffer
-	enc := gob.NewEncoder(&buff)
-	err := enc.Encode(lltx)
-	if err!=nil {
-		log.Panic(err)
-	}
-	content := buff.Bytes()
+	//lltx := LeaveTx{}
+	//lltx.Id = ltx.Id
+	//lltx.IpAddr = ltx.IpAddr
+	//lltx.Pubkey = ""
+	//lltx.Sig = PariSign{}
+	//var buff bytes.Buffer
+	//gob.Register(elliptic.P256())
+	//enc := gob.NewEncoder(&buff)
+	//err := enc.Encode(lltx)
+	//if err!=nil {
+	//	log.Panic(err)
+	//}
+	//content := buff.Bytes()
+	content := ltx.Serial()
 	//le := len(content)
 	//fmt.Println("leave-tx content has length", le, "content head:", content[0:12], "content tail:", content[le-10:le-1])
 	res = sha256.Sum256(content)
@@ -128,6 +130,7 @@ func (ltx *LeaveTx) Serial() []byte {
 	lltx.Sig = PariSign{}
 
 	var buff bytes.Buffer
+	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(lltx)
 	if err!=nil {
