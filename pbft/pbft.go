@@ -179,7 +179,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 		fmt.Println("instance", pbft.Id, "will leave the system after a while")
 	} // 机制2测试
 
-	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey)
+	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey, clientpubkeystr)
 
 	return pbft
 }

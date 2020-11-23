@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/sha256"
+	b64 "encoding/base32"
 	"encoding/gob"
 	"fmt"
 	"log"
@@ -54,6 +55,7 @@ type CDEdata struct {
 
 	Pubkeystr string
 	Prvkey *ecdsa.PrivateKey
+	Clientacctopuk map[string]string
 }
 
 type CDEPureDelayData struct {
@@ -65,7 +67,7 @@ type CDEPureDelayData struct {
 
 func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp, broadCh chan Datatosend, recvtestch chan DataReceived,
 	recvresponsech chan DataReceived, RecvInformTestCh chan RequestTestMsg, recvsinglemeasurementCh chan SingleMeasurementAToB,
-	pubkeystr string, prvkey *ecdsa.PrivateKey) *CDEdata {
+	pubkeystr string, prvkey *ecdsa.PrivateKey, clientpubkeystr map[int]string) *CDEdata {
 	cde := &CDEdata{}
 
 	cde.Id = id
@@ -110,6 +112,11 @@ func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp,
 
 	cde.Pubkeystr = pubkeystr
 	cde.Prvkey = prvkey
+	for _,v := range clientpubkeystr {
+		hv := sha256.Sum256([]byte(v))
+		acc := b64.StdEncoding.EncodeToString(hv[:])
+		cde.Clientacctopuk[acc] = v
+	}
 
 	return cde
 }
@@ -151,7 +158,7 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 	// validate txlist, it may took some time
 	reslist := make([]bool, 0)
 	for _, tx := range proposetestmsg.TxBatch {
-		reslist = append(reslist, tx.Verify())
+		reslist = append(reslist, tx.Verify(cdedata.Clientacctopuk[tx.Source]))
 	}
 
 	pprmsg := NewProposeResponseWithValidateMsg(cdedata.Id, proposetestmsg.Round, proposetestmsg.Challange, reslist, proposetestmsg.TxBatch)
