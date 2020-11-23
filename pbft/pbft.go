@@ -208,7 +208,7 @@ func (pbft *PBFT) initializeAccountBalance(clientpubkeystr map[int]string) {
 		acc := b64.StdEncoding.EncodeToString(hv[:])
 		pbft.clientaccount[k] = acc
 	}
-	for _, v := range clientpubkeystr {
+	for _, v := range pbft.clientaccount {
 		pbft.accountbalance[v] = 10
 	}
 }

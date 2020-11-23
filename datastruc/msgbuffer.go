@@ -47,6 +47,7 @@ func (msgbuf *MessageBuffer) Initialize() {
 	msgbuf.CommitVote = make(map[Term]map[int][]CommitMsg)
 	msgbuf.Vcmsg = make(map[Term][]ViewChangeMsg)
 	msgbuf.AccountBalance = make(map[string]int)
+
 	msgbuf.MeasurementResPool = make(map[[32]byte]MeasurementResultMsg)
 }
 
