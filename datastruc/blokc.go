@@ -138,7 +138,7 @@ func (block *Block) fetchTransactionForBlock(txpool *[]Transaction) {
 
 func (block *Block) IncludeTheTx(thetx *Transaction) bool {
 	for _, tx := range block.TransactionList {
-		if TwoHashEqual(thetx.ID, tx.ID) {
+		if TwoHashEqual(thetx.GetHash(), tx.GetHash()) {
 			return true
 		}
 	}
@@ -182,7 +182,8 @@ func GenTxMerkTree(d *[]Transaction, out *[32]byte) error {
 		return nil
 	}
 	if len(*d) == 1 {
-		tmp := (*d)[0].ID[:]
+		id := (*d)[0].GetHash()
+		tmp := id[:]
 		SingleHash256(&tmp, out)
 	} else {
 		l := len(*d)
