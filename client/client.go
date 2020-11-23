@@ -15,6 +15,7 @@ import (
 	"net"
 	"os"
 	"time"
+	"unsafe"
 )
 
 type ClienKeys struct {
@@ -113,12 +114,17 @@ func (client *Client) Run() {
 	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))
 	//var hval [32]byte
 	startime := time.Now()
-	for i:=0; i<10000; i++ {
+	for i:=0; i<4; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodeaccountstr, client.nodePrvKey)
-		hv := sha256.Sum256([]byte(newtx.Source))
-		bstr := b64.StdEncoding.EncodeToString(hv[:])
-		fmt.Println("base64 string:", bstr)
+		fmt.Println("analysing tx:")
+		fmt.Println("tx kind", newtx.Kind, "length:", len(newtx.Kind))
+		fmt.Println("tx timestamp", newtx.Timestamp, "length:", unsafe.Sizeof(newtx.Timestamp))
+		fmt.Println("tx source", newtx.Source, "length:", len(newtx.Source))
+		fmt.Println("tx recipient", newtx.Recipient, "length:", len(newtx.Recipient))
+		fmt.Println("tx value", newtx.Value, "length:", unsafe.Sizeof(newtx.Value))
+		fmt.Println("tx sig", newtx.Sig, "length:", unsafe.Sizeof(newtx.Sig))
+		
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
 			if i%10==0 {
