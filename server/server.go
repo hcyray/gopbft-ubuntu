@@ -516,6 +516,7 @@ func (serv *Server) handleLeaveTx(conten []byte) {
 
 
 	if !leavetx.Verify() {
+		fmt.Println("**** server", serv.id, "receives an unvalid leave-tx, its content", conten)
 		fmt.Println("**** server", serv.id, "receives an unvalid leave-tx, its content", leavetx.Serial(), "  its hash", leavetx.GetHash(), " its id ", leavetx.Id, " its ip addr ", leavetx.IpAddr, " its pubkey ", leavetx.Pubkey, " its sig ", leavetx.Sig)
 		return
 	} else {
