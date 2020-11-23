@@ -210,7 +210,7 @@ func (client *Client) BroadcastMintedTransaction(newTransaction datastruc.Transa
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	fmt.Println("the tx has size:", len(content))
+	//fmt.Println("the tx has size:", len(content))
 	datatosend := datastruc.Datatosend{dest, "mintedtx", content}
 	client.sendtxCh <- datatosend
 }
