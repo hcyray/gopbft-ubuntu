@@ -8,6 +8,7 @@ import (
 	"crypto/elliptic"
 	crand "crypto/rand"
 	"crypto/sha256"
+	b64 "encoding/base32"
 	"encoding/gob"
 	"fmt"
 	"log"
@@ -203,7 +204,9 @@ func (pbft *PBFT) initializeMapChan() {
 
 func (pbft *PBFT) initializeAccountBalance(clientpubkeystr map[int]string) {
 	for k,v := range clientpubkeystr {
-		pbft.clientaccount[k] = v
+		hv := sha256.Sum256([]byte(v))
+		acc := b64.StdEncoding.EncodeToString(hv[:])
+		pbft.clientaccount[k] = acc
 	}
 	for _, v := range clientpubkeystr {
 		pbft.accountbalance[v] = 10

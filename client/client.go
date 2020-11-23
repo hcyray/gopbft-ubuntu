@@ -34,6 +34,7 @@ type Client struct {
 	nodePrvKey *ecdsa.PrivateKey
 	nodePubkeystr string
 	nodePrvkeystr string
+	nodeaccountstr string // a base64 string
 
 	sendvolume int
 }
@@ -98,6 +99,8 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []
 	client.nodePubKey = publicKey
 	client.nodePrvkeystr = datastruc.EncodePrivate(privateKey)
 	client.nodePubkeystr = datastruc.EncodePublic(publicKey)
+	hv := sha256.Sum256([]byte(client.nodePubkeystr))
+	client.nodeaccountstr = b64.StdEncoding.EncodeToString(hv[:])
 	//fmt.Println("client", client.id, "privatekey is", client.nodePrvKey)
 	fmt.Println("client", client.id, "pubkey string is", client.nodePubkeystr)
 	return client
@@ -112,7 +115,7 @@ func (client *Client) Run() {
 	startime := time.Now()
 	for i:=0; i<10; i++ {
 		rannum := rand.Uint64()
-		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodePubkeystr, client.nodePrvKey)
+		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodeaccountstr, client.nodePrvKey)
 		hv := sha256.Sum256([]byte(newtx.Source))
 		bstr := b64.StdEncoding.EncodeToString(hv[:])
 		fmt.Println("base64 string:", bstr)

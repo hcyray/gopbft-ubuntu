@@ -13,7 +13,6 @@ import (
 type Transaction struct {
 	Kind string
 	Timestamp uint64
-	//ID   [32]byte
 	Source string
 	Recipient string
 	Value int
@@ -26,14 +25,12 @@ type TXSet struct {
 
 func (tx *Transaction) GetHash() [32]byte {
 	var hash [32]byte
-	//txCopy := *tx
 	var txCopy Transaction
 	txCopy.Kind = tx.Kind
 	txCopy.Timestamp = tx.Timestamp
 	txCopy.Source = tx.Source
 	txCopy.Recipient = tx.Recipient
 	txCopy.Value = tx.Value
-	//txCopy.ID = [32]byte{}
 
 	hash = sha256.Sum256(txCopy.Serialize())
 	return hash
@@ -71,9 +68,9 @@ func (tx *Transaction) Sign(privkey *ecdsa.PrivateKey) {
 	tx.Sig.Sign(datatosign[:], privkey)
 }
 
-func (tx *Transaction) Verify() bool {
+func (tx *Transaction) Verify(pukstr string) bool {
 	if tx.IsMint() {
-		publickey := DecodePublic(tx.Source)
+		publickey := DecodePublic(pukstr)
 		datatoverify := tx.GetHash()
 		if !tx.Sig.Verify(datatoverify[:], publickey) {
 			return false
