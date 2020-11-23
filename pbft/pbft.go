@@ -355,8 +355,9 @@ func (pbft *PBFT) Run() {
 					var blockhash [32]byte
 					tmpres := pbft.MsgBuff.ConfigTxIsEmpty()
 					if tmpres=="bothempty" {
-						fmt.Println("leader", pbft.Id, "has", len(pbft.MsgBuff.TxPool), "txs in its buffer, packing tx-block")
+
 						thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+						fmt.Println("leader", pbft.Id, "has", len(pbft.MsgBuff.TxPool), "txs in its buffer, packing tx-block, reading tx number:", len(thetxpool))
 						themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
 						bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
 							pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
