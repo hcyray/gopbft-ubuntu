@@ -328,9 +328,7 @@ func (pbft *PBFT) Run() {
 	for {
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=16 {
 			// todo, wants to leave, mechanism 2
-			for i:=0; i<10; i++ {
-				pbft.broadcastLeavingTx()
-			}
+			pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
 			pbft.leaverequeststarttime = time.Now()
 		}
