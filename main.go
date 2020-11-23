@@ -142,6 +142,6 @@ func main() {
 		}
 	}
 
-	time.Sleep(time.Second * 30)
+	time.Sleep(time.Second * 40)
 	fmt.Println("main thread completes")
 }
