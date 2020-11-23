@@ -112,6 +112,7 @@ func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp,
 
 	cde.Pubkeystr = pubkeystr
 	cde.Prvkey = prvkey
+	cde.Clientacctopuk = make(map[string]string)
 	for _,v := range clientpubkeystr {
 		hv := sha256.Sum256([]byte(v))
 		acc := b64.StdEncoding.EncodeToString(hv[:])
