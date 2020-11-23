@@ -1133,6 +1133,7 @@ func (pbft *PBFT) broadcastLeavingTx() {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
+	fmt.Println("***** instance", pbft.Id, "sends the original leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
 
 	pbft.MsgBuff.Msgbuffmu.Lock()
 	pbft.MsgBuff.JoinLeavetxSet.LTxSet = append(pbft.MsgBuff.JoinLeavetxSet.LTxSet, ltx)
