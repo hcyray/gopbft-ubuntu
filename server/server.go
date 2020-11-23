@@ -508,6 +508,7 @@ func (serv *Server) handleLeaveTx(conten []byte) {
 	var buff bytes.Buffer
 	var leavetx datastruc.LeaveTx
 	buff.Write(conten)
+	gob.Register(elliptic.P256())
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(&leavetx)
 	if err != nil {
