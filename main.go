@@ -77,7 +77,7 @@ func ReadClientKeys(fn string)  client.ClienKeys {
 }
 
 func main() {
-	fmt.Println("backup this version!!")
+	fmt.Println("compact tx, backup this version!!")
 	fmt.Println("Get the cluster IPs from", os.Args[1])
 	fmt.Println("Get client keys from", os.Args[2])
 	localip := GetOutboundIP().String()

@@ -124,7 +124,7 @@ func (client *Client) Run() {
 		fmt.Println("tx recipient", newtx.Recipient, "length:", len(newtx.Recipient))
 		fmt.Println("tx value", newtx.Value, "length:", unsafe.Sizeof(newtx.Value))
 		fmt.Println("tx sig", newtx.Sig, "length:", unsafe.Sizeof(newtx.Sig))
-		
+
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
 			if i%10==0 {
