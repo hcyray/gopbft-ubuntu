@@ -13,7 +13,7 @@ import (
 type Transaction struct {
 	Kind string
 	Timestamp uint64
-	ID   [32]byte
+	//ID   [32]byte
 	Source string
 	Recipient string
 	Value int
@@ -33,7 +33,7 @@ func (tx *Transaction) GetHash() [32]byte {
 	txCopy.Source = tx.Source
 	txCopy.Recipient = tx.Recipient
 	txCopy.Value = tx.Value
-	txCopy.ID = [32]byte{}
+	//txCopy.ID = [32]byte{}
 
 	hash = sha256.Sum256(txCopy.Serialize())
 	return hash
@@ -60,8 +60,8 @@ func (tx Transaction) IsMint() bool {
 func MintNewTransaction(rannum uint64, pubkeystr string, privkey *ecdsa.PrivateKey) (bool, Transaction) {
 
 	thetimestamp := uint64(time.Now().Unix()) + rannum
-	tx := Transaction{"mint", thetimestamp, [32]byte{}, pubkeystr, pubkeystr, 5, PariSign{}}
-	tx.ID = tx.GetHash()
+	tx := Transaction{"mint", thetimestamp, pubkeystr, pubkeystr, 5, PariSign{}}
+	//tx.ID = tx.GetHash()
 	tx.Sign(privkey)
 	return true, tx
 }
