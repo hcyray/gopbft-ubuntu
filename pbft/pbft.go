@@ -320,7 +320,7 @@ func (pbft *PBFT) Run() {
 	pbft.starttime = time.Now()
 	//go pbft.statetransfermonitor()
 	go pbft.computeTps()
-	//go pbft.delaySelfMonitor()
+	go pbft.delaySelfMonitor()
 	go pbft.censorshipmonitor()
 
 
@@ -978,9 +978,9 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			//if pbft.Id==0 {
 			//	fmt.Println("consensus delay when instance", pbft.Id, "as leader is", consensusdelay)
 			//}
-			//if pbft.Id==0 {
-			//	pbft.cdedata.PrintResult()
-			//}
+			if pbft.Id==0 {
+				pbft.cdedata.PrintResult()
+			}
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 			commqc := datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, pbft.currentHeight, pbft.quorumsize)}
 			pbft.cachedb.UpdateAfterCommit(pbft.currentHeight, pbft.curblock, pbft.accountbalance, commqc)
@@ -1445,7 +1445,8 @@ func (pbft *PBFT) delaySelfMonitor() {
 	go pbft.cdedata.CDETestMonitor()
 
 	for {
-		if pbft.cdedata.Round >= 100 {
+		if pbft.cdedata.Round >= 1 {
+			fmt.Println("instance", pbft.Id, "finish all predefined delay data shares")
 			break
 		}
 		// sleep random time, then invoke delay data update process
