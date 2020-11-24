@@ -23,8 +23,9 @@ type JoinTx struct {
 type LeaveTx struct {
 	Id int
 	IpAddr string
-	Pubkey string
+	TxHash [32]byte
 
+	Pubkey string
 	Sig PariSign
 }
 
@@ -51,8 +52,8 @@ func NewLeaveTx(id int, ipaddr string, pubkey string, prvkey *ecdsa.PrivateKey) 
 	ltx := LeaveTx{}
 	ltx.Id = id
 	ltx.IpAddr = ipaddr
-
-	datatosign := ltx.GetHash()
+	ltx.TxHash = sha256.Sum256(ltx.Serial())
+	datatosign := ltx.TxHash
 	ltx.Sig.Sign(datatosign[:], prvkey)
 	ltx.Pubkey = pubkey
 	return ltx
@@ -102,6 +103,7 @@ func (ltx *LeaveTx) GetHash() [32]byte {
 	//lltx := LeaveTx{}
 	//lltx.Id = ltx.Id
 	//lltx.IpAddr = ltx.IpAddr
+	//lltx.TxHash = [32]byte{}
 	//lltx.Pubkey = ""
 	//lltx.Sig = PariSign{}
 	//var buff bytes.Buffer
@@ -112,13 +114,14 @@ func (ltx *LeaveTx) GetHash() [32]byte {
 	//	log.Panic(err)
 	//}
 	//content := buff.Bytes()
-	content := ltx.Serial()
+	//res = sha256.Sum256(content)
+	res = ltx.TxHash
+	return res
+
+
 	//le := len(content)
 	//fmt.Println("leave-tx content has length", le, "content head:", content[0:12], "content tail:", content[le-10:le-1])
-	res = sha256.Sum256(content)
 	//fmt.Println("leave-tx hash is ", res)
-
-	return res
 }
 
 func (ltx *LeaveTx) Serial() []byte {
