@@ -560,7 +560,7 @@ func (serv *Server) handleTransaction(request []byte) {
 	err := dec.Decode(&tx)
 	if err != nil {
 		serv.decoderrortx += 1
-		if serv.decoderrortx%100==0 {
+		if serv.decoderrortx%1000==0 {
 			fmt.Println("server", serv.id, "tx decoding error time:", serv.decoderrortx)
 		}
 		return
@@ -590,7 +590,7 @@ func (serv *Server) handleTransaction(request []byte) {
 		serv.msgbuff.Msgbuffmu.Unlock()
 	} else {
 		serv.sigwrongtx += 1
-		if serv.sigwrongtx%1==0 {
+		if serv.sigwrongtx%1000==0 {
 			fmt.Println("server", serv.id, "receives a tx with wrong signature time:", serv.sigwrongtx)
 		}
 	}
