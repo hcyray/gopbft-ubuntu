@@ -618,9 +618,9 @@ func (pbft *PBFT) UpdateByzantineIdentity() {
 	//if pbft.Id>=start && pbft.Id<start+pbft.fmax {
 	//	pbft.isbyzantine = true
 	//}
-	if pbft.Id==2 {
-		pbft.isbyzantine = true
-	}
+	//if pbft.Id==2 {
+	//	pbft.isbyzantine = true
+	//}
 }
 
 func (pbft *PBFT) UpdateQuorumSize(n int) {
