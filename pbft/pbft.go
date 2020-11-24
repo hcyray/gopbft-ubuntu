@@ -1452,32 +1452,27 @@ func (pbft *PBFT) delaySelfMonitor() {
 		// sleep random time, then invoke delay data update process
 		ra := rand.Intn(4000)
 		time.Sleep(time.Millisecond * time.Duration(4000+ra))
-
-		fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round)
-		// update measurement
-		cdedatap := pbft.cdedata
-		thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
-		delayv := pbft.cdedata.CreateDelayVector(thetxs)
-		fmt.Println("instance", delayv.Tester, "peers: ", delayv.Peers)
-		var mrmsg datastruc.MeasurementResultMsg
-		closech := make(chan bool)
-		pbft.cdedata.Recvmu.Lock()
-		go pbft.cdedata.CDEResponseMonitor(closech)
-		if cdedatap.Round%1==0 && !pbft.isleader {
+		if !pbft.isleader {
+			fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round)
+			// update measurement
+			cdedatap := pbft.cdedata
+			thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+			delayv := pbft.cdedata.CreateDelayVector(thetxs)
+			fmt.Println("instance", delayv.Tester, "peers: ", delayv.Peers)
+			var mrmsg datastruc.MeasurementResultMsg
+			closech := make(chan bool)
+			pbft.cdedata.Recvmu.Lock()
+			go pbft.cdedata.CDEResponseMonitor(closech)
 			delayv.Update("both")
 			mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
-		} else {
-			// this will not execute, i. e., always update both delays
-			delayv.Update("write")
-			// copy propose-delay and validate-delay
-			mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, false, cdedatap.Pubkeystr, cdedatap.Prvkey)
+
+			closech<-true
+			pbft.cdedata.Recvmu.Unlock()
+			// broadcast most recent measurement
+			pbft.broadcastMeasurementResult(mrmsg)
+			fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes")
+			pbft.cdedata.Round += 1
 		}
-		closech<-true
-		pbft.cdedata.Recvmu.Unlock()
-		// broadcast most recent measurement
-		pbft.broadcastMeasurementResult(mrmsg)
-		fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes")
-		pbft.cdedata.Round += 1
 	}
 }
 
