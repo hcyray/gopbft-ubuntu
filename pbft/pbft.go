@@ -165,7 +165,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.initializeMapChan()
 	pbft.initializeAccountBalance(clientpubkeystr)
 	pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
-	//pbft.UpdateByzantineIdentity()
+	pbft.UpdateByzantineIdentity()
 	if pbft.isbyzantine {
 		fmt.Println("instance", pbft.Id, "is a byzantine guy")
 	}
@@ -613,12 +613,15 @@ func (pbft *PBFT) statetransfermonitor() {
 	}
 }
 
-//func (pbft *PBFT) UpdateByzantineIdentity() {
-//	start := 2
-//	if pbft.Id>=start && pbft.Id<start+pbft.fmax {
-//		pbft.isbyzantine = true
-//	}
-//}
+func (pbft *PBFT) UpdateByzantineIdentity() {
+	//start := 2
+	//if pbft.Id>=start && pbft.Id<start+pbft.fmax {
+	//	pbft.isbyzantine = true
+	//}
+	if pbft.Id==2 {
+		pbft.isbyzantine = true
+	}
+}
 
 func (pbft *PBFT) UpdateQuorumSize(n int) {
 	x := float64(n-1)
