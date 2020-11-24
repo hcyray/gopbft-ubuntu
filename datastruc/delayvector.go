@@ -80,22 +80,22 @@ func (delayv *DelayVector) Update(testop string) {
 	if testop=="both" {
 		delayv.UpdateWrite()
 		delayv.UpdatePropose()
-		if delayv.Tester==0 {
-			fmt.Println("propose-delay and validate-delay measurement result----------------------------------------")
-			delayv.PrintResult()
-		}
+		//if delayv.Tester==0 {
+		//	fmt.Println("propose-delay and validate-delay measurement result----------------------------------------")
+		//	delayv.PrintResult()
+		//}
 	} else if testop=="write" {
 		delayv.UpdateWrite()
-		if delayv.Tester==0 {
-			fmt.Println("write-delay measurement result----------------------------------------")
-			delayv.PrintResult()
-		}
+		//if delayv.Tester==0 {
+		//	fmt.Println("write-delay measurement result----------------------------------------")
+		//	delayv.PrintResult()
+		//}
 	} else if testop=="propose" {
 		delayv.UpdatePropose()
-		if delayv.Tester==0 {
-			fmt.Println("propose-delay and validate-delay measurement result----------------------------------------")
-			delayv.PrintResult()
-		}
+		//if delayv.Tester==0 {
+		//	fmt.Println("propose-delay and validate-delay measurement result----------------------------------------")
+		//	delayv.PrintResult()
+		//}
 	} else {
 		log.Panic("wrong option")
 	}
