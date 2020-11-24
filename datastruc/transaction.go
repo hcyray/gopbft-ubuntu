@@ -16,6 +16,7 @@ type Transaction struct {
 	Source string
 	Recipient string
 	Value int
+	TxHash [32]byte
 	Sig PariSign
 }
 
@@ -24,24 +25,22 @@ type TXSet struct {
 }
 
 func (tx *Transaction) GetHash() [32]byte {
-	var hash [32]byte
-	var txCopy Transaction
-	txCopy.Kind = tx.Kind
-	txCopy.Timestamp = tx.Timestamp
-	txCopy.Source = tx.Source
-	txCopy.Recipient = tx.Recipient
-	txCopy.Value = tx.Value
-
-	hash = sha256.Sum256(txCopy.Serialize())
-	return hash
+	return tx.TxHash
 }
 
-func (tx Transaction) Serialize() []byte {
-	var encoded bytes.Buffer
+func (tx *Transaction) Serialize() []byte {
+	txcopy := Transaction{}
+	txcopy.Kind = tx.Kind
+	txcopy.Timestamp = tx.Timestamp
+	txcopy.Source = tx.Source
+	txcopy.Recipient = tx.Recipient
+	txcopy.Value = tx.Value
 
+
+	var encoded bytes.Buffer
 	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&encoded)
-	err := enc.Encode(tx)
+	err := enc.Encode(txcopy)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -54,10 +53,17 @@ func (tx Transaction) IsMint() bool {
 	return res
 }
 
-func MintNewTransaction(rannum uint64, pubkeystr string, privkey *ecdsa.PrivateKey) (bool, Transaction) {
+func MintNewTransaction(rannum uint64, accountstr string, privkey *ecdsa.PrivateKey) (bool, Transaction) {
 
 	thetimestamp := uint64(time.Now().Unix()) + rannum
-	tx := Transaction{"mint", thetimestamp, pubkeystr, pubkeystr, 5, PariSign{}}
+	tx := Transaction{}
+	tx.Kind = "mint"
+	tx.Timestamp = thetimestamp
+	tx.Source = accountstr
+	tx.Recipient = accountstr
+	tx.Value = 5
+	tx.TxHash = sha256.Sum256(tx.Serialize())
+
 	//tx.ID = tx.GetHash()
 	tx.Sign(privkey)
 	return true, tx
