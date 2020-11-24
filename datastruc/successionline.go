@@ -90,19 +90,28 @@ func (sl *SuccLine) ConverToList() []PeerIdentity {
 		p = p.Next
 	}
 
-	sllist = append(sllist)
 	return sllist
 }
 
+//func (sl *SuccLine) ConvertToPeerList() []PeerIdentity {
+//	sllist := []PeerIdentity{}
+//	p := sl.Tail.Next
+//	for i:=0; i<sl.Leng; i++ {
+//		sllist = append(sllist, p.Member)
+//		p = p.Next
+//	}
+//	return sllist
+//}
+
 func (sl *SuccLine) Serialize() []byte {
 	// convert the circle chain to a list
-	sllist := []PeerIdentity{}
-	p := sl.Tail.Next
-	for i:=0; i<sl.Leng; i++ {
-		sllist = append(sllist, p.Member)
-		p = p.Next
-	}
-
+	//sllist := []PeerIdentity{}
+	//p := sl.Tail.Next
+	//for i:=0; i<sl.Leng; i++ {
+	//	sllist = append(sllist, p.Member)
+	//	p = p.Next
+	//}
+	sllist := sl.ConverToList()
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(sllist)

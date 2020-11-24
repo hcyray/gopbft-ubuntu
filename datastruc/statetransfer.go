@@ -24,6 +24,11 @@ type ReplyStateTransMsg struct {
 	Sig PariSign
 }
 
+type ReadConfigRequest struct {
+	Id int
+	IpportAddr string
+}
+
 func NewQueryStateTransfer(id int, height int, pubkey string, prvkey *ecdsa.PrivateKey) QueryStateTransMsg {
 	qstmsg := QueryStateTransMsg{}
 	qstmsg.Id = id
@@ -44,4 +49,11 @@ func NewReplyStateTransfer(height int, balance map[string]int, pubkey string, pr
 	replymsg.Pubkey = pubkey
 	replymsg.Sig.Sign([]byte(datatosign), prvkey)
 	return replymsg
+}
+
+func NewReadConfigRequest(id int, ip string) ReadConfigRequest {
+	rcr := ReadConfigRequest{}
+	rcr.Id = id
+	rcr.IpportAddr = ip
+	return rcr
 }

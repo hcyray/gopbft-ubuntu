@@ -80,6 +80,8 @@ func RecordConfig(sl *SuccLine) {
 }
 
 func ReadConfig() []PeerIdentity {
+	// read from some existing instance
+
 	var conten []byte
 	file, err := os.Open("config")
 	if err!=nil {

@@ -251,19 +251,20 @@ func (pbft *PBFT) InitialSetup() {
 	pbft.persis.blockhashlist[0] = genesisb.GetHash()
 	pbft.cachedb.UpdateFromGenesisb(genesisb)
 	pbft.persis.executedheight[0] = true
-	//datastruc.RecordConfig(pbft.succLine)
+	pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
+
 
 	pbft.status = stat_consensus
 	pbft.status = stat_consensus
 	pbft.currentHeight += 1
 }
 
-func (pbft *PBFT) LateSetup() {
-	time.Sleep(time.Second * 16)
-	fmt.Println("instance", pbft.Id, "initializes setup")
+func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
+	//time.Sleep(time.Second * 16)
+	fmt.Println("instance", pbft.Id, "initializes late setup")
 
 	//build current leader succession line and config
-	pbft.curConfigure = datastruc.ReadConfig() // todo, read config file two times, need improvement
+	pbft.curConfigure = peerlist
 	pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curConfigure)
 	//pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
 
@@ -299,6 +300,7 @@ func (pbft *PBFT) LateSetup() {
 	pbft.persis.accountbalance = thebalance
 
 	// generate a new succession line and config, includes itself
+	pbft.curConfigure = cblock.Bloc.Configure
 	pbft.succLine = datastruc.ConstructSuccessionLine(cblock.Bloc.Configure)
 	pbft.UpdateQuorumSize(pbft.succLine.Leng)
 
@@ -320,7 +322,7 @@ func (pbft *PBFT) Run() {
 	pbft.starttime = time.Now()
 	//go pbft.statetransfermonitor()
 	go pbft.computeTps()
-	//go pbft.delaySelfMonitor()
+	go pbft.delaySelfMonitor()
 	go pbft.censorshipmonitor()
 
 
@@ -1021,7 +1023,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				balancehash := pbft.generateaccountbalancehash()
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
-				//datastruc.RecordConfig(pbft.succLine)
+				pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
 				//pbft.UpdateByzantineIdentity()
 
@@ -1053,7 +1055,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
-				//datastruc.RecordConfig(pbft.succLine)
+				pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
 				//pbft.UpdateByzantineIdentity()
 

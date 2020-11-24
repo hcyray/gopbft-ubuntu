@@ -86,16 +86,9 @@ func (delayv *DelayVector) Update(testop string) {
 		//}
 	} else if testop=="write" {
 		delayv.UpdateWrite()
-		//if delayv.Tester==0 {
-		//	fmt.Println("write-delay measurement result----------------------------------------")
-		//	delayv.PrintResult()
-		//}
+
 	} else if testop=="propose" {
 		delayv.UpdatePropose()
-		//if delayv.Tester==0 {
-		//	fmt.Println("propose-delay and validate-delay measurement result----------------------------------------")
-		//	delayv.PrintResult()
-		//}
 	} else {
 		log.Panic("wrong option")
 	}
@@ -237,14 +230,10 @@ func (delayv *DelayVector) UpdateWriteAtNew() {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-
+	fmt.Println("new instance invoke update-write-at-new, peers:", delayv.Peers, "its own id:", delayv.Tester)
 	datatosend := Datatosend{delayv.Peers, "writetestfromnew", content}
 	delayv.BroadcastCh <- datatosend
 
-	//gotresponse := make(map[int]bool)
-	//for _, v := range delayv.Peers {
-	//	gotresponse[v] = false
-	//}
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
 theloop:
 	for {

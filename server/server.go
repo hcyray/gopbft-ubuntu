@@ -51,6 +51,8 @@ type Server struct {
 
 	RecvInformTestCh chan datastruc.RequestTestMsg
 	recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB
+
+	recvconfigCh chan []byte
 }
 
 func CreateServer(id int, localip string, clientpukstr map[int]string, serverips []string, inseach int) *Server {
@@ -82,17 +84,22 @@ func CreateServer(id int, localip string, clientpukstr map[int]string, serverips
 	return serv
 }
 
-func CreateLateServer(id int, localip string) *Server {
+func CreateLateServer(id int, localip string, clientpukstr map[int]string, initialserverips []string, inseach int) *Server {
 	serv := &Server{}
 
 	serv.id = id
 	serv.ipportaddr = localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
+	//serv.totalserver = len(initialserverips) * inseach // total server does not count itself
 	serv.localallipsforserver = generatelistenserverips(id, localip)
 	serv.localallipsforclient = generatelistenclientips(id, localip)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
 	serv.InitializeMapandChan()
-
+	for _, v := range clientpukstr {
+		hv := sha256.Sum256([]byte(v))
+		acc := b64.StdEncoding.EncodeToString(hv[:])
+		serv.clientacctopukstr[acc] = v
+	}
 	// total number, read from config
 	// memberid, read from config
 	// remoteallips, read from config
@@ -127,21 +134,21 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 	go serv.Run()
 
 	time.Sleep(time.Second * time.Duration(sleeptime))
-	fmt.Println("the late server", serv.id, "reads config:")
-	peerlist := datastruc.ReadConfig()
+	fmt.Println("the late server", serv.id, "reads config from some remote peer:")
+	peerlist := serv.ReadConfigFromRemote()
 	serv.totalserver = len(peerlist)+1
 	for _, v := range peerlist {
 		serv.memberIds = append(serv.memberIds, v.Id)
 		serv.remoteallips[v.Id] = v.IpPortAddr
 	}
 	serv.memberIds = append(serv.memberIds, serv.id)
-	serv.remoteallips[serv.id] = serv.ipportaddr
+	serv.remoteallips[serv.id] = serv.ipportaddr // add itself to members
 	fmt.Println("server", serv.id, "remote all ips:", serv.remoteallips)
-	serv.pbft = pbft.CreatePBFTInstance(serv.id, serv.ipportaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.sendCh, serv.broadcastCh,
-		serv.memberidchangeCh, serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh,
+	serv.pbft = pbft.CreatePBFTInstance(serv.id, serv.ipportaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.sendCh,
+		serv.broadcastCh, serv.memberidchangeCh, serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh,
 		serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh)
 
-	serv.pbft.LateSetup()
+	serv.pbft.LateSetup(peerlist)
 	go serv.pbft.Run()
 }
 
@@ -270,6 +277,10 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 			go serv.handleSingleMeasurement(request[commandLength:])
 		case "informtest":
 			go serv.handleInformTest(request[commandLength:])
+		case "readconfig":
+			go serv.handleReadConfigRequest(request[commandLength:])
+		case "readconfigreply":
+			go serv.handleReadConfigReply(request[commandLength:])
 		}
 	}
 }
@@ -1090,3 +1101,59 @@ func (serv *Server) BlockTxValidate(bloc *datastruc.Block) bool {
 //	wg.Done()
 //}
 
+func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
+	config := []datastruc.PeerIdentity{}
+
+	// send "readconfig" request
+	rcr := datastruc.NewReadConfigRequest(serv.id, serv.localallipsforserver[0])
+	var buff bytes.Buffer
+	enc := gob.NewEncoder(&buff)
+	err := enc.Encode(rcr)
+	if err!=nil {
+		log.Panic("readconfig request encode error")
+	}
+	content := buff.Bytes()
+	datatosend := datastruc.DatatosendWithIp{[]string{serv.remoteallips[0]}, "readconfig", content}
+	serv.sendCh <- datatosend
+
+
+	// block, until receiving "replyconfigreply"
+	conten :=<-serv.recvconfigCh
+	var buf bytes.Buffer
+	buf.Write(conten)
+	dec := gob.NewDecoder(&buf)
+	err = dec.Decode(&config)
+	if err!=nil {
+		fmt.Println("config reply decoding error")
+	}
+	return config
+}
+
+func (serv *Server) handleReadConfigRequest(content []byte) {
+	// decode the request
+	var buff bytes.Buffer
+	var rcr datastruc.ReadConfigRequest
+	buff.Write(content)
+	dec := gob.NewDecoder(&buff)
+	err := dec.Decode(&rcr)
+	if err != nil {
+		fmt.Println("ReadConfigRequest decoding error")
+	}
+
+	// send the reply back
+	config := serv.msgbuff.CurConfig
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err = enc.Encode(config)
+	if err!=nil {
+		log.Panic("readconfig reply encode error")
+	}
+	conten := buff.Bytes()
+	datatosend := datastruc.DatatosendWithIp{[]string{rcr.IpportAddr}, "readconfigreply", conten}
+	serv.sendCh <- datatosend
+
+}
+
+func (serv *Server) handleReadConfigReply(content []byte) {
+	serv.recvconfigCh <- content
+}

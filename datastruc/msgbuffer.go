@@ -34,6 +34,7 @@ type MessageBuffer struct {
 
 	AccountBalance map[string]int
 	MeasurementResPool map[[32]byte]MeasurementResultMsg
+	CurConfig []PeerIdentity
 }
 
 func (msgbuf *MessageBuffer) Initialize() {
@@ -333,6 +334,14 @@ func (msgbuf *MessageBuffer) ConfigTxIsEmpty() string {
 	return res
 }
 
+func (msgbuf *MessageBuffer) UpdateCurConfig(curconfig []PeerIdentity) {
+	msgbuf.Msgbuffmu.Lock()
+	defer msgbuf.Msgbuffmu.Unlock()
+
+	msgbuf.CurConfig = make([]PeerIdentity, len(curconfig))
+	copy(msgbuf.CurConfig, curconfig)
+}
+
 func (msgbuf *MessageBuffer) UpdateBalance(accb map[string]int) {
 	msgbuf.Msgbuffmu.Lock()
 	defer msgbuf.Msgbuffmu.Unlock()
@@ -341,3 +350,4 @@ func (msgbuf *MessageBuffer) UpdateBalance(accb map[string]int) {
 		msgbuf.AccountBalance[k] = v
 	}
 }
+

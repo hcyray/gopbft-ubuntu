@@ -568,7 +568,6 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	closech<-true
 	//fmt.Println("new instance updates write-delay completes-----------------------------------------------------------------------------------------------------")
 
-	fmt.Println("executes here *****************************")
 
 	// for node in system: update node->new one by one
 	go cdedata.CDETestMonitor()
@@ -577,12 +576,10 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	inversewritedelay := make(map[int]int)
 	for _, i := range cdedata.Peers {
 		// inform instance i to test itself
-		singlemmsg := cdedata.InformTestInstance(cdedata.Id, i)
+		singlemmsg := cdedata.InformTestInstance(cdedata.Id, i) // block, until receives the test result with signature
 		inverseproposedelay[i] = singlemmsg.Proposedelay
 		inversevalidatedelay[i] = singlemmsg.Validatedelay
 		inversewritedelay[i] = singlemmsg.Writedelay
-		// block, until receives the test result with signature
-
 	}
 	imrmsg := NewInverseMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, inverseproposedelay,
 		inversevalidatedelay, inversewritedelay, cdedata.Pubkeystr, cdedata.Prvkey)
