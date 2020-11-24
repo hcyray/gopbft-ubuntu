@@ -320,7 +320,7 @@ func (pbft *PBFT) Run() {
 	pbft.starttime = time.Now()
 	//go pbft.statetransfermonitor()
 	go pbft.computeTps()
-	go pbft.delaySelfMonitor()
+	//go pbft.delaySelfMonitor()
 	go pbft.censorshipmonitor()
 
 
