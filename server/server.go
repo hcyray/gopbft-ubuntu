@@ -118,9 +118,9 @@ func (serv *Server) Start() {
 	go serv.Run()
 
 	time.Sleep(time.Second * 1)
-	//serv.pbft.InitialSetup()
-	//time.Sleep(time.Second * 5)
-	//go serv.pbft.Run()
+	serv.pbft.InitialSetup()
+	time.Sleep(time.Second * 5)
+	go serv.pbft.Run()
 }
 
 func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
@@ -517,14 +517,14 @@ func (serv *Server) handleLeaveTx(conten []byte) {
 
 
 	if !leavetx.Verify() {
-		fmt.Println("**** server", serv.id, "receives thecontent", conten)
+		//fmt.Println("**** server", serv.id, "receives thecontent", conten)
 		fmt.Println("**** server", serv.id, "receives leave-tx", leavetx)
-		fmt.Println("**** server", serv.id, "receives an unvalid leave-tx, its content", leavetx.Serial(), "  its hash", leavetx.GetHash(), " its id ", leavetx.Id, " its ip addr ", leavetx.IpAddr, " its pubkey ", leavetx.Pubkey, " its sig ", leavetx.Sig)
+		//fmt.Println("**** server", serv.id, "receives an unvalid leave-tx, its content", leavetx.Serial(), "  its hash", leavetx.GetHash(), " its id ", leavetx.Id, " its ip addr ", leavetx.IpAddr, " its pubkey ", leavetx.Pubkey, " its sig ", leavetx.Sig)
 		return
 	} else {
-		fmt.Println("**** server", serv.id, "receives thecontent", conten)
-		fmt.Println("**** server", serv.id, "receives leave-tx", leavetx)
-		fmt.Println("***** server", serv.id, "receives a valid leave-tx, its content", leavetx.Serial(), "  its hash", leavetx.GetHash(), " its id ", leavetx.Id, " its ip addr ", leavetx.IpAddr, " its pubkey ", leavetx.Pubkey, " its sig ", leavetx.Sig)
+		//fmt.Println("**** server", serv.id, "receives thecontent", conten)
+		//fmt.Println("**** server", serv.id, "receives leave-tx", leavetx)
+		//fmt.Println("***** server", serv.id, "receives a valid leave-tx, its content", leavetx.Serial(), "  its hash", leavetx.GetHash(), " its id ", leavetx.Id, " its ip addr ", leavetx.IpAddr, " its pubkey ", leavetx.Pubkey, " its sig ", leavetx.Sig)
 	}
 
 	serv.msgbuff.Msgbuffmu.Lock()
