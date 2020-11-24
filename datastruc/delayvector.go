@@ -16,6 +16,12 @@ func (cdedata *CDEdata) CreateDelayVector(txbatch []Transaction) *DelayVector {
 	dv.IpAddr = cdedata.IpAddr
 	dv.Round = cdedata.Round
 	dv.Peers = cdedata.Peers
+	dv.Peerexceptme = []int{}
+	for _, id := range dv.Peers {
+		if id!=dv.Tester {
+			dv.Peerexceptme = append(dv.Peerexceptme, id)
+		}
+	}
 
 	dv.ProposeDelaydata = make(map[int]int)
 	dv.WriteDelaydata = make(map[int]int)
@@ -47,6 +53,7 @@ type DelayVector struct
 	Tester int
 	IpAddr string
 	Peers []int
+	Peerexceptme []int
 
 	ProposeDelaydata map[int]int
 	WriteDelaydata map[int]int
@@ -67,16 +74,11 @@ type DelayVector struct
 	RecvWriteResponFromNewCh chan DataReceived
 }
 
-
 func (delayv *DelayVector) Update(testop string) {
 
 	fmt.Println("instance", delayv.Tester, "starts updating", testop, "delay vector at round", delayv.Round)
 	if testop=="both" {
 		delayv.UpdateWrite()
-		//if delayv.Tester==0 {
-		//	fmt.Println("write-delay measurement result----------------------------------------")
-		//	delayv.PrintResult()
-		//}
 		delayv.UpdatePropose()
 		if delayv.Tester==0 {
 			fmt.Println("propose-delay and validate-delay measurement result----------------------------------------")
@@ -97,9 +99,6 @@ func (delayv *DelayVector) Update(testop string) {
 	} else {
 		log.Panic("wrong option")
 	}
-	//if delayv.Tester==0 {
-	//	delayv.PrintResult()
-	//}
 }
 
 func (delayv *DelayVector) UpdateAtNew(testop string) {
@@ -132,7 +131,7 @@ func (delayv *DelayVector) UpdatePropose() {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	datatosend := Datatosend{delayv.Peers, "proposetest", content}
+	datatosend := Datatosend{delayv.Peerexceptme, "proposetest", content}
 	delayv.BroadcastCh <- datatosend // todo, hope this won't block or take too much time
 
 	// wait for reponse
@@ -140,6 +139,8 @@ func (delayv *DelayVector) UpdatePropose() {
 	//for _, v := range delayv.Peers {
 	//	gotresponse[v] = false
 	//}
+	delayv.ProposeDelaydata[delayv.Tester] = 0
+	delayv.ValidationDelaydata[delayv.Tester] = 0
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
 	t1 := make(map[int]int)
 	for _, v := range delayv.Peers {
@@ -198,9 +199,10 @@ func (delayv *DelayVector) UpdateWrite() {
 	}
 	content := buff.Bytes()
 
-	datatosend := Datatosend{delayv.Peers, "writetest", content}
+	datatosend := Datatosend{delayv.Peerexceptme, "writetest", content}
 	delayv.BroadcastCh <- datatosend // todo, hope this won't block or take too much time
 
+	delayv.WriteDelaydata[delayv.Tester] = 0
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
 theloop:
 	for {

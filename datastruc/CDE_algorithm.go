@@ -51,7 +51,7 @@ type CDEdata struct {
 	RecvInformTestCh chan RequestTestMsg
 	RecvSingleMeasurement chan SingleMeasurementAToB
 
-	Recvmu sync.Mutex
+	Recvmu sync.Mutex // what for?
 
 	Pubkeystr string
 	Prvkey *ecdsa.PrivateKey
