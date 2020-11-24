@@ -326,12 +326,12 @@ func (pbft *PBFT) Run() {
 
 	starttime := time.Now()
 	for {
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=16 {
-			// todo, wants to leave, mechanism 2
-			pbft.broadcastLeavingTx()
-			pbft.sentleavingtx = true
-			pbft.leaverequeststarttime = time.Now()
-		}
+		//if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=1600 {
+		//	// todo, wants to leave, mechanism 2
+		//	pbft.broadcastLeavingTx()
+		//	pbft.sentleavingtx = true
+		//	pbft.leaverequeststarttime = time.Now()
+		//}
 		switch pbft.status {
 		case stat_consensus:
 			//fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
@@ -1445,7 +1445,7 @@ func (pbft *PBFT) delaySelfMonitor() {
 	go pbft.cdedata.CDETestMonitor()
 
 	for {
-		if pbft.cdedata.Round >= 1 {
+		if pbft.cdedata.Round >= 2 {
 			fmt.Println("instance", pbft.Id, "finish all predefined delay data shares")
 			break
 		}
