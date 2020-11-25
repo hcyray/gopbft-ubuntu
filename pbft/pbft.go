@@ -174,7 +174,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	//	pbft.isjoining = true
 	//} // 机制1测试
 
-	if pbft.Id==total-1 {
+	if pbft.Id==total+1 {
 		pbft.isleaving = true
 		fmt.Println("instance", pbft.Id, "will leave the system after a while")
 	} // 机制2测试
