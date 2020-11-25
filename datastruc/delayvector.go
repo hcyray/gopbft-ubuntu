@@ -230,7 +230,7 @@ func (delayv *DelayVector) UpdateWriteAtNew() {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
-	fmt.Println("new instance invoke update-write-at-new, peers:", delayv.Peers, "its own id:", delayv.Tester)
+	fmt.Println("new instance invoke update-write-at-new, peers:", delayv.Peers, "its own id:", delayv.Tester, "write-msg:", wrmsg)
 	datatosend := Datatosend{delayv.Peers, "writetestfromnew", content}
 	delayv.BroadcastCh <- datatosend
 
