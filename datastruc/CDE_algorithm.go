@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"log"
 	"sort"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -138,10 +137,11 @@ func (cdedata *CDEdata) responseProposeWoValidate(proposetestmsg ProposeTestMsg,
 	if replytonew {
 		destip := make([]string, 0)
 		tmp := proposetestmsg.IpAddr
-		le := len(tmp)
-		theipprefix := tmp[0:(le-1)]
-		theremoteip := theipprefix + strconv.Itoa(cdedata.Id)
-		destip = append(destip, theremoteip)
+		//le := len(tmp)
+		//theipprefix := tmp[0:(le-1)]
+		//theremoteip := theipprefix + strconv.Itoa(cdedata.Id)
+		//destip = append(destip, theremoteip)
+		destip = append(destip, tmp)
 		datatosend := DatatosendWithIp{destip, "proporesponwofromold", content}
 		cdedata.SendCh <- datatosend
 	} else {
@@ -175,10 +175,11 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 	if replytonew {
 		destip := make([]string, 0)
 		tmp := proposetestmsg.IpAddr
-		le := len(tmp)
-		theipprefix := tmp[0:(le-1)]
-		theremoteip := theipprefix + strconv.Itoa(cdedata.Id)
-		destip = append(destip, theremoteip)
+		//le := len(tmp)
+		//theipprefix := tmp[0:(le-1)]
+		//theremoteip := theipprefix + strconv.Itoa(cdedata.Id)
+		//destip = append(destip, theremoteip)
+		destip = append(destip, tmp)
 		datatosend := DatatosendWithIp{destip, "proporesponwfromold", content}
 		cdedata.SendCh <- datatosend
 	} else {
@@ -204,10 +205,11 @@ func (cdedata *CDEdata) responseWrite(writetestmsg WriteTestMsg, replytonew bool
 		// calculate the port number of itself
 		destip := make([]string, 0)
 		tmp := writetestmsg.IpAddr
-		le := len(tmp)
-		theipprefix := tmp[0:(le-1)]
-		theremoteip := theipprefix + strconv.Itoa(cdedata.Id)
-		destip = append(destip, theremoteip)
+		//le := len(tmp)
+		//theipprefix := tmp[0:(le-1)]
+		//theremoteip := theipprefix + strconv.Itoa(cdedata.Id)
+		//destip = append(destip, theremoteip)
+		destip = append(destip, tmp)
 		datatosend := DatatosendWithIp{destip, "writeresponfromold", content}
 		cdedata.SendCh <- datatosend
 		//fmt.Println("instance", cdedata.Id, "respond to write-test from new node ip", theremoteip)
