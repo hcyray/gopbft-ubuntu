@@ -1144,18 +1144,17 @@ func (serv *Server) handleReadConfigRequest(content []byte) {
 	fmt.Println("server", serv.id, "the received read config request:", rcr)
 
 	// send the reply back
-	config := datastruc.ReadConfigReply{serv.msgbuff.CurConfig}
+	reply := datastruc.ReadConfigReply{serv.msgbuff.CurConfig}
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
-	err = enc.Encode(config)
+	err = enc.Encode(reply)
 	if err!=nil {
 		log.Panic("readconfig reply encode error")
 	}
-	conten := buff.Bytes()
+	conten := buf.Bytes()
 	datatosend := datastruc.DatatosendWithIp{[]string{rcr.IpportAddr}, "readconfigreply", conten}
 	serv.sendCh <- datatosend
-	fmt.Println("server", serv.id, "replies read config to", rcr.IpportAddr, " reply is ", config)
-
+	fmt.Println("server", serv.id, "replies read config to", rcr.IpportAddr, " reply is ", reply)
 }
 
 func (serv *Server) handleReadConfigReply(conten []byte) {
