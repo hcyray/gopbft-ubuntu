@@ -1123,7 +1123,7 @@ func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
 
 	// block, until receiving "replyconfigreply"
 	conten :=<-serv.recvconfigCh
-	fmt.Println("server", serv.id, "receives read config reply")
+	fmt.Println("server", serv.id, "receives read config reply signal from channel")
 	var buf bytes.Buffer
 	buf.Write(conten)
 	dec := gob.NewDecoder(&buf)
@@ -1163,4 +1163,5 @@ func (serv *Server) handleReadConfigRequest(content []byte) {
 
 func (serv *Server) handleReadConfigReply(content []byte) {
 	serv.recvconfigCh <- content
+	fmt.Println("server", serv.id, "pushed read config reply signal into channel")
 }
