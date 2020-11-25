@@ -118,6 +118,7 @@ func (serv *Server) InitializeMapandChan() {
 	serv.cderesponserecvCh = make(chan datastruc.DataReceived)
 	serv.RecvInformTestCh = make(chan datastruc.RequestTestMsg)
 	serv.recvsinglemeasurementCh = make(chan datastruc.SingleMeasurementAToB)
+	serv.recvconfigCh = make(chan []byte)
 	serv.clientacctopukstr = make(map[string]string)
 }
 
