@@ -136,6 +136,7 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 	time.Sleep(time.Second * time.Duration(sleeptime))
 	fmt.Println("the late server", serv.id, "reads config from some remote peer:")
 	peerlist := serv.ReadConfigFromRemote()
+	fmt.Println("server", serv.id, "readConfigFromRemote completes")
 	serv.totalserver = len(peerlist)+1
 	for _, v := range peerlist {
 		serv.memberIds = append(serv.memberIds, v.Id)
