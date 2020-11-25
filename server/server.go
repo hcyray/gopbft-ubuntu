@@ -52,7 +52,7 @@ type Server struct {
 	RecvInformTestCh chan datastruc.RequestTestMsg
 	recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB
 
-	recvconfigCh chan []byte
+	recvconfigCh chan datastruc.ReadConfigReply
 }
 
 func CreateServer(id int, localip string, clientpukstr map[int]string, serverips []string, inseach int) *Server {
@@ -108,6 +108,9 @@ func CreateLateServer(id int, localip string, clientpukstr map[int]string, initi
 }
 
 func (serv *Server) InitializeMapandChan() {
+	serv.clientacctopukstr = make(map[string]string)
+	serv.remoteallips = make(map[int]string)
+
 	serv.sendCh = make(chan datastruc.DatatosendWithIp)
 	serv.broadcastCh = make(chan datastruc.Datatosend)
 	serv.memberidchangeCh = make(chan datastruc.DataMemberChange)
@@ -118,9 +121,8 @@ func (serv *Server) InitializeMapandChan() {
 	serv.cderesponserecvCh = make(chan datastruc.DataReceived)
 	serv.RecvInformTestCh = make(chan datastruc.RequestTestMsg)
 	serv.recvsinglemeasurementCh = make(chan datastruc.SingleMeasurementAToB)
-	serv.recvconfigCh = make(chan []byte)
-	serv.clientacctopukstr = make(map[string]string)
-}
+	serv.recvconfigCh = make(chan datastruc.ReadConfigReply)
+	}
 
 func (serv *Server) Start() {
 	go serv.Run()
@@ -1106,7 +1108,6 @@ func (serv *Server) BlockTxValidate(bloc *datastruc.Block) bool {
 //}
 
 func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
-	reply := datastruc.ReadConfigReply{}
 
 	// send "readconfig" request
 	rcr := datastruc.NewReadConfigRequest(serv.id, serv.localallipsforserver[0])
@@ -1123,15 +1124,8 @@ func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
 
 
 	// block, until receiving "replyconfigreply"
-	conten :=<-serv.recvconfigCh
+	reply :=<-serv.recvconfigCh
 	fmt.Println("server", serv.id, "receives read config reply signal from channel")
-	var buf bytes.Buffer
-	buf.Write(conten)
-	dec := gob.NewDecoder(&buf)
-	err = dec.Decode(&reply)
-	if err!=nil {
-		fmt.Println("config reply decoding error")
-	}
 	return reply.Config
 }
 
@@ -1162,7 +1156,15 @@ func (serv *Server) handleReadConfigRequest(content []byte) {
 
 }
 
-func (serv *Server) handleReadConfigReply(content []byte) {
-	serv.recvconfigCh <- content
+func (serv *Server) handleReadConfigReply(conten []byte) {
+	var reply datastruc.ReadConfigReply
+	var buf bytes.Buffer
+	buf.Write(conten)
+	dec := gob.NewDecoder(&buf)
+	err := dec.Decode(&reply)
+	if err!=nil {
+		fmt.Println("config reply decoding error")
+	}
+	serv.recvconfigCh <- reply
 	fmt.Println("server", serv.id, "pushed read config reply signal into channel")
 }
