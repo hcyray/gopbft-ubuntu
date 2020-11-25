@@ -29,6 +29,10 @@ type ReadConfigRequest struct {
 	IpportAddr string
 }
 
+type ReadConfigReply struct {
+	Config []PeerIdentity
+}
+
 func NewQueryStateTransfer(id int, height int, pubkey string, prvkey *ecdsa.PrivateKey) QueryStateTransMsg {
 	qstmsg := QueryStateTransMsg{}
 	qstmsg.Id = id

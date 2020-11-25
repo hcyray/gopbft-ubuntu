@@ -1102,7 +1102,7 @@ func (serv *Server) BlockTxValidate(bloc *datastruc.Block) bool {
 //}
 
 func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
-	config := []datastruc.PeerIdentity{}
+	reply := datastruc.ReadConfigReply{}
 
 	// send "readconfig" request
 	rcr := datastruc.NewReadConfigRequest(serv.id, serv.localallipsforserver[0])
@@ -1122,11 +1122,11 @@ func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
 	var buf bytes.Buffer
 	buf.Write(conten)
 	dec := gob.NewDecoder(&buf)
-	err = dec.Decode(&config)
+	err = dec.Decode(&reply)
 	if err!=nil {
 		fmt.Println("config reply decoding error")
 	}
-	return config
+	return reply.Config
 }
 
 func (serv *Server) handleReadConfigRequest(content []byte) {
@@ -1141,7 +1141,7 @@ func (serv *Server) handleReadConfigRequest(content []byte) {
 	}
 
 	// send the reply back
-	config := serv.msgbuff.CurConfig
+	config := datastruc.ReadConfigReply{serv.msgbuff.CurConfig}
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	err = enc.Encode(config)
