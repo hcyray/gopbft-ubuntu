@@ -976,10 +976,10 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.MsgBuff.UpdateMeasurementResAfterCommitBlock(pbft.curblock)
 			pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
-			consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.Id, pbft.succLine.Leng, pbft.quorumsize)
-			if pbft.Id==0 {
-				fmt.Println("consensus delay when instance", pbft.Id, "as leader is", consensusdelay)
-			}
+			//consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.Id, pbft.succLine.Leng, pbft.quorumsize)
+			//if pbft.Id==0 {
+			//	fmt.Println("consensus delay when instance", pbft.Id, "as leader is", consensusdelay)
+			//}
 			if pbft.Id==0 {
 				pbft.cdedata.PrintResult()
 			}

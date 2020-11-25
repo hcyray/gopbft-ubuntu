@@ -1113,7 +1113,7 @@ func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
 		log.Panic("readconfig request encode error")
 	}
 	content := buff.Bytes()
-	datatosend := datastruc.DatatosendWithIp{[]string{serv.remoteallips[0]}, "readconfig", content}
+	datatosend := datastruc.DatatosendWithIp{[]string{"172.31.77.143:4000"}, "readconfig", content}
 	serv.sendCh <- datatosend
 
 
