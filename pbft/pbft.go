@@ -252,6 +252,7 @@ func (pbft *PBFT) InitialSetup() {
 	pbft.cachedb.UpdateFromGenesisb(genesisb)
 	pbft.persis.executedheight[0] = true
 	pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
+	fmt.Println("instance", pbft.Id, "updates msgbuff.curconfig:", pbft.succLine.ConverToList())
 
 
 	pbft.status = stat_consensus
