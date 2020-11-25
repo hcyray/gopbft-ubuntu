@@ -64,13 +64,14 @@ func CreateServer(id int, localip string, clientpukstr map[int]string, serverips
 	for i:=0; i<serv.totalserver; i++ {
 		serv.memberIds = append(serv.memberIds, i)
 	}
+	serv.InitializeMapandChan()
 	serv.remoteallips = generateremoteallips(serv.memberIds, serverips, inseach)
 	fmt.Println("server", serv.id, "will send consensus messages to", serv.remoteallips)
 	serv.localallipsforserver = generatelistenserverips(id, localip)
 	serv.localallipsforclient = generatelistenclientips(id, localip)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
-	serv.InitializeMapandChan()
+
 
 	for _, v := range clientpukstr {
 		hv := sha256.Sum256([]byte(v))
@@ -88,13 +89,14 @@ func CreateLateServer(id int, localip string, clientpukstr map[int]string, initi
 	serv := &Server{}
 
 	serv.id = id
+	serv.InitializeMapandChan()
 	serv.ipportaddr = localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
 	//serv.totalserver = len(initialserverips) * inseach // total server does not count itself
 	serv.localallipsforserver = generatelistenserverips(id, localip)
 	serv.localallipsforclient = generatelistenclientips(id, localip)
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
-	serv.InitializeMapandChan()
+
 	for _, v := range clientpukstr {
 		hv := sha256.Sum256([]byte(v))
 		acc := b64.StdEncoding.EncodeToString(hv[:])
