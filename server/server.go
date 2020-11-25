@@ -278,8 +278,10 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 		case "informtest":
 			go serv.handleInformTest(request[commandLength:])
 		case "readconfig":
+			fmt.Println("server", serv.id, "receives a read config request")
 			go serv.handleReadConfigRequest(request[commandLength:])
 		case "readconfigreply":
+			fmt.Println("server", serv.id, "receives a read config reply")
 			go serv.handleReadConfigReply(request[commandLength:])
 		}
 	}
@@ -1141,6 +1143,7 @@ func (serv *Server) handleReadConfigRequest(content []byte) {
 	if err != nil {
 		fmt.Println("ReadConfigRequest decoding error")
 	}
+	fmt.Println("server", serv.id, "the received read config request:", rcr)
 
 	// send the reply back
 	config := datastruc.ReadConfigReply{serv.msgbuff.CurConfig}
@@ -1153,6 +1156,7 @@ func (serv *Server) handleReadConfigRequest(content []byte) {
 	conten := buff.Bytes()
 	datatosend := datastruc.DatatosendWithIp{[]string{rcr.IpportAddr}, "readconfigreply", conten}
 	serv.sendCh <- datatosend
+	fmt.Println("server", serv.id, "replies read config to", rcr.IpportAddr)
 
 }
 
