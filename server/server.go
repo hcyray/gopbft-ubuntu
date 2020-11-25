@@ -978,7 +978,7 @@ func (serv *Server) handleProposeTestFromNew(conten []byte) {
 
 func (serv *Server) handleWriteTestFromNew(conten []byte) {
 	datarecv := datastruc.DataReceived{"writetestfromnew", conten}
-	//fmt.Println("server", serv.id, "receives write-test-from-new")
+	fmt.Println("server", serv.id, "receives write-test-from-new")
 	serv.cdetestrecvCh <- datarecv
 }
 
