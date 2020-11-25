@@ -1152,7 +1152,7 @@ func (serv *Server) handleReadConfigRequest(content []byte) {
 	conten := buff.Bytes()
 	datatosend := datastruc.DatatosendWithIp{[]string{rcr.IpportAddr}, "readconfigreply", conten}
 	serv.sendCh <- datatosend
-	fmt.Println("server", serv.id, "replies read config to", rcr.IpportAddr)
+	fmt.Println("server", serv.id, "replies read config to", rcr.IpportAddr, " reply is ", config)
 
 }
 
