@@ -636,7 +636,7 @@ func (serv *Server) handleBlock(content []byte) {
 	starttime := time.Now()
 	if bloc.Blockhead.Kind=="txblock" {
 		//res := serv.BlockTxValidateMultiThread(&bloc)
-		res := serv.BlockTxValidate(&bloc)
+		res := serv.BlockTxValidateMultiThread(&bloc)
 		//res := true
 		if !res {
 			fmt.Println("The received block contains unvalid mint-tx")
@@ -1063,51 +1063,51 @@ func (serv *Server) BlockTxValidate(bloc *datastruc.Block) bool {
 	return validateres
 }
 
-//func (serv *Server) BlockTxValidateMultiThread(bloc *datastruc.Block) bool {
-//	ThreadNum := 4 // Thread number for tx validation
-//	results := make([]*bool, 0)
-//	for i:=0; i<ThreadNum; i++ {
-//		res := new(bool)
-//		*res = true
-//		results = append(results, res)
-//	}
-//
-//	wg := new(sync.WaitGroup)
-//	wg.Add(ThreadNum)
-//	startpos := 0
-//	distance := len(bloc.TransactionList)/ThreadNum
-//	for i:=0; i<ThreadNum; i++ {
-//		txbatch := make([]datastruc.Transaction, 0)
-//		if i<ThreadNum-1 {
-//			txbatch = bloc.TransactionList[startpos:(startpos+distance)]
-//		} else {
-//			txbatch = bloc.TransactionList[startpos:len(bloc.TransactionList)]
-//		}
-//		go TxBatchValidate(txbatch, wg, results[i])
-//		startpos = startpos + distance
-//	}
-//	wg.Wait()
-//
-//	validateres := true
-//	for i:=0; i<ThreadNum; i++ {
-//		if !(*results[i]) {
-//			validateres = false
-//		}
-//	}
-//
-//	return validateres
-//}
-//
-//func TxBatchValidate(txlist []datastruc.Transaction, wg *sync.WaitGroup, res *bool) {
-//	for _, tx := range txlist {
-//		if !tx.Verify() {
-//			*res = false
-//			wg.Done()
-//		}
-//	}
-//	*res = true
-//	wg.Done()
-//}
+func (serv *Server) BlockTxValidateMultiThread(bloc *datastruc.Block) bool {
+	ThreadNum := 4 // Thread number for tx validation
+	results := make([]*bool, 0)
+	for i:=0; i<ThreadNum; i++ {
+		res := new(bool)
+		*res = true
+		results = append(results, res)
+	}
+
+	wg := new(sync.WaitGroup)
+	wg.Add(ThreadNum)
+	startpos := 0
+	distance := len(bloc.TransactionList)/ThreadNum
+	for i:=0; i<ThreadNum; i++ {
+		txbatch := make([]datastruc.Transaction, 0)
+		if i<ThreadNum-1 {
+			txbatch = bloc.TransactionList[startpos:(startpos+distance)]
+		} else {
+			txbatch = bloc.TransactionList[startpos:len(bloc.TransactionList)]
+		}
+		go serv.TxBatchValidate(txbatch, wg, results[i])
+		startpos = startpos + distance
+	}
+	wg.Wait()
+
+	validateres := true
+	for i:=0; i<ThreadNum; i++ {
+		if !(*results[i]) {
+			validateres = false
+		}
+	}
+
+	return validateres
+}
+
+func (serv *Server) TxBatchValidate(txlist []datastruc.Transaction, wg *sync.WaitGroup, res *bool) {
+	for _, tx := range txlist {
+		if !tx.Verify(serv.clientacctopukstr[tx.Source]) {
+			*res = false
+			wg.Done()
+		}
+	}
+	*res = true
+	wg.Done()
+}
 
 func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
 

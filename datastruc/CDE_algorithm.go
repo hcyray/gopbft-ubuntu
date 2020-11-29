@@ -158,9 +158,11 @@ func (cdedata *CDEdata) responseProposeWoValidate(proposetestmsg ProposeTestMsg,
 func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMsg, replytonew bool) {
 	// validate txlist, it may took some time
 	reslist := make([]bool, 0)
-	for _, tx := range proposetestmsg.TxBatch {
-		reslist = append(reslist, tx.Verify(cdedata.Clientacctopuk[tx.Source]))
-	}
+	//for _, tx := range proposetestmsg.TxBatch {
+	//	reslist = append(reslist, tx.Verify(cdedata.Clientacctopuk[tx.Source]))
+	//}
+
+	cdedata.TxListValidateMultiThread(proposetestmsg.TxBatch)
 
 	pprmsg := NewProposeResponseWithValidateMsg(cdedata.Id, proposetestmsg.Round, proposetestmsg.Challange, reslist, proposetestmsg.TxBatch)
 	var buff bytes.Buffer
@@ -827,4 +829,51 @@ func (cdedata *CDEdata) UpdateUsingPureDelayData(cdep CDEPureDelayData) {
 			cdedata.WriteDelayMatrix[u][v] = cdep.WriteDelayMatrix[u][v]
 		}
 	}
+}
+
+
+func (cdedata *CDEdata) TxListValidateMultiThread(txlist []Transaction) bool {
+	ThreadNum := 4 // Thread number for tx validation
+	results := make([]*bool, 0)
+	for i:=0; i<ThreadNum; i++ {
+		res := new(bool)
+		*res = true
+		results = append(results, res)
+	}
+
+	wg := new(sync.WaitGroup)
+	wg.Add(ThreadNum)
+	startpos := 0
+	distance := len(txlist)/ThreadNum
+	for i:=0; i<ThreadNum; i++ {
+		txbatch := make([]Transaction, 0)
+		if i<ThreadNum-1 {
+			txbatch = txlist[startpos:(startpos+distance)]
+		} else {
+			txbatch = txlist[startpos:len(txlist)]
+		}
+		go cdedata.TxBatchValidate(txbatch, wg, results[i])
+		startpos = startpos + distance
+	}
+	wg.Wait()
+
+	validateres := true
+	for i:=0; i<ThreadNum; i++ {
+		if !(*results[i]) {
+			validateres = false
+		}
+	}
+
+	return validateres
+}
+
+func (cdedata *CDEdata) TxBatchValidate(txlist []Transaction, wg *sync.WaitGroup, res *bool) {
+	for _, tx := range txlist {
+		if !tx.Verify(cdedata.Clientacctopuk[tx.Source]) {
+			*res = false
+			wg.Done()
+		}
+	}
+	*res = true
+	wg.Done()
 }
