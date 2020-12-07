@@ -918,6 +918,8 @@ func (serv *Server) handleStateTransferQuery(content []byte) {
 	pub := datastruc.DecodePublic(qstmsg.Pubkey)
 	if !qstmsg.Sig.Verify(datatoverify[:], pub) {
 		fmt.Println("serv", serv.id, "received a query-for-state-transfer msg but the signature is wrong!")
+	} else {
+		fmt.Println("serv", serv.id, "received a query-for-state-transfer msg")
 	}
 
 	// tell pbft instance
