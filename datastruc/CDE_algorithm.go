@@ -601,7 +601,7 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 
 	// create join-tx for new instance
 	fmt.Println("new instance creates join-tx")
-	jtx := NewJoinTx(cdedata.Id, "", mrmsg, imrmsg, cdedata.Pubkeystr, cdedata.Prvkey)
+	jtx := NewJoinTx(cdedata.Id, cdedata.IpAddr, mrmsg, imrmsg, cdedata.Pubkeystr, cdedata.Prvkey)
 	return jtx
 }
 
