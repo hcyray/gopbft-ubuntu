@@ -283,6 +283,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.broadcastJoinTx(newjointx)
 	fmt.Println("node", pbft.Id, "is a new node, waits for the confirmed block")
 	cblock := pbft.waitForConfirmedBlock()
+	fmt.Println("node", pbft.Id, "is a new node, got the confirmed block")
 	pbft.MsgBuff.UpdateJoinLeaveTxSetAfterCommitBlock(&cblock.Bloc)
 	pbft.MsgBuff.UpdateConfirmedBlockPool(&cblock)
 	pbft.cdedata.UpdateUsingPureDelayData(cblock.Cdedelaydata)
@@ -290,6 +291,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	// invoke state transfer and wait for state-transfer-reply
 	pbft.QueryStateTransfer(cblock.Bloc.Blockhead.Height-1, 0) // todo, pick a dest or broadcast to the system
 	thebalance := pbft.waitForStateTransferReply(cblock.Bloc.Blockhead.Height-1)
+	fmt.Println("node", pbft.Id, "is a new node, got the state transfer")
 
 	// update persister and blockcachedb
 	pbft.cachedb.UpdateAfterConfirmB(cblock)
@@ -484,7 +486,7 @@ func (pbft *PBFT) Run() {
 						pbft.consenstatus = Commited
 						pbft.persis.commitlock.LockedHeight = pbft.currentHeight
 						pbft.CommitCurConsensOb()
-						time.Sleep(time.Millisecond * 20)
+						time.Sleep(time.Millisecond * 50)
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", pbft.currentHeight-1, "\n")
 					}
