@@ -430,18 +430,28 @@ func generateremoteallips(memberIds []int, serverips []string, inseach int) map[
 
 
 func sendData(data []byte, addr string) {
-	conn, err := net.Dial(protocol, addr)
-	if err != nil {
-		fmt.Printf("%s is not available\n", addr)
-	} else {
-		defer conn.Close()
+	t := 0
+	for {
+		conn, err := net.Dial(protocol, addr)
+		if err != nil {
+			fmt.Printf("%s is not available\n", addr)
+			t += 1
+			if t>=3 {
+				break
+			}
+			time.Sleep(time.Millisecond * 50)
+		} else {
+			defer conn.Close()
 
-		_, err = conn.Write(data)
-		if err!=nil {
-			fmt.Println("send error")
-			log.Panic(err)
+			_, err = conn.Write(data)
+			if err!=nil {
+				fmt.Println("send error")
+				log.Panic(err)
+			}
 		}
+
 	}
+
 }
 
 func (serv *Server) handleclienttx(conn net.Conn) {

@@ -277,7 +277,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	newjointx := pbft.cdedata.CollectDelayDataForNew(pbft.MsgBuff.ReadTxBatch(BlockVolume))
 	pbft.cdedata.Peers = make([]int, le)
 	copy(pbft.cdedata.Peers, tmp) // recover peers to include itself
-	fmt.Println("new instance peers: ", pbft.cdedata.Peers)
+	fmt.Println("new instance recovers peers: ", pbft.cdedata.Peers)
 
 	// broadcast join-tx and wait for confirmed block
 	pbft.broadcastJoinTx(newjointx)
@@ -1454,8 +1454,8 @@ func (pbft *PBFT) delaySelfMonitor() {
 			break
 		}
 		// sleep random time, then invoke delay data update process
-		ra := rand.Intn(4000)
-		time.Sleep(time.Millisecond * time.Duration(4000+ra))
+		ra := rand.Intn(20000)
+		time.Sleep(time.Millisecond * time.Duration(ra))
 		if !pbft.isleader {
 			fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round)
 			// update measurement
