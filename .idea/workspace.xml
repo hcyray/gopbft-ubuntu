@@ -19,9 +19,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6ce3e2ac-ea02-49b9-b204-019ec57babb8" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="6ce3e2ac-ea02-49b9-b204-019ec57babb8" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -34,7 +32,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" path="/snap/go/6727" />
+  <component name="GOROOT" path="/snap/go/6745" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -169,12 +167,13 @@
     </state>
     <state width="1877" height="352" key="GridCell.Tab.1.right/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1603185549306" />
     <state width="1319" height="758" key="GridCell.Tab.1.right/0.0.1920.1050@0.0.1920.1050" timestamp="1603034565717" />
-    <state x="295" y="95" key="SettingsEditor" timestamp="1605006927051">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="356" y="122" width="1022" height="737" key="SettingsEditor" timestamp="1607343998365">
+      <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="-1625" y="95" key="SettingsEditor/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604578688731" />
     <state x="221" y="79" key="SettingsEditor/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1604470565712" />
     <state x="295" y="95" key="SettingsEditor/0.0.1920.1050/-1920.0.1920.1050@0.0.1920.1050" timestamp="1605006927051" />
+    <state x="356" y="122" width="1022" height="737" key="SettingsEditor/72.27.1848.1053@72.27.1848.1053" timestamp="1607343998365" />
     <state x="280" y="32" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1604577330395">
       <screen x="0" y="0" width="1440" height="870" />
     </state>
