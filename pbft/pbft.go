@@ -1086,6 +1086,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				cblock := datastruc.ConfirmedBlock{pppmsg, *pbft.curblock,commqc, cdep}
 				if pbft.isleader {
 					pbft.InformNewPeer(cblock, thejoinid)
+					fmt.Println("leader", pbft.Id, " informs the new instace the confirmed block")
 				}
 			} else {
 				log.Panic("the config-block has no leave-tx or join-tx")

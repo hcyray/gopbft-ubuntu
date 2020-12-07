@@ -695,9 +695,9 @@ func (serv *Server) handleConfirmedBlock(content []byte) {
 
 	serv.msgbuff.Msgbuffmu.Lock()
 	serv.msgbuff.ConfirmedBlockPool = append(serv.msgbuff.ConfirmedBlockPool, cbloc)
-	if serv.id==4 {
-		fmt.Println("server 4 received a confirmed block")
-	}
+
+	fmt.Println("server", serv.id, "received a confirmed block")
+
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
