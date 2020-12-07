@@ -449,7 +449,9 @@ func (pbft *PBFT) Run() {
 							startt := time.Now()
 							q := CalculateQuorumSize(pbft.InitialTotalPeer+1)
 							res1 := pbft.cdedata.CalculateConsensusDelayForNewJointx(pbft.Id, pbft.InitialTotalPeer+1, q, jtx)
+							fmt.Println("consensus delay when instance", pbft.Id, "is leader: ", res1)
 							res2 := pbft.cdedata.CalculateConsensusDelayForNewJointx(jtx.Id, pbft.InitialTotalPeer+1, q, jtx)
+							fmt.Println("consensus delay when instance", jtx.Id, "is leader: ", res2)
 							elaps := time.Since(startt).Milliseconds()
 							res := EvaluateCapacity(res1, res2, q)
 							if res {
@@ -1457,7 +1459,7 @@ func (pbft *PBFT) delaySelfMonitor() {
 			break
 		}
 		// sleep random time, then invoke delay data update process
-		ra := rand.Intn(20000)
+		ra := rand.Intn(10000)
 		time.Sleep(time.Millisecond * time.Duration(ra))
 		if !pbft.isleader {
 			fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round)
