@@ -12,11 +12,12 @@ import (
 type JoinTx struct {
 	Id int
 	IpAddr string
-	Pubkey string
+	TxHash [32]byte
 
 	Measureres MeasurementResultMsg
 	InvMeasureres InverseMeasurementResultMsg
 
+	Pubkey string
 	Sig PariSign
 }
 
@@ -41,10 +42,11 @@ func NewJoinTx(id int, ipaddr string, mr MeasurementResultMsg, imr InverseMeasur
 	jtx.IpAddr = ipaddr
 	jtx.Measureres = mr
 	jtx.InvMeasureres = imr
-	jtx.Pubkey = pubkey
+	jtx.TxHash = sha256.Sum256(jtx.Serial())
 
-	datatosign := jtx.GetHash()
+	datatosign := jtx.TxHash
 	jtx.Sig.Sign(datatosign[:], prvkey)
+	jtx.Pubkey = pubkey
 	return jtx
 }
 
@@ -78,23 +80,7 @@ func (ltx *LeaveTx) Verify() bool {
 }
 
 func (jtx *JoinTx) GetHash() [32]byte {
-	var res [32]byte
-
-	jjtx := JoinTx{}
-	jjtx.Id = jtx.Id
-	jjtx.Pubkey = jtx.Pubkey
-	jjtx.IpAddr = jtx.IpAddr
-
-	var buff bytes.Buffer
-	enc := gob.NewEncoder(&buff)
-	err := enc.Encode(jjtx)
-	if err!=nil {
-		log.Panic(err)
-	}
-	content := buff.Bytes()
-	res = sha256.Sum256(content)
-
-	return res
+	return jtx.TxHash
 }
 
 func (ltx *LeaveTx) GetHash() [32]byte {
@@ -141,4 +127,25 @@ func (ltx *LeaveTx) Serial() []byte {
 	}
 	content := buff.Bytes()
 	return content
+}
+
+func (jtx *JoinTx) Serial() []byte {
+	jjtx := JoinTx{}
+	jjtx.Id = jtx.Id
+	jjtx.IpAddr = jtx.IpAddr
+	jjtx.Pubkey = ""
+	jjtx.Sig = PariSign{}
+	jjtx.Measureres = jtx.Measureres
+	jjtx.InvMeasureres = jtx.InvMeasureres
+
+	var buff bytes.Buffer
+	gob.Register(elliptic.P256())
+	enc := gob.NewEncoder(&buff)
+	err := enc.Encode(jjtx)
+	if err!=nil {
+		log.Panic(err)
+	}
+	content := buff.Bytes()
+	return content
+
 }
