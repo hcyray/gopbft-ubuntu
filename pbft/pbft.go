@@ -325,7 +325,9 @@ func (pbft *PBFT) Run() {
 	pbft.starttime = time.Now()
 	go pbft.statetransfermonitor()
 	go pbft.computeTps()
-	go pbft.delaySelfMonitor()
+	if pbft.Id<=3 {
+		go pbft.delaySelfMonitor()
+	}
 	go pbft.censorshipmonitor()
 
 
