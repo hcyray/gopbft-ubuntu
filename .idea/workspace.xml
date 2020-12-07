@@ -21,8 +21,6 @@
   <component name="ChangeListManager">
     <list default="true" id="6ce3e2ac-ea02-49b9-b204-019ec57babb8" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/datastruc/CDE_algorithm.go" beforeDir="false" afterPath="$PROJECT_DIR$/datastruc/CDE_algorithm.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,7 +34,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" path="/snap/go/6715" />
+  <component name="GOROOT" path="/snap/go/6727" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -50,6 +48,9 @@
     <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="configurable.Global.GOPATH.is.expanded" value="true" />
+    <property name="configurable.Module.GOPATH.is.expanded" value="false" />
+    <property name="configurable.Project.GOPATH.is.expanded" value="true" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
@@ -92,12 +93,16 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="796" y="483" key="#GOROOT" timestamp="1605095576570">
+    <state x="791" y="215" width="400" height="684" key="#GOPATH" timestamp="1607342806417">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="791" y="215" width="400" height="684" key="#GOPATH/72.27.1848.1053@72.27.1848.1053" timestamp="1607342806417" />
+    <state x="796" y="483" key="#GOROOT" timestamp="1607342633647">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="-1168" y="455" key="#GOROOT/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1602986047062" />
     <state x="752" y="455" key="#GOROOT/0.0.1920.1050@0.0.1920.1050" timestamp="1603028675651" />
-    <state x="796" y="483" key="#GOROOT/72.27.1848.1053@72.27.1848.1053" timestamp="1605095576570" />
+    <state x="796" y="483" key="#GOROOT/72.27.1848.1053@72.27.1848.1053" timestamp="1607342633647" />
     <state x="-1641" y="91" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1604634747182">
       <screen x="-1920" y="0" width="1920" height="1050" />
     </state>
@@ -107,11 +112,11 @@
       <screen x="-1920" y="0" width="1920" height="1050" />
     </state>
     <state x="-1215" y="325" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604634692296" />
-    <state x="784" y="307" width="424" height="491" key="FileChooserDialogImpl" timestamp="1606050227357">
+    <state x="579" y="477" width="424" height="491" key="FileChooserDialogImpl" timestamp="1607342805606">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="-1180" y="279" key="FileChooserDialogImpl/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604644298543" />
-    <state x="784" y="307" width="424" height="491" key="FileChooserDialogImpl/72.27.1848.1053@72.27.1848.1053" timestamp="1606050227357" />
+    <state x="579" y="477" width="424" height="491" key="FileChooserDialogImpl/72.27.1848.1053@72.27.1848.1053" timestamp="1607342805606" />
     <state width="1921" height="993" key="GridCell.Tab.0.bottom" timestamp="1605095358581">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
