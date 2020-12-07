@@ -155,6 +155,7 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 		serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh)
 
 	serv.pbft.LateSetup(peerlist)
+	fmt.Println("the new node late setup completes, start consensing")
 	go serv.pbft.Run()
 }
 

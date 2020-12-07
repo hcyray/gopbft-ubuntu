@@ -484,6 +484,7 @@ func (pbft *PBFT) Run() {
 						pbft.consenstatus = Commited
 						pbft.persis.commitlock.LockedHeight = pbft.currentHeight
 						pbft.CommitCurConsensOb()
+						time.Sleep(time.Millisecond * 20)
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", pbft.currentHeight-1, "\n")
 					}
