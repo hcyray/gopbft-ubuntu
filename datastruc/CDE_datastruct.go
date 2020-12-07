@@ -116,7 +116,6 @@ type RequestTestMsg struct {
 
 
 
-
 func NewProposeMsg(tester int, roud int, ip string, txlist []Transaction, rann uint64) ProposeTestMsg {
 	ppmsg := ProposeTestMsg{}
 

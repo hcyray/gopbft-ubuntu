@@ -131,7 +131,7 @@ func main() {
 			fmt.Println("server", instanceid, "starts, it is a late server")
 		}
 	} else {
-		//invoke cliients
+		//invoke clients
 		for i:=0; i<clientnumber; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*instanceoneachserver, privatekey, allips[0:totalserver], instanceoneachserver)

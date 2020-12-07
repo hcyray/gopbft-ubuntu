@@ -133,7 +133,7 @@ func (client *Client) Run() {
 			}
 		}
 		if i%10==0 {
-			time.Sleep(time.Millisecond*40) // 25ms seems good, 30ms also good for test.
+			time.Sleep(time.Millisecond*30) // 25ms seems good, 30ms also good for test.
 		}
 		//val := rand.Intn(2) + 1
 		//val := 10000
@@ -163,8 +163,8 @@ func (client *Client) sendtooneloop(destid int) {
 		destip := client.minerIPAddress[destid]
 		conn, err := net.Dial("tcp", destip)
 		if err != nil {
-			fmt.Println("connect failed, err : %v , will retry later\n", err.Error())
-			t := rand.Intn(100)
+			fmt.Println("connect failed, will retry later\n", err.Error())
+			t := rand.Intn(1000)
 			fmt.Println("will re connect soon")
 			time.Sleep(time.Millisecond * time.Duration(t))
 		} else {
