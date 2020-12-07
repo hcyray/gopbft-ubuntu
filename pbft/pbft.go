@@ -1056,6 +1056,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				thejoinid := pbft.curblock.JoinTxList[0].Id
 				thejoinaddr := pbft.curblock.JoinTxList[0].IpAddr
 				datatosend := datastruc.DataMemberChange{"join", thejoinid, thejoinaddr}
+				fmt.Println("instance", pbft.Id,"tells communication layer to add an addr:", thejoinaddr)
 				pbft.memberidchangeCh <- datatosend // todo, server needs do something
 				pbft.members = append(pbft.members, thejoinid)
 
@@ -1087,6 +1088,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				cdep := pbft.cdedata.GeneratePureDelayData()
 				cblock := datastruc.ConfirmedBlock{pppmsg, *pbft.curblock,commqc, cdep}
 				if pbft.isleader {
+					time.Sleep(time.Millisecond * 2)
 					pbft.InformNewPeer(cblock, thejoinid)
 					fmt.Println("leader", pbft.Id, " informs the new instace the confirmed block")
 				}
