@@ -172,3 +172,15 @@ func (sl *SuccLine) Deserialize(conten []byte) {
 	sl.Leng = len(tmp)
 	sl.CurLeader = sl.Tail.Next
 }
+
+func (sl *SuccLine) SucclinePrint() {
+	tmpid := make([]int, 0)
+	tmppubk := make([]string, 0)
+	p := sl.Tail.Next
+	for i:=0; i<sl.Leng; i++ {
+		tmpid = append(tmpid, p.Member.Id)
+		tmppubk = append(tmppubk, p.Member.PubKey)
+		p = p.Next
+	}
+
+}

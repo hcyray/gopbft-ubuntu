@@ -232,15 +232,8 @@ func (pbft *PBFT) InitialSetup() {
 	}
 
 	// print leader succession line
-	tmpid := make([]int, 0)
-	tmppubk := make([]string, 0)
-	p := pbft.succLine.Tail.Next
-	for i:=0; i<pbft.succLine.Leng; i++ {
-		tmpid = append(tmpid, p.Member.Id)
-		tmppubk = append(tmppubk, p.Member.PubKey)
-		p = p.Next
-	}
-	//fmt.Println("instace", pbft.Id, "thinks the leader succession line is", tmpid, "pubkey not shown")
+	fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
+	pbft.succLine.SucclinePrint()
 	//fmt.Println("instance", pbft.Id, "pubkey string is", pbft.PubKeystr)
 
 	// construct genesis block
@@ -305,8 +298,10 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	}
 	// generate a new succession line and config, includes itself
 	pbft.curConfigure = cblock.Bloc.Configure
-	fmt.Println("new instance config:", cblock.Bloc.Configure)
+	//fmt.Println("new instance config:", cblock.Bloc.Configure)
 	pbft.succLine = datastruc.ConstructSuccessionLine(cblock.Bloc.Configure)
+	fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
+	pbft.succLine.SucclinePrint()
 	pbft.UpdateQuorumSize(pbft.succLine.Leng)
 	fmt.Println("instance", pbft.Id, "thinks the current quorum size is", pbft.quorumsize)
 
@@ -1084,6 +1079,8 @@ func (pbft *PBFT) CommitCurConsensOb() {
 
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
+				fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
+				pbft.succLine.SucclinePrint()
 				pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
 				fmt.Println("instance", pbft.Id, "thinks the current quorum size is", pbft.quorumsize)
