@@ -300,8 +300,9 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.persis.executedheight[cblock.Bloc.Blockhead.Height] = true
 	pbft.persis.checkpointheight = cblock.Bloc.Blockhead.Height
 	pbft.persis.commitlock = datastruc.CommitedLock{cblock.Bloc.Blockhead.Height, cblock.PreppMsg, cblock.PreppMsg.Digest, cblock.CommiQC}
-	pbft.persis.accountbalance = thebalance
-
+	for k,v := range thebalance {
+		pbft.persis.accountbalance[k] = v
+	}
 	// generate a new succession line and config, includes itself
 	pbft.curConfigure = cblock.Bloc.Configure
 	fmt.Println("new instance config:", cblock.Bloc.Configure)
@@ -310,6 +311,9 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	fmt.Println("instance", pbft.Id, "thinks the current quorum size is", pbft.quorumsize)
 
 	// generate system hash at current height
+	for k,v := range thebalance {
+		pbft.accountbalance[k] = v
+	}
 	pbft.currentHeight = cblock.Bloc.Blockhead.Height
 	balancehash := pbft.generateaccountbalancehash()
 	fmt.Println("new instance balance hash:", balancehash)
