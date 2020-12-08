@@ -1160,7 +1160,7 @@ func (serv *Server) handleReadConfigRequest(content []byte) {
 	conten := buf.Bytes()
 	datatosend := datastruc.DatatosendWithIp{[]string{rcr.IpportAddr}, "readconfigreply", conten}
 	serv.sendCh <- datatosend
-	fmt.Println("server", serv.id, "replies read config to", rcr.IpportAddr, " reply is ", reply)
+	//fmt.Println("server", serv.id, "replies read config to", rcr.IpportAddr, " reply is ", reply)
 }
 
 func (serv *Server) handleReadConfigReply(conten []byte) {
@@ -1173,5 +1173,5 @@ func (serv *Server) handleReadConfigReply(conten []byte) {
 		fmt.Println("config reply decoding error")
 	}
 	serv.recvconfigCh <- reply
-	fmt.Println("server", serv.id, "pushed read config reply signal into channel, the reply: ", reply)
+	//fmt.Println("server", serv.id, "pushed read config reply signal into channel, the reply: ", reply)
 }

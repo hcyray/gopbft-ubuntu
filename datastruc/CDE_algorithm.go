@@ -628,8 +628,8 @@ func (cdedata *CDEdata) InformTestInstance(id int, dest int) SingleMeasurementAT
 }
 
 func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
-	cdedata.mu.Lock()
-	defer cdedata.mu.Unlock()
+	//cdedata.mu.Lock()
+	//defer cdedata.mu.Unlock()
 
 
 	blockdelay := cdedata.ProposeDelayConvertToMatrix()
