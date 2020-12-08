@@ -1028,6 +1028,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 					datatosend := datastruc.DataMemberChange{"leave", theleavingid, ""}
 					pbft.memberidchangeCh <- datatosend
 					pbft.censorshipnothappenCh <- true
+					// todo, update member and memberexceptme
 				}
 
 				balancehash := pbft.generateaccountbalancehash()
@@ -1035,7 +1036,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
 				pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
-				// update member and memberexceptme
+
 				//pbft.UpdateByzantineIdentity()
 
 				confighash := pbft.succLine.GetHash()
