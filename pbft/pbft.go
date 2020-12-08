@@ -471,6 +471,7 @@ func (pbft *PBFT) Run() {
 					pbft.mu.Lock()
 					if prog.Ver==pbft.vernumber && prog.View==pbft.viewnumber && prog.Height==pbft.currentHeight && pbft.consenstatus==Unstarted {
 						pbft.consenstatus = Preprepared
+						fmt.Println("instance", pbft.Id, "is pre-prepared in ver",pbft.vernumber,"view", pbft.viewnumber, "height", pbft.currentHeight)
 						go pbft.broadcastPrepare(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.curblockhash)
 						go pbft.scanPrepare(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.curblockhash, pbft.quorumsize)
 					}
