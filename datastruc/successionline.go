@@ -177,10 +177,12 @@ func (sl *SuccLine) Deserialize(conten []byte) {
 func (sl *SuccLine) SucclinePrint() {
 	tmpid := make([]int, 0)
 	tmppubk := make([]string, 0)
+	tmpip := make([]string, 0)
 	p := sl.Tail.Next
 	for i:=0; i<sl.Leng; i++ {
 		tmpid = append(tmpid, p.Member.Id)
 		tmppubk = append(tmppubk, p.Member.PubKey)
+		tmpip = append(tmpip, p.Member.IpPortAddr)
 		p = p.Next
 	}
 	fmt.Println(tmpid)
