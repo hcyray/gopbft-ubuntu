@@ -312,10 +312,14 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	// generate system hash at current height
 	pbft.currentHeight = cblock.Bloc.Blockhead.Height
 	balancehash := pbft.generateaccountbalancehash()
+	fmt.Println("new instance balance hash:", balancehash)
 	confighash := pbft.succLine.GetHash()
+	fmt.Println("new instance config hash:", confighash)
 	cdedatahash := pbft.cdedata.GenerateStateHash()
+	fmt.Println("new instance cdedatahash:", cdedatahash)
 	pbft.vernumber = cblock.Bloc.Blockhead.Ver
 	pbft.viewnumber = cblock.CommiQC.CommitMsgSet[0].View
+	fmt.Println("new instance ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
 	pbft.systemhash[pbft.currentHeight] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
 
 	// enter view-change stage
@@ -1087,8 +1091,12 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				}
 
 				balancehash := pbft.generateaccountbalancehash()
+				fmt.Println("INSTANCE", pbft.Id, "balance hash:", balancehash)
 				confighash := pbft.succLine.GetHash()
+				fmt.Println("INSTANCE", pbft.Id, "confighash:", confighash)
 				cdedatahash := pbft.cdedata.GenerateStateHash()
+				fmt.Println("INSTANCE", pbft.Id, "cdedatahash:", cdedatahash)
+				fmt.Println("INSTANCE", pbft.Id, "ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
 				pbft.systemhash[pbft.currentHeight] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
 				pbft.persis.blockhashlist[pbft.currentHeight] = pbft.curblockhash
 				pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
