@@ -280,7 +280,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.MsgBuff.UpdateJoinLeaveTxSetAfterCommitBlock(&cblock.Bloc)
 	pbft.MsgBuff.UpdateConfirmedBlockPool(&cblock)
 	pbft.cdedata.UpdateUsingPureDelayData(cblock.Cdedelaydata)
-
+	fmt.Println("new-instance-cdedata.peers:", pbft.cdedata.Peers)
 	// invoke state transfer and wait for state-transfer-reply
 	pbft.QueryStateTransfer(cblock.Bloc.Blockhead.Height-1, 0) // todo, pick a dest or broadcast to the system
 	thebalance := pbft.waitForStateTransferReply(cblock.Bloc.Blockhead.Height-1)
@@ -1061,6 +1061,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 				pbft.MsgBuff.UpdateJoinLeaveTxSetAfterCommitBlock(pbft.curblock)
 				pbft.cdedata.AddNewInstanceData(pbft.curblock.JoinTxList[0])
+				fmt.Println(pbft.Id, "instance-cdedata.peers:", pbft.cdedata.Peers)
 
 				theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 				commqc := datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, pbft.currentHeight, pbft.quorumsize)}
