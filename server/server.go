@@ -721,6 +721,7 @@ func (serv *Server) handlePreprepareMsg(content []byte) {
 	theprog := datastruc.Progres{prepreparemsg.Ver, prepreparemsg.View, prepreparemsg.Order}
 	serv.msgbuff.Pre_preparelog[theprog] = prepreparemsg
 	serv.msgbuff.Msgbuffmu.Unlock()
+	fmt.Println("server", serv.id, "receives an pre-prepare msg at height", prepreparemsg.Order)
 }
 
 func (serv *Server) handlePrepareMsg(content []byte) {

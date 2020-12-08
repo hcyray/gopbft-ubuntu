@@ -1230,6 +1230,7 @@ func (pbft *PBFT) broadcastPreprepare(ver, view, n int, prk *ecdsa.PrivateKey, h
 	pbft.MsgBuff.Pre_preparelog[theprog] = prepreparemsg
 	pbft.MsgBuff.Msgbuffmu.Unlock()
 
+	fmt.Println("leader", pbft.Id, "broadcasts pre-prepare msg to", pbft.membersexceptme)
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "prepreparemsg", content}
 	pbft.broadcdataCh <- datatosend
 }
