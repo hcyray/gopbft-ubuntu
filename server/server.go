@@ -828,7 +828,9 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 	delete(serv.msgbuff.Vcmsg, theterm)
 	serv.msgbuff.Vcmsg[theterm] = make([]datastruc.ViewChangeMsg, len(tmp))
 	copy(serv.msgbuff.Vcmsg[theterm], tmp)
-	//fmt.Println("serve", serv.id, "now has", len(serv.msgbuff.Vcmsg[theterm]), "view-change msg")
+	if serv.id==4 {
+		fmt.Println("serve", serv.id, "now has", len(serv.msgbuff.Vcmsg[theterm]), "view-change msg at ver", theterm.Ver, "view", theterm.View)
+	}
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
