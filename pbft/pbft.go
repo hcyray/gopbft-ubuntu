@@ -1069,8 +1069,6 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				//pbft.UpdateByzantineIdentity()
 
 
-				//consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.Id, pbft.succLine.Leng, pbft.quorumsize)
-				//todo, this func blocks, why? debug!
 				if pbft.Id==0 {
 					pbft.cdedata.PrintResult()
 				}
