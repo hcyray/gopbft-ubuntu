@@ -300,8 +300,6 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.curConfigure = cblock.Bloc.Configure
 	//fmt.Println("new instance config:", cblock.Bloc.Configure)
 	pbft.succLine = datastruc.ConstructSuccessionLine(cblock.Bloc.Configure)
-	fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
-	pbft.succLine.SucclinePrint()
 	pbft.UpdateQuorumSize(pbft.succLine.Leng)
 	fmt.Println("instance", pbft.Id, "thinks the current quorum size is", pbft.quorumsize)
 
@@ -312,6 +310,8 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.currentHeight = cblock.Bloc.Blockhead.Height
 	balancehash := pbft.generateaccountbalancehash()
 	fmt.Println("new instance balance hash:", balancehash)
+	fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
+	pbft.succLine.SucclinePrint()
 	confighash := pbft.succLine.GetHash()
 	fmt.Println("new instance config hash:", confighash)
 	cdedatahash := pbft.cdedata.GenerateStateHash()
@@ -1081,19 +1081,19 @@ func (pbft *PBFT) CommitCurConsensOb() {
 
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
-				fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
-				pbft.succLine.SucclinePrint()
 				pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
 				fmt.Println("instance", pbft.Id, "thinks the current quorum size is", pbft.quorumsize)
 				//pbft.UpdateByzantineIdentity()
 
-				if pbft.Id==0 {
-					pbft.cdedata.PrintResult()
-				}
+				//if pbft.Id==0 {
+				//	pbft.cdedata.PrintResult()
+				//}
 
 				balancehash := pbft.generateaccountbalancehash()
 				fmt.Println("INSTANCE", pbft.Id, "balance hash:", balancehash)
+				fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
+				pbft.succLine.SucclinePrint()
 				confighash := pbft.succLine.GetHash()
 				fmt.Println("INSTANCE", pbft.Id, "confighash:", confighash)
 				cdedatahash := pbft.cdedata.GenerateStateHash()

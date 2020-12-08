@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"fmt"
 	"log"
 )
 
@@ -182,5 +183,6 @@ func (sl *SuccLine) SucclinePrint() {
 		tmppubk = append(tmppubk, p.Member.PubKey)
 		p = p.Next
 	}
-
+	fmt.Println(tmpid)
+	fmt.Println(tmppubk)
 }
