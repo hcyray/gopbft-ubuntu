@@ -814,7 +814,7 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 	pub := datastruc.DecodePublic(vcmsg.Pubkey)
 	if !vcmsg.Sig.Verify(datatoverify[:], pub) {
 		fmt.Println("serve", serv.id, "receives a view-change msg, but the signature is wrong!")
-		fmt.Println("sender id is ", vcmsg.SenderId, " singed data is ", datatoverify, "\n")
+		//fmt.Println("sender id is ", vcmsg.SenderId, " singed data is ", datatoverify, "\n")
 		return
 	}
 	//fmt.Println("serve", serv.id, "receives a view-change msg")
