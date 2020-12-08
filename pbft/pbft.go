@@ -1293,6 +1293,7 @@ func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.Leav
 	pbft.MsgBuff.Msgbuffmu.Unlock()
 
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "viewchangemsg", content}
+	fmt.Println("instance", pbft.Id, "broadcasts the view chagne msg to", pbft.membersexceptme)
 	pbft.broadcdataCh <- datatosend
 }
 
