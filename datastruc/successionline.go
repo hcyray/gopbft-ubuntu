@@ -131,7 +131,7 @@ func (sl *SuccLine) GetHash() [32]byte {
 		sllist = append(sllist, p.Member)
 		p = p.Next
 	}
-
+	fmt.Println("sllist:~~~~~~~~~~~~", sllist)
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(sllist)
@@ -139,6 +139,7 @@ func (sl *SuccLine) GetHash() [32]byte {
 		log.Panic(err)
 	}
 	content := buff.Bytes()
+	fmt.Println("content of sllist:~~~~~~~~~~~~~~~", content)
 	hashval := sha256.Sum256(content)
 	return hashval
 }
