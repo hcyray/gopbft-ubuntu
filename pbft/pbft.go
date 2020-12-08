@@ -240,8 +240,8 @@ func (pbft *PBFT) InitialSetup() {
 		tmppubk = append(tmppubk, p.Member.PubKey)
 		p = p.Next
 	}
-	fmt.Println("instace", pbft.Id, "thinks the leader succession line is", tmpid, "pubkey not shown")
-	fmt.Println("instance", pbft.Id, "pubkey string is", pbft.PubKeystr)
+	//fmt.Println("instace", pbft.Id, "thinks the leader succession line is", tmpid, "pubkey not shown")
+	//fmt.Println("instance", pbft.Id, "pubkey string is", pbft.PubKeystr)
 
 	// construct genesis block
 	confighash := pbft.succLine.GetHash()
