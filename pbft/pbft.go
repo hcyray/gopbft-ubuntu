@@ -1089,8 +1089,8 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pppmsg, _ := pbft.MsgBuff.ReadPrepreparelog(theprog)
 				cdep := pbft.cdedata.GeneratePureDelayData()
 				cblock := datastruc.ConfirmedBlock{pppmsg, *pbft.curblock,commqc, cdep}
+				time.Sleep(time.Millisecond * 4)
 				if pbft.isleader {
-					time.Sleep(time.Millisecond * 2)
 					pbft.InformNewPeer(cblock, thejoinid)
 					elapsed := time.Since(pbft.starttime).Seconds()
 					fmt.Println("leader", pbft.Id, " informs the new instace the confirmed block at", elapsed, "s")

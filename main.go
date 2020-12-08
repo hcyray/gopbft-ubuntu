@@ -135,7 +135,7 @@ func main() {
 		for i:=0; i<clientnumber; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*instanceoneachserver, privatekey, allips[0:totalserver], instanceoneachserver)
-			val := rand.Intn(400)
+			val := rand.Intn(400) + 5000
 			time.Sleep(time.Millisecond*time.Duration(val))
 			go theclient.Run()
 			fmt.Println("the ", i, "client starts")
