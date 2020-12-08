@@ -1035,6 +1035,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
 				pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
+				// update member and memberexceptme
 				//pbft.UpdateByzantineIdentity()
 
 				confighash := pbft.succLine.GetHash()
@@ -1063,6 +1064,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				fmt.Println("instance", pbft.Id,"tells communication layer to add an addr:", thejoinaddr)
 				pbft.memberidchangeCh <- datatosend // todo, server needs do something
 				pbft.members = append(pbft.members, thejoinid)
+				pbft.membersexceptme = append(pbft.membersexceptme, thejoinid)
 
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
