@@ -306,6 +306,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.curConfigure = cblock.Bloc.Configure
 	pbft.succLine = datastruc.ConstructSuccessionLine(cblock.Bloc.Configure)
 	pbft.UpdateQuorumSize(pbft.succLine.Leng)
+	fmt.Println("instance", pbft.Id, "thinks the current quorum size is", pbft.quorumsize)
 
 	// generate system hash at current height
 	pbft.currentHeight = cblock.Bloc.Blockhead.Height
@@ -317,6 +318,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.systemhash[pbft.currentHeight] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
 
 	// enter view-change stage
+	// todo, need broadcast view-change msg, omit currently for simplicity.
 	pbft.resetVariForViewChangeAfterReconfig()
 }
 
@@ -1066,8 +1068,8 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
 				pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
+				fmt.Println("instance", pbft.Id, "thinks the current quorum size is", pbft.quorumsize)
 				//pbft.UpdateByzantineIdentity()
-
 
 				if pbft.Id==0 {
 					pbft.cdedata.PrintResult()
@@ -1087,7 +1089,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pppmsg, _ := pbft.MsgBuff.ReadPrepreparelog(theprog)
 				cdep := pbft.cdedata.GeneratePureDelayData()
 				cblock := datastruc.ConfirmedBlock{pppmsg, *pbft.curblock,commqc, cdep}
-				time.Sleep(time.Millisecond * 4)
+				time.Sleep(time.Millisecond * 10)
 				if pbft.isleader {
 					pbft.InformNewPeer(cblock, thejoinid)
 					elapsed := time.Since(pbft.starttime).Seconds()
