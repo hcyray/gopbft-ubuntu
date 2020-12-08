@@ -1092,7 +1092,8 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				if pbft.isleader {
 					time.Sleep(time.Millisecond * 2)
 					pbft.InformNewPeer(cblock, thejoinid)
-					fmt.Println("leader", pbft.Id, " informs the new instace the confirmed block")
+					elapsed := time.Since(pbft.starttime).Seconds()
+					fmt.Println("leader", pbft.Id, " informs the new instace the confirmed block at", elapsed, "s")
 				}
 			} else {
 				log.Panic("the config-block has no leave-tx or join-tx")
