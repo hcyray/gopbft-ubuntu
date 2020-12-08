@@ -480,7 +480,7 @@ func (pbft *PBFT) Run() {
 					if prog.Ver==pbft.vernumber && prog.View==pbft.viewnumber && prog.Height==pbft.currentHeight && pbft.consenstatus==Preprepared {
 						pbft.consenstatus = Prepared
 						pbft.persis.preparelock.LockedHeight = pbft.currentHeight
-						//fmt.Println("instance", pbft.Id, "is prepared in ver",pbft.vernumber,"view", pbft.viewnumber, "height", pbft.currentHeight)
+						fmt.Println("instance", pbft.Id, "is prepared in ver",pbft.vernumber,"view", pbft.viewnumber, "height", pbft.currentHeight)
 						//fmt.Println("instance ", pbft.Id, "broadcast commit msg with digest ", pbft.curblockhash)
 						go pbft.broadcastCommit(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.curblockhash)
 						//fmt.Println("instance ", pbft.Id, "scan commit msg expect digest ", pbft.curblockhash)
