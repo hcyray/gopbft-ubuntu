@@ -321,6 +321,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	// enter view-change stage
 	// todo, need broadcast view-change msg, omit currently for simplicity.
 	pbft.resetVariForViewChangeAfterReconfig()
+	fmt.Println("the new instance late setup completes")
 }
 
 func (pbft *PBFT) Run() {

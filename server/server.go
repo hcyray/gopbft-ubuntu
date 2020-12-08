@@ -141,7 +141,7 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 	time.Sleep(time.Second * time.Duration(sleeptime))
 	fmt.Println("the late server", serv.id, "reads config from some remote peer:")
 	peerlist := serv.ReadConfigFromRemote()
-	fmt.Println("server", serv.id, "readConfigFromRemote completes, peerlist: ", peerlist)
+	//fmt.Println("server", serv.id, "readConfigFromRemote completes, peerlist: ", peerlist)
 	serv.totalserver = len(peerlist)+1
 	for _, v := range peerlist {
 		serv.memberIds = append(serv.memberIds, v.Id)
@@ -155,7 +155,7 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 		serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh)
 
 	serv.pbft.LateSetup(peerlist)
-	fmt.Println("the new node late setup completes, start consensing")
+	fmt.Println("the new instance late setup completes, start consensing")
 	go serv.pbft.Run()
 }
 
