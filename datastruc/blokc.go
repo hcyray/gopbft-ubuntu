@@ -28,11 +28,11 @@ type BlockHead struct {
 	Kind string
 	Ver int
 	Height int
+	HeadHash [32]byte
+
 	PrevHash [32]byte
 	SystemHash [32]byte
-
 	TXMerkleTreeHash [32]byte
-	// todo, config hash and measurement hash
 }
 
 func NewTxBlock(pubkeystr string, prvkey *ecdsa.PrivateKey, txpool *[]Transaction, measureinfolist []MeasurementResultMsg,
@@ -41,6 +41,7 @@ func NewTxBlock(pubkeystr string, prvkey *ecdsa.PrivateKey, txpool *[]Transactio
 	bloc.Blockhead.Kind = "txblock"
 	bloc.Blockhead.Ver = ver
 	bloc.Blockhead.Height = height
+
 	bloc.Blockhead.PrevHash = prevhash
 	bloc.Blockhead.SystemHash = syshash
 
@@ -54,6 +55,7 @@ func NewTxBlock(pubkeystr string, prvkey *ecdsa.PrivateKey, txpool *[]Transactio
 		fmt.Println("error in generating merkle tree")
 	}
 
+	bloc.Blockhead.HeadHash = sha256.Sum256(bloc.Blockhead.GetSerialize())
 	datatosign := bloc.GetHash()
 	bloc.Sig.Sign(datatosign[:], prvkey)
 	bloc.PubKey = pubkeystr
@@ -79,6 +81,7 @@ func NewJoinConfigBlock(pubkeystr string, prvkey *ecdsa.PrivateKey, jtx JoinTx, 
 	bloc.LeaveTxList = make([]LeaveTx, 0)
 	bloc.Configure = peers
 
+	bloc.Blockhead.HeadHash = sha256.Sum256(bloc.Blockhead.GetSerialize())
 	datatosign := bloc.GetHash()
 	bloc.Sig.Sign(datatosign[:], prvkey)
 	bloc.PubKey = pubkeystr
@@ -99,6 +102,7 @@ func NewLeaveConfigBlock(pubkeystr string, prvkey *ecdsa.PrivateKey, ltx LeaveTx
 	bloc.LeaveTxList = append(bloc.LeaveTxList, ltx)
 	bloc.Configure = peers
 
+	bloc.Blockhead.HeadHash = sha256.Sum256(bloc.Blockhead.GetSerialize())
 	datatosign := bloc.GetHash()
 	bloc.Sig.Sign(datatosign[:], prvkey)
 	bloc.PubKey = pubkeystr
@@ -199,10 +203,11 @@ func GenTxMerkTree(d *[]Transaction, out *[32]byte) error {
 }
 
 func (bloc *Block) GetHash() [32]byte {
-	var hash [32]byte
-	data := bloc.Blockhead.GetSerialize()
-	hash = sha256.Sum256(data)
-	return hash
+	//var hash [32]byte
+	//data := bloc.Blockhead.GetSerialize()
+	//hash = sha256.Sum256(data)
+	//return hash
+	return bloc.Blockhead.HeadHash
 }
 
 
