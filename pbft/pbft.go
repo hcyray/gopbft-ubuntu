@@ -422,9 +422,9 @@ func (pbft *PBFT) Run() {
 					var hval [32]byte
 					pbft.mu.Lock()
 					hval = pbft.systemhash[pbft.currentHeight-1]
-					fmt.Println("instance", pbft.Id, "scan pre-prepare msg with prev system hash: ", hval)
+					//fmt.Println("instance", pbft.Id, "scan pre-prepare msg with prev system hash: ", hval)
 					go pbft.scanPreprepare(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.curleaderPubKeystr, hval)
-					fmt.Println("instance", pbft.Id, "scan pre-prepare msg at height", pbft.currentHeight)
+					//fmt.Println("instance", pbft.Id, "scan pre-prepare msg at height", pbft.currentHeight)
 					pbft.mu.Unlock()
 				}
 				select {
@@ -797,7 +797,7 @@ func (pbft *PBFT) scanCommit(ver, view, heigh int, digest [32]byte, quorumsize i
 }
 
 func (pbft *PBFT) scanViewChange(ver, view, quorumsize int) {
-	fmt.Println("instance", pbft.Id, "scans view-change msg in ver", ver, "view", view)
+	//fmt.Println("instance", pbft.Id, "scans view-change msg in ver", ver, "view", view)
 	timeouter := time.NewTimer(time.Second*ThreadExit)
 	theterm := datastruc.Term{ver, view}
 	for {
@@ -1239,7 +1239,7 @@ func (pbft *PBFT) broadcastPreprepare(ver, view, n int, prk *ecdsa.PrivateKey, h
 	pbft.MsgBuff.Pre_preparelog[theprog] = prepreparemsg
 	pbft.MsgBuff.Msgbuffmu.Unlock()
 
-	fmt.Println("leader", pbft.Id, "broadcasts pre-prepare msg to", pbft.membersexceptme)
+	//fmt.Println("leader", pbft.Id, "broadcasts pre-prepare msg to", pbft.membersexceptme)
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "prepreparemsg", content}
 	pbft.broadcdataCh <- datatosend
 }
