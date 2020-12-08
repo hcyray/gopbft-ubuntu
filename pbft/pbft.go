@@ -291,7 +291,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	// invoke state transfer and wait for state-transfer-reply
 	pbft.QueryStateTransfer(cblock.Bloc.Blockhead.Height-1, 0) // todo, pick a dest or broadcast to the system
 	thebalance := pbft.waitForStateTransferReply(cblock.Bloc.Blockhead.Height-1)
-	fmt.Println("node", pbft.Id, "is a new node, got the state transfer")
+	fmt.Println("node", pbft.Id, "is a new node, got the state transfer, the balance:", thebalance)
 
 	// update persister and blockcachedb
 	pbft.cachedb.UpdateAfterConfirmB(cblock)
@@ -1066,7 +1066,6 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.MsgBuff.UpdateJoinLeaveTxSetAfterCommitBlock(pbft.curblock)
 				pbft.cdedata.AddNewInstanceData(pbft.curblock.JoinTxList[0])
 
-
 				theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 				commqc := datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, pbft.currentHeight, pbft.quorumsize)}
 				pbft.cachedb.UpdateAfterCommit(pbft.currentHeight, pbft.curblock, pbft.accountbalance, commqc)
@@ -1108,12 +1107,12 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.reconfighappen = true
 				pbft.currentHeight += 1
 
-				theprog := datastruc.Progres{pbft.vernumber, pbft.viewnumber, pbft.currentHeight}
-				pppmsg, _ := pbft.MsgBuff.ReadPrepreparelog(theprog)
-				cdep := pbft.cdedata.GeneratePureDelayData()
-				cblock := datastruc.ConfirmedBlock{pppmsg, *pbft.curblock,commqc, cdep}
 				time.Sleep(time.Millisecond * 10)
 				if pbft.isleader {
+					theprog := datastruc.Progres{pbft.vernumber, pbft.viewnumber, pbft.currentHeight}
+					pppmsg, _ := pbft.MsgBuff.ReadPrepreparelog(theprog)
+					cdep := pbft.cdedata.GeneratePureDelayData()
+					cblock := datastruc.ConfirmedBlock{pppmsg, *pbft.curblock,commqc, cdep}
 					pbft.InformNewPeer(cblock, thejoinid)
 					elapsed := time.Since(pbft.starttime).Seconds()
 					fmt.Println("leader", pbft.Id, " informs the new instace the confirmed block at", elapsed, "s")
