@@ -304,6 +304,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 
 	// generate a new succession line and config, includes itself
 	pbft.curConfigure = cblock.Bloc.Configure
+	fmt.Println("new instance config:", cblock.Bloc.Configure)
 	pbft.succLine = datastruc.ConstructSuccessionLine(cblock.Bloc.Configure)
 	pbft.UpdateQuorumSize(pbft.succLine.Leng)
 	fmt.Println("instance", pbft.Id, "thinks the current quorum size is", pbft.quorumsize)
@@ -1066,6 +1067,10 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.memberidchangeCh <- datatosend // todo, server needs do something
 				pbft.members = append(pbft.members, thejoinid)
 				pbft.membersexceptme = append(pbft.membersexceptme, thejoinid)
+
+				if pbft.Id==0 {
+					fmt.Println("the config in config-block:", pbft.curblock.Configure)
+				}
 
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
