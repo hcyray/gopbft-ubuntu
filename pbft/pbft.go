@@ -344,7 +344,7 @@ func (pbft *PBFT) Run() {
 		//}
 		switch pbft.status {
 		case stat_consensus:
-			//fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
+			fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
 			if pbft.currentHeight>1 {
 				elapsed := time.Since(starttime).Milliseconds()
 				pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
@@ -1301,7 +1301,7 @@ func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.Leav
 	pbft.MsgBuff.Msgbuffmu.Unlock()
 
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "viewchangemsg", content}
-	fmt.Println("instance", pbft.Id, "broadcasts the view chagne msg to", pbft.membersexceptme)
+	//fmt.Println("instance", pbft.Id, "broadcasts the view chagne msg to", pbft.membersexceptme)
 	pbft.broadcdataCh <- datatosend
 }
 
