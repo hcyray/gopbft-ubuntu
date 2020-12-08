@@ -187,4 +187,5 @@ func (sl *SuccLine) SucclinePrint() {
 	}
 	fmt.Println(tmpid)
 	fmt.Println(tmppubk)
+	fmt.Println(tmpip)
 }
