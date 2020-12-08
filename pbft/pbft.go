@@ -284,7 +284,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	// invoke state transfer and wait for state-transfer-reply
 	pbft.QueryStateTransfer(cblock.Bloc.Blockhead.Height-1, 0) // todo, pick a dest or broadcast to the system
 	thebalance := pbft.waitForStateTransferReply(cblock.Bloc.Blockhead.Height-1)
-	fmt.Println("node", pbft.Id, "is a new node, got the state transfer, the balance:", thebalance)
+	//fmt.Println("node", pbft.Id, "is a new node, got the state transfer, the balance:", thebalance)
 
 	// update persister and blockcachedb
 	pbft.cachedb.UpdateAfterConfirmB(cblock)
@@ -319,6 +319,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.vernumber = cblock.Bloc.Blockhead.Ver
 	pbft.viewnumber = cblock.CommiQC.CommitMsgSet[0].View
 	fmt.Println("new instance ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
+	pbft.cdedata.PrintResult()
 	pbft.systemhash[pbft.currentHeight] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
 
 	// enter view-change stage
@@ -1073,9 +1074,9 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.members = append(pbft.members, thejoinid)
 				pbft.membersexceptme = append(pbft.membersexceptme, thejoinid)
 
-				if pbft.Id==0 {
-					fmt.Println("the config in config-block:", pbft.curblock.Configure)
-				}
+				//if pbft.Id==0 {
+				//	fmt.Println("the config in config-block:", pbft.curblock.Configure)
+				//}
 
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
