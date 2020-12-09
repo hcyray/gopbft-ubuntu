@@ -3,6 +3,7 @@ package datastruc
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/gob"
 	"log"
 	"os"
@@ -67,17 +68,17 @@ func GenerateSystemHash(ver, height int, confighash, utxohash, cdestatehash [32]
 	return res
 }
 
-func RecordConfig(sl *SuccLine) {
-	file, err := os.OpenFile("config", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
-	if err!=nil {
-		fmt.Println("create config file error")
-	}
-	enc := gob.NewEncoder(file)
-	err = enc.Encode(sl.Serialize())
-	if err!=nil {
-		fmt.Println("write config to file error")
-	}
-}
+//func RecordConfig(sl *SuccLine) {
+//	file, err := os.OpenFile("config", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
+//	if err!=nil {
+//		fmt.Println("create config file error")
+//	}
+//	enc := gob.NewEncoder(file)
+//	err = enc.Encode(sl.Serialize())
+//	if err!=nil {
+//		fmt.Println("write config to file error")
+//	}
+//}
 
 func ReadConfig() []PeerIdentity {
 	// read from some existing instance
@@ -122,4 +123,20 @@ func GenerateTwoBitId(id int) string {
 		res = strconv.Itoa(id)
 	}
 	return res
+}
+
+func EncodeInt(current *[]byte, d int) error {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, d)
+	if err != nil {
+		return fmt.Errorf("Basic.EncodeInt write failed, %s", err)
+	}
+	*current = append(*current, buf.Bytes()...)
+	return nil
+}
+
+func EncodeString(current *[]byte, d string) error {
+	dstr := []byte(d)
+	*current = append(*current, dstr...)
+	return nil
 }

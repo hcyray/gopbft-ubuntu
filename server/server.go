@@ -683,6 +683,7 @@ func (serv *Server) handleConfirmedBlock(content []byte) {
 	var buff bytes.Buffer
 	var cbloc datastruc.ConfirmedBlock
 	buff.Write(content)
+	gob.Register(elliptic.P256())
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(&cbloc)
 	if err != nil {

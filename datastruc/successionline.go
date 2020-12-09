@@ -49,11 +49,10 @@ func (sl *SuccLine) InverseRotateLeader() {
 	sl.CurLeader = res
 }
 
-func (sl *SuccLine) DeleteMember(thepeer PeerIdentity) {
-
-}
-
-
+//func (sl *SuccLine) DeleteMember(thepeer PeerIdentity) {
+//
+//}
+//
 
 func (sl *SuccLine) InsertNewSLNode(n1 *SLNode) {
 	// insert the new node to the start of the circle chain list
@@ -104,24 +103,18 @@ func (sl *SuccLine) ConverToList() []PeerIdentity {
 //	return sllist
 //}
 
-func (sl *SuccLine) Serialize() []byte {
-	// convert the circle chain to a list
-	//sllist := []PeerIdentity{}
-	//p := sl.Tail.Next
-	//for i:=0; i<sl.Leng; i++ {
-	//	sllist = append(sllist, p.Member)
-	//	p = p.Next
-	//}
-	sllist := sl.ConverToList()
-	var buff bytes.Buffer
-	enc := gob.NewEncoder(&buff)
-	err := enc.Encode(sllist)
-	if err != nil {
-		log.Panic(err)
-	}
-	content := buff.Bytes()
-	return content
-}
+//func (sl *SuccLine) Serialize() []byte {
+//	// convert the circle chain to a list
+//	sllist := sl.ConverToList()
+//	var buff bytes.Buffer
+//	enc := gob.NewEncoder(&buff)
+//	err := enc.Encode(sllist)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//	content := buff.Bytes()
+//	return content
+//}
 
 func (sl *SuccLine) GetHash() [32]byte {
 	// convert the circle chain to a list
@@ -131,15 +124,25 @@ func (sl *SuccLine) GetHash() [32]byte {
 		sllist = append(sllist, p.Member)
 		p = p.Next
 	}
-	fmt.Println("sllist:~~~~~~~~~~~~", sllist)
-	var buff bytes.Buffer
-	enc := gob.NewEncoder(&buff)
-	err := enc.Encode(sllist)
-	if err != nil {
-		log.Panic(err)
+
+	// turn the sllist to []byte, but avoid using gob.encode
+
+	var content []byte
+	for _, v := range sllist {
+		content = append(content, v.Serialize()...)
 	}
-	content := buff.Bytes()
-	fmt.Println("content of sllist:~~~~~~~~~~~~~~~", content)
+
+	////fmt.Println("sllist:~~~~~~~~~~~~", sllist)
+	//var buff bytes.Buffer
+	//enc := gob.NewEncoder(&buff)
+	//err := enc.Encode(sllist)
+	//if err != nil {
+	//	log.Panic(err)
+	//}
+	//content := buff.Bytes()
+	////fmt.Println("content of sllist:~~~~~~~~~~~~~~~", content)
+	//
+
 	hashval := sha256.Sum256(content)
 	return hashval
 }
@@ -186,7 +189,9 @@ func (sl *SuccLine) SucclinePrint() {
 		tmpip = append(tmpip, p.Member.IpPortAddr)
 		p = p.Next
 	}
+	fmt.Println("succeline ~~~~~~~~~~~~~~~")
 	fmt.Println(tmpid)
 	fmt.Println(tmppubk)
 	fmt.Println(tmpip)
+	fmt.Println("succeline ~~~~~~~~~~~~~~~")
 }

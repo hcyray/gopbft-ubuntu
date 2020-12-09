@@ -903,13 +903,18 @@ func (pbft *PBFT) generateaccountbalancehash() [32]byte {
 	for i:=0; i<len(pbft.clientaccount); i++ {
 		value = append(value, pbft.accountbalance[pbft.clientaccount[i]])
 	}
-	var buff bytes.Buffer
-	enc := gob.NewEncoder(&buff)
-	err := enc.Encode(value)
-	if err != nil {
-		log.Panic(err)
+
+	var content []byte
+	for _,v:=range value {
+		datastruc.EncodeInt(&content, v)
 	}
-	content := buff.Bytes()
+	//var buff bytes.Buffer
+	//enc := gob.NewEncoder(&buff)
+	//err := enc.Encode(value)
+	//if err != nil {
+	//	log.Panic(err)
+	//}
+	//content := buff.Bytes()
 	hashv := sha256.Sum256(content)
 	return hashv
 }
@@ -1411,6 +1416,7 @@ func (pbft *PBFT) broadcastNewViewWithBlock(ver int, view int, vcset []datastruc
 
 func (pbft *PBFT) InformNewPeer(cbloc datastruc.ConfirmedBlock,dest int) {
 	var buff bytes.Buffer
+	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(cbloc)
 	if err!=nil {

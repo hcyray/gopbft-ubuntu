@@ -118,13 +118,20 @@ func (peerid PeerIdentity) Lessthan (peerid2 PeerIdentity) bool {
 }
 
 func (peerid PeerIdentity) Serialize() []byte {
-	var encoded bytes.Buffer
+	//var encoded bytes.Buffer
+	//
+	//enc := gob.NewEncoder(&encoded)
+	//err := enc.Encode(peerid)
+	//if err != nil {
+	//	log.Panic(err)
+	//}
+	//
+	//return encoded.Bytes()
 
-	enc := gob.NewEncoder(&encoded)
-	err := enc.Encode(peerid)
-	if err != nil {
-		log.Panic(err)
-	}
+	var tmp []byte
+	EncodeString(&tmp, peerid.PubKey)
+	EncodeInt(&tmp, peerid.Id)
+	EncodeString(&tmp, peerid.IpPortAddr)
 
-	return encoded.Bytes()
+	return tmp
 }
