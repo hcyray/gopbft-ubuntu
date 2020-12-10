@@ -548,13 +548,6 @@ func (cdedata *CDEdata) GenerateStateHash() [32]byte {
 	tmp2 := append(tmp1, validatetwodlistrepresent...)
 	thefinallist := append(tmp2, writetwodlistrepresent...)
 
-	//var buff bytes.Buffer
-	//enc := gob.NewEncoder(&buff)
-	//err := enc.Encode(thefinallist)
-	//if err!=nil {
-	//	log.Panic("generate cde data state hash wrong!")
-	//}
-	//content := buff.Bytes()
 	var content []byte
 	for _,v := range thefinallist {
 		EncodeInt(&content, v)

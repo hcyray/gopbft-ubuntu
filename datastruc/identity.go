@@ -1,11 +1,5 @@
 package datastruc
 
-import (
-	"bytes"
-	"encoding/gob"
-	"log"
-)
-
 type PeerIdentity struct {
 	PubKey string
 	Id int
@@ -63,29 +57,29 @@ func GenerateNewConfigForLeave(originalpeers []PeerIdentity, ltx LeaveTx) []Peer
 	return res
 }
 
-func ConfigSerialize(config []PeerIdentity) []byte {
-	var buff bytes.Buffer
-	enc := gob.NewEncoder(&buff)
-	err := enc.Encode(config)
-	if err != nil {
-		log.Panic(err)
-	}
-	content := buff.Bytes()
-	return content
-}
+//func ConfigSerialize(config []PeerIdentity) []byte {
+//	var buff bytes.Buffer
+//	enc := gob.NewEncoder(&buff)
+//	err := enc.Encode(config)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//	content := buff.Bytes()
+//	return content
+//}
 
-func ConfigDeSerialize(content []byte) []PeerIdentity {
-	var config []PeerIdentity
-	var buff bytes.Buffer
-	buff.Write(content)
-	dec := gob.NewDecoder(&buff)
-	err := dec.Decode(config)
-	if err != nil {
-		log.Panic(err)
-	}
-	return config
-
-}
+//func ConfigDeSerialize(content []byte) []PeerIdentity {
+//	var config []PeerIdentity
+//	var buff bytes.Buffer
+//	buff.Write(content)
+//	dec := gob.NewDecoder(&buff)
+//	err := dec.Decode(config)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//	return config
+//
+//}
 
 //func (peerid PeerIdentity) Lessthan (peerid2 PeerIdentity) bool {
 //	// compare the hash value

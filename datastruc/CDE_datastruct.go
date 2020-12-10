@@ -287,9 +287,55 @@ func (wrr *WriteResponseMsg) Deserialize(content []byte) {
 }
 
 func (mr *MeasurementResultMsg) GetHash() [32]byte {
-	rawdata := []byte(string(mr.Id) + "measurement result" + string(mr.Round))
+	rawdata := mr.Serialize()
 	res := sha256.Sum256(rawdata)
 	return res
+}
+
+func (mr *MeasurementResultMsg) Serialize() []byte {
+	var tmp []byte
+	EncodeInt(&tmp, mr.Id)
+	EncodeInt(&tmp, mr.Round)
+	for _,v := range mr.Peers {
+		EncodeInt(&tmp, v)
+	}
+	for _,v := range mr.Peers {
+		EncodeInt(&tmp, mr.ProposeDealy[v])
+	}
+	for _,v := range mr.Peers {
+		EncodeInt(&tmp, mr.ValidateDelay[v])
+	}
+	for _,v := range mr.Peers {
+		EncodeInt(&tmp, mr.WriteDelay[v])
+	}
+	EncodeBool(&tmp, mr.ProposeFlag)
+	return tmp
+}
+
+
+func (imr *InverseMeasurementResultMsg) GetHash() [32]byte {
+	rawdata := imr.Serialize()
+	res := sha256.Sum256(rawdata)
+	return res
+}
+
+func (imr *InverseMeasurementResultMsg) Serialize() []byte {
+	var tmp []byte
+	EncodeInt(&tmp, imr.Id)
+	EncodeInt(&tmp, imr.Round)
+	for _,v := range imr.Peers {
+		EncodeInt(&tmp, v)
+	}
+	for _,v := range imr.Peers {
+		EncodeInt(&tmp, imr.ProposeDealy[v])
+	}
+	for _,v := range imr.Peers {
+		EncodeInt(&tmp, imr.ValidateDelay[v])
+	}
+	for _,v := range imr.Peers {
+		EncodeInt(&tmp, imr.WriteDelay[v])
+	}
+	return tmp
 }
 
 func PeersMatch(alist []int, blist []int) bool {

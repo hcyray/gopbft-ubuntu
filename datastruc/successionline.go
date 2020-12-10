@@ -1,11 +1,8 @@
 package datastruc
 
 import (
-	"bytes"
 	"crypto/sha256"
-	"encoding/gob"
 	"fmt"
-	"log"
 )
 
 type SLNode struct {
@@ -147,36 +144,36 @@ func (sl *SuccLine) GetHash() [32]byte {
 	return hashval
 }
 
-func (sl *SuccLine) Deserialize(conten []byte) {
-	var sllist []PeerIdentity
-	var buff bytes.Buffer
-	buff.Write(conten)
-	enc := gob.NewDecoder(&buff)
-	err := enc.Decode(&sllist)
-	if err != nil {
-		log.Panic(err)
-	}
-	l := len(sllist)
-
-	tmp := []*SLNode{}
-	for i:=0; i<l; i++ {
-		peer := sllist[i]
-		sln := new(SLNode)
-		sln.Member = peer
-		tmp = append(tmp, sln)
-	}
-
-	for i, sln := range tmp {
-		if i==len(tmp)-1 {
-			sln.Next = tmp[0]
-		} else {
-			sln.Next = tmp[i+1]
-		}
-	}
-	sl.Tail = tmp[len(tmp)-1]
-	sl.Leng = len(tmp)
-	sl.CurLeader = sl.Tail.Next
-}
+//func (sl *SuccLine) Deserialize(conten []byte) {
+//	var sllist []PeerIdentity
+//	var buff bytes.Buffer
+//	buff.Write(conten)
+//	enc := gob.NewDecoder(&buff)
+//	err := enc.Decode(&sllist)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//	l := len(sllist)
+//
+//	tmp := []*SLNode{}
+//	for i:=0; i<l; i++ {
+//		peer := sllist[i]
+//		sln := new(SLNode)
+//		sln.Member = peer
+//		tmp = append(tmp, sln)
+//	}
+//
+//	for i, sln := range tmp {
+//		if i==len(tmp)-1 {
+//			sln.Next = tmp[0]
+//		} else {
+//			sln.Next = tmp[i+1]
+//		}
+//	}
+//	sl.Tail = tmp[len(tmp)-1]
+//	sl.Leng = len(tmp)
+//	sl.CurLeader = sl.Tail.Next
+//}
 
 func (sl *SuccLine) SucclinePrint() {
 	tmpid := make([]int, 0)

@@ -1,12 +1,8 @@
 package datastruc
 
 import (
-	"bytes"
 	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/sha256"
-	"encoding/gob"
-	"log"
 	"time"
 )
 
@@ -29,23 +25,15 @@ func (tx *Transaction) GetHash() [32]byte {
 }
 
 func (tx *Transaction) Serialize() []byte {
-	txcopy := Transaction{}
-	txcopy.Kind = tx.Kind
-	txcopy.Timestamp = tx.Timestamp
-	txcopy.Source = tx.Source
-	txcopy.Recipient = tx.Recipient
-	txcopy.Value = tx.Value
+	var tmp []byte
 
+	EncodeString(&tmp, tx.Kind)
+	EncodeUint64(&tmp, tx.Timestamp)
+	EncodeString(&tmp, tx.Source)
+	EncodeString(&tmp, tx.Recipient)
+	EncodeInt(&tmp, tx.Value)
 
-	var encoded bytes.Buffer
-	gob.Register(elliptic.P256())
-	enc := gob.NewEncoder(&encoded)
-	err := enc.Encode(txcopy)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	return encoded.Bytes()
+	return tmp
 }
 
 func (tx Transaction) IsMint() bool {

@@ -125,7 +125,7 @@ func (delayv *DelayVector) UpdatePropose() {
 	}
 	content := buff.Bytes()
 	datatosend := Datatosend{delayv.Peerexceptme, "proposetest", content}
-	delayv.BroadcastCh <- datatosend // todo, hope this won't block or take too much time
+	delayv.BroadcastCh <- datatosend // question, hope this won't block or take too much time
 
 	// wait for reponse
 	//gotresponse := make(map[int]bool)
@@ -193,7 +193,7 @@ func (delayv *DelayVector) UpdateWrite() {
 	content := buff.Bytes()
 
 	datatosend := Datatosend{delayv.Peerexceptme, "writetest", content}
-	delayv.BroadcastCh <- datatosend // todo, hope this won't block or take too much time
+	delayv.BroadcastCh <- datatosend // question, hope this won't block or take too much time
 
 	delayv.WriteDelaydata[delayv.Tester] = 0
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
@@ -283,7 +283,7 @@ func (delayv *DelayVector) UpdateProposeAtNew() {
 	content := buff.Bytes()
 	datatosend := Datatosend{delayv.Peers, "proposetestfromnew", content}
 
-	delayv.BroadcastCh <- datatosend // todo, hope this won't block or take too much time
+	delayv.BroadcastCh <- datatosend // question, hope this won't block or take too much time
 
 	// wait for reponse
 	gotresponse := make(map[int]bool)

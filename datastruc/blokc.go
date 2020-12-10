@@ -55,16 +55,12 @@ func NewTxBlock(pubkeystr string, prvkey *ecdsa.PrivateKey, txpool *[]Transactio
 		fmt.Println("error in generating merkle tree")
 	}
 
-	bloc.Blockhead.HeadHash = sha256.Sum256(bloc.Blockhead.GetSerialize())
+	bloc.Blockhead.HeadHash = sha256.Sum256(bloc.Blockhead.Serialize())
 	datatosign := bloc.GetHash()
 	bloc.Sig.Sign(datatosign[:], prvkey)
 	bloc.PubKey = pubkeystr
 
 	fmt.Println("the tx number of the new packed block at height", height, "is ", len(bloc.TransactionList))
-	//fmt.Println("the measurement result of the new packed block at height", height, "is", len(bloc.MeasurementResList))
-
-	//fmt.Println("the system hash included in the new packed block at height", height,"is", prevhash)
-
 	return bloc
 }
 
@@ -81,7 +77,7 @@ func NewJoinConfigBlock(pubkeystr string, prvkey *ecdsa.PrivateKey, jtx JoinTx, 
 	bloc.LeaveTxList = make([]LeaveTx, 0)
 	bloc.Configure = peers
 
-	bloc.Blockhead.HeadHash = sha256.Sum256(bloc.Blockhead.GetSerialize())
+	bloc.Blockhead.HeadHash = sha256.Sum256(bloc.Blockhead.Serialize())
 	datatosign := bloc.GetHash()
 	bloc.Sig.Sign(datatosign[:], prvkey)
 	bloc.PubKey = pubkeystr
@@ -102,7 +98,7 @@ func NewLeaveConfigBlock(pubkeystr string, prvkey *ecdsa.PrivateKey, ltx LeaveTx
 	bloc.LeaveTxList = append(bloc.LeaveTxList, ltx)
 	bloc.Configure = peers
 
-	bloc.Blockhead.HeadHash = sha256.Sum256(bloc.Blockhead.GetSerialize())
+	bloc.Blockhead.HeadHash = sha256.Sum256(bloc.Blockhead.Serialize())
 	datatosign := bloc.GetHash()
 	bloc.Sig.Sign(datatosign[:], prvkey)
 	bloc.PubKey = pubkeystr
@@ -160,7 +156,7 @@ func (block *Block) GetSerialize() []byte {
 	return content
 }
 
-func (blockhead *BlockHead) GetSerialize() []byte {
+func (blockhead *BlockHead) Serialize() []byte {
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(blockhead)
@@ -171,15 +167,15 @@ func (blockhead *BlockHead) GetSerialize() []byte {
 	return content
 }
 
-func (block *Block) GetDeserialize(conten []byte) {
-	var buff bytes.Buffer
-	buff.Write(conten)
-	dec := gob.NewDecoder(&buff)
-	err := dec.Decode(block)
-	if err!=nil {
-		fmt.Println("serialized block decoding error")
-	}
-}
+//func (block *Block) GetDeserialize(conten []byte) {
+//	var buff bytes.Buffer
+//	buff.Write(conten)
+//	dec := gob.NewDecoder(&buff)
+//	err := dec.Decode(block)
+//	if err!=nil {
+//		fmt.Println("serialized block decoding error")
+//	}
+//}
 
 func GenTxMerkTree(d *[]Transaction, out *[32]byte) error {
 	if len(*d) == 0 {

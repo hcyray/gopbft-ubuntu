@@ -268,7 +268,7 @@ func (msgbuf *MessageBuffer) UpdateJoinLeaveTxSetAfterCommitBlock(bloc *Block) {
 		theltx := bloc.LeaveTxList[0]
 		ltxlist := make([]LeaveTx, 0)
 		for _, ltx := range msgbuf.JoinLeavetxSet.LTxSet {
-			if !TwoHashEqual(theltx.GetHash(), ltx.GetHash()) {
+			if !TwoHashEqual(theltx.TxHash, ltx.TxHash) {
 				ltxlist = append(ltxlist, ltx)
 			}
 		}
@@ -278,7 +278,7 @@ func (msgbuf *MessageBuffer) UpdateJoinLeaveTxSetAfterCommitBlock(bloc *Block) {
 		thejtx := bloc.JoinTxList[0]
 		jtxlist := make([]JoinTx, 0)
 		for _, jtx := range msgbuf.JoinLeavetxSet.JTxset {
-			if !TwoHashEqual(thejtx.GetHash(), jtx.GetHash()) {
+			if !TwoHashEqual(thejtx.TxHash, jtx.TxHash) {
 				jtxlist = append(jtxlist, jtx)
 			}
 		}

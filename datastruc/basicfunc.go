@@ -125,7 +125,27 @@ func GenerateTwoBitId(id int) string {
 	return res
 }
 
+func EncodeBool(current *[]byte, d bool) error {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, d)
+	if err != nil {
+		return fmt.Errorf("Basic.EncodeInt write failed, %s", err)
+	}
+	*current = append(*current, buf.Bytes()...)
+	return nil
+}
+
 func EncodeInt(current *[]byte, d int) error {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, d)
+	if err != nil {
+		return fmt.Errorf("Basic.EncodeInt write failed, %s", err)
+	}
+	*current = append(*current, buf.Bytes()...)
+	return nil
+}
+
+func EncodeUint64(current *[]byte, d uint64) error {
 	buf := new(bytes.Buffer)
 	err := binary.Write(buf, binary.LittleEndian, d)
 	if err != nil {
@@ -138,5 +158,10 @@ func EncodeInt(current *[]byte, d int) error {
 func EncodeString(current *[]byte, d string) error {
 	dstr := []byte(d)
 	*current = append(*current, dstr...)
+	return nil
+}
+
+func EncodeByteSlice(current *[]byte, d []byte) error {
+	*current = append(*current, d...)
 	return nil
 }

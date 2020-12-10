@@ -552,7 +552,7 @@ func (serv *Server) handleLeaveTx(conten []byte) {
 	serv.msgbuff.JoinLeavetxSet.LTxSet = append(serv.msgbuff.JoinLeavetxSet.LTxSet, leavetx)
 	//fmt.Println("server", serv.id, "receives a leave-tx")
 	serv.msgbuff.Msgbuffmu.Unlock()
-	serv.censorshipmonitorCh <- leavetx.GetHash()
+	serv.censorshipmonitorCh <- leavetx.TxHash
 }
 
 func (serv *Server) handleIdPortPubkey(conten []byte) {
@@ -654,7 +654,7 @@ func (serv *Server) handleBlock(content []byte) {
 		}
 		for _, ltx := range bloc.LeaveTxList {
 			if !ltx.Verify() {
-				fmt.Println("server", serv.id, "receives a block, but contains unvalid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
+				fmt.Println("server", serv.id, "receives a block, but contains unvalid leave-tx, its content", ltx.Serialize(), "  its hash", ltx.TxHash, " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
 				return
 			} else {
 				//fmt.Println("server", serv.id, "receives a block, contains valid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)

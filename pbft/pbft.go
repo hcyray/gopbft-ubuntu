@@ -112,6 +112,7 @@ type PBFT struct {
 	leaverequeststarttime time.Time
 
 	cdedata *datastruc.CDEdata
+	cdeupdateflag bool
 }
 
 func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[int]string, msgbuf *datastruc.MessageBuffer, sendCh chan datastruc.DatatosendWithIp,
@@ -254,7 +255,6 @@ func (pbft *PBFT) InitialSetup() {
 }
 
 func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
-	//time.Sleep(time.Second * 16)
 	fmt.Println("instance", pbft.Id, "initializes late setup")
 
 	//build current leader succession line and config
@@ -284,10 +284,11 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	// invoke state transfer and wait for state-transfer-reply
 	pbft.QueryStateTransfer(cblock.Bloc.Blockhead.Height-1, 0) // todo, pick a dest or broadcast to the system
 	thebalance := pbft.waitForStateTransferReply(cblock.Bloc.Blockhead.Height-1)
-	//fmt.Println("node", pbft.Id, "is a new node, got the state transfer, the balance:", thebalance)
+	//fmt.Println("node", pbft.Id, "is a new node, got the state transfer")
 
 	// update persister and blockcachedb
 	pbft.cachedb.UpdateAfterConfirmB(cblock)
+	pbft.cachedb.UpdateAccountBalanceAtHeight(cblock.Bloc.Blockhead.Height-1, thebalance)
 	pbft.persis.blockhashlist[cblock.Bloc.Blockhead.Height] = cblock.Bloc.GetHash()
 	pbft.persis.logterm[cblock.Bloc.Blockhead.Height] = datastruc.Term{cblock.Bloc.Blockhead.Ver, cblock.CommiQC.CommitMsgSet[0].View}
 	pbft.persis.executedheight[cblock.Bloc.Blockhead.Height] = true
@@ -332,17 +333,16 @@ func (pbft *PBFT) Run() {
 	fmt.Println("instance", pbft.Id, "starts running")
 	pbft.starttime = time.Now()
 	go pbft.statetransfermonitor()
-	go pbft.computeTps()
-	if pbft.Id<=3 {
-		go pbft.delaySelfMonitor()
-	}
 	go pbft.censorshipmonitor()
+	go pbft.cdedata.CDEInformTestMonitor()
+	go pbft.cdedata.CDETestMonitor()
+	go pbft.computeTps()
 
 
 	starttime := time.Now()
 	for {
 		//if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=1600 {
-		//	// todo, wants to leave, mechanism 2
+		//	// wants to leave, mechanism 2
 		//	pbft.broadcastLeavingTx()
 		//	pbft.sentleavingtx = true
 		//	pbft.leaverequeststarttime = time.Now()
@@ -351,6 +351,7 @@ func (pbft *PBFT) Run() {
 		case stat_consensus:
 			fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
 			if pbft.currentHeight>1 {
+				// record consensus time at each height
 				elapsed := time.Since(starttime).Milliseconds()
 				pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
 				starttime = time.Now()
@@ -364,53 +365,80 @@ func (pbft *PBFT) Run() {
 					pbft.remainblocknuminnewview -= 1
 					pbft.leaderlease -= 1
 				} else {
-					fmt.Println("leader ", pbft.Id," now starts driving consensus in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
-					pbft.mu.Lock()
-					var bloc datastruc.Block
-					var blockhash [32]byte
-					tmpres := pbft.MsgBuff.ConfigTxIsEmpty()
-					if tmpres=="bothempty" {
+					if pbft.cdeupdateflag {
+						// todo, invoke a CDE dalay data update
 
-						thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
-						fmt.Println("leader", pbft.Id, "has", len(pbft.MsgBuff.TxPool), "txs in its buffer, packing tx-block, reading tx number:", len(thetxpool))
-						themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
-						bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
-							pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
-						blockhash = bloc.GetHash()
-						go pbft.broadcastTxBlock(&bloc)
-					} else if tmpres=="leavetxexists" {
-						if !pbft.isbyzantine {
-							theleavetx := pbft.MsgBuff.ReadLeaveTx()[0]
-							peers := datastruc.GenerateNewConfigForLeave(pbft.succLine.ConverToList(), theleavetx)
-							fmt.Println("leader", pbft.Id, "has leave-tx in its buffer, packing config-block for instance leaving at height",
-								pbft.currentHeight, "the new config has", len(peers), "instances")
-							bloc = datastruc.NewLeaveConfigBlock(pbft.PubKeystr, pbft.PriKey, theleavetx, peers, pbft.currentHeight, pbft.vernumber,
-								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
-							blockhash = bloc.GetHash()
-							go pbft.broadcastConfigBlock(&bloc)
-						} else {
-							fmt.Println("byzantine leader", pbft.Id, "censors the leave-tx")
+						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round)
+						cdedatap := pbft.cdedata
+						thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+						delayv := pbft.cdedata.CreateDelayVector(thetxs)
+						var mrmsg datastruc.MeasurementResultMsg
+						closech := make(chan bool)
+						pbft.cdedata.Recvmu.Lock()
+						go pbft.cdedata.CDEResponseMonitor(closech)
+						delayv.Update("both")
+						mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
+						closech<-true
+						pbft.cdedata.Recvmu.Unlock()
+
+						// record the result to msgbuff, so that it will be packed in the forthcoming block, it does not need to be broadcasted to others
+						pbft.MsgBuff.Msgbuffmu.Lock()
+						hval := mrmsg.GetHash()
+						pbft.MsgBuff.MeasurementResPool[hval] = mrmsg
+						pbft.MsgBuff.Msgbuffmu.Unlock()
+
+						fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes")
+						pbft.cdedata.Round += 1
+						pbft.cdeupdateflag = false
+					} else {
+						fmt.Println("leader ", pbft.Id," now starts driving consensus in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
+						pbft.mu.Lock()
+						var bloc datastruc.Block
+						var blockhash [32]byte
+						tmpres := pbft.MsgBuff.ConfigTxIsEmpty()
+						if tmpres=="bothempty" {
+
 							thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+							fmt.Println("leader", pbft.Id, "has", len(pbft.MsgBuff.TxPool), "txs in its buffer, packing tx-block, reading tx number:", len(thetxpool))
 							themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
 							bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
 								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
 							blockhash = bloc.GetHash()
 							go pbft.broadcastTxBlock(&bloc)
+						} else if tmpres=="leavetxexists" {
+							if !pbft.isbyzantine {
+								theleavetx := pbft.MsgBuff.ReadLeaveTx()[0]
+								peers := datastruc.GenerateNewConfigForLeave(pbft.succLine.ConverToList(), theleavetx)
+								fmt.Println("leader", pbft.Id, "has leave-tx in its buffer, packing config-block for instance leaving at height",
+									pbft.currentHeight, "the new config has", len(peers), "instances")
+								bloc = datastruc.NewLeaveConfigBlock(pbft.PubKeystr, pbft.PriKey, theleavetx, peers, pbft.currentHeight, pbft.vernumber,
+									pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+								blockhash = bloc.GetHash()
+								go pbft.broadcastConfigBlock(&bloc)
+							} else {
+								fmt.Println("byzantine leader", pbft.Id, "censors the leave-tx")
+								thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+								themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
+								bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
+									pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+								blockhash = bloc.GetHash()
+								go pbft.broadcastTxBlock(&bloc)
+							}
+						} else if tmpres=="jointxexists" {
+							thejointx := pbft.MsgBuff.ReadJoinTx()[0]
+							fmt.Println("leader", pbft.Id, "has join-tx in its buffer, packing config-block for instance", thejointx.Id, "joining at height", pbft.currentHeight)
+							peers := datastruc.GenerateNewConfigForJoin(pbft.succLine.ConverToList(), thejointx)
+							bloc = datastruc.NewJoinConfigBlock(pbft.PubKeystr, pbft.PriKey, thejointx, peers, pbft.currentHeight, pbft.vernumber,
+								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+							blockhash = bloc.GetHash()
+							go pbft.broadcastConfigBlock(&bloc)
+						} else {
+							fmt.Println("leader buffer wrong!")
 						}
-					} else if tmpres=="jointxexists" {
-						thejointx := pbft.MsgBuff.ReadJoinTx()[0]
-						fmt.Println("leader", pbft.Id, "has join-tx in its buffer, packing config-block for instance", thejointx.Id, "joining at height", pbft.currentHeight)
-						peers := datastruc.GenerateNewConfigForJoin(pbft.succLine.ConverToList(), thejointx)
-						bloc = datastruc.NewJoinConfigBlock(pbft.PubKeystr, pbft.PriKey, thejointx, peers, pbft.currentHeight, pbft.vernumber,
-							pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
-						blockhash = bloc.GetHash()
-						go pbft.broadcastConfigBlock(&bloc)
-					} else {
-						fmt.Println("leader buffer wrong!")
+						go pbft.broadcastPreprepare(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.PriKey, blockhash)
+						pbft.mu.Unlock()
+						pbft.leaderlease -= 1
 					}
-					go pbft.broadcastPreprepare(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.PriKey, blockhash)
-					pbft.mu.Unlock()
-					pbft.leaderlease -= 1
 				}
 			} else {
 				pbft.leaderlease = LeaderLease
@@ -866,9 +894,9 @@ func (pbft *PBFT) scanNewView(ver, view int, leaderpubkey string) {
 							//pbft.inauguratedCh <- datastruc.Progres{ver, view, nvmsg.CKpoint + 1}
 							return
 						} else {
-							// todo, case2 the nvmsg has only commit-lock, new leader will freely propose
-							// todo, the main intersted case in this experiment
-							// todo, query lost blocks, hoping this condition will never trigger after state recovery
+							// case2 the nvmsg has only commit-lock, new leader will freely propose
+							// the main intersted case in this experiment
+							// query lost blocks, hoping this condition will never trigger after state recovery
 							if nvmsg.Bloc.Blockhead.Height==0 {
 								// means there is no config-block in new-view msg
 								fmt.Println("instance",pbft.Id,"local committed height equals the new-view msg commit-locked height, enters the next height, the leade will freely propose")
@@ -958,6 +986,7 @@ func (pbft *PBFT) resetVariForViewChange() {
 	}
 	pbft.curblockhash = [32]byte{}
 	pbft.curblock = &datastruc.Block{}
+	pbft.cdeupdateflag = true
 }
 
 func (pbft *PBFT) resetVariForViewChangeAfterReconfig() {
@@ -973,6 +1002,7 @@ func (pbft *PBFT) resetVariForViewChangeAfterReconfig() {
 	}
 	pbft.curblockhash = [32]byte{}
 	pbft.curblock = &datastruc.Block{}
+	pbft.cdeupdateflag = true
 }
 
 func (pbft *PBFT) VirtuallyCommitConsensOb() [32]byte {
@@ -1041,7 +1071,21 @@ func (pbft *PBFT) CommitCurConsensOb() {
 					datatosend := datastruc.DataMemberChange{"leave", theleavingid, ""}
 					pbft.memberidchangeCh <- datatosend
 					pbft.censorshipnothappenCh <- true
-					// todo, update member and memberexceptme
+
+					// update member and memberexceptme
+					tmp1 := make([]int, 0)
+					tmp2 := make([]int, 0)
+					for _,v := range pbft.members {
+						if v!=theleavingid {
+							tmp1 = append(tmp1, v)
+							if v!=pbft.Id {}
+							tmp2 = append(tmp2, v)
+						}
+					}
+					pbft.members = make([]int, 0)
+					pbft.membersexceptme = make([]int, 0)
+					copy(pbft.members, tmp1)
+					copy(pbft.membersexceptme, tmp2)
 				}
 
 				balancehash := pbft.generateaccountbalancehash()
@@ -1076,7 +1120,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				thejoinaddr := pbft.curblock.JoinTxList[0].IpAddr
 				datatosend := datastruc.DataMemberChange{"join", thejoinid, thejoinaddr}
 				fmt.Println("instance", pbft.Id,"tells communication layer to add an addr:", thejoinaddr)
-				pbft.memberidchangeCh <- datatosend // todo, server needs do something
+				pbft.memberidchangeCh <- datatosend
 				pbft.members = append(pbft.members, thejoinid)
 				pbft.membersexceptme = append(pbft.membersexceptme, thejoinid)
 
@@ -1181,7 +1225,7 @@ func (pbft *PBFT) broadcastLeavingTx() {
 	pbft.MsgBuff.Msgbuffmu.Lock()
 	pbft.MsgBuff.JoinLeavetxSet.LTxSet = append(pbft.MsgBuff.JoinLeavetxSet.LTxSet, ltx)
 	pbft.MsgBuff.Msgbuffmu.Unlock()
-	pbft.censorshipmonitorCh <- ltx.GetHash()
+	pbft.censorshipmonitorCh <- ltx.TxHash
 
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "leavetx", content}
 	pbft.broadcdataCh <- datatosend
@@ -1220,9 +1264,9 @@ func (pbft *PBFT) broadcastConfigBlock(bloc *datastruc.Block) {
 	pbft.MsgBuff.BlockPool = append(pbft.MsgBuff.BlockPool, *bloc)
 	for _, ltx := range bloc.LeaveTxList {
 		if !ltx.Verify() {
-			fmt.Println("leader", pbft.Id, "receives a block, but contains unvalid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
+			fmt.Println("leader", pbft.Id, "receives a block, but contains unvalid leave-tx, its content", ltx.Serialize(), "  its hash", ltx.TxHash, " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
 		} else {
-			fmt.Println("leader", pbft.Id, "receives a block, contains valid leave-tx, its content", ltx.Serial(), "  its hash", ltx.GetHash(), " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
+			fmt.Println("leader", pbft.Id, "receives a block, contains valid leave-tx, its content", ltx.Serialize(), "  its hash", ltx.TxHash, " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
 		}
 	}
 	pbft.MsgBuff.Msgbuffmu.Unlock()
@@ -1484,8 +1528,7 @@ func (pbft *PBFT) ReplyStateTransfer(height, id int) {
 
 func (pbft *PBFT) delaySelfMonitor() {
 
-	go pbft.cdedata.CDEInformTestMonitor()
-	go pbft.cdedata.CDETestMonitor()
+
 
 	for {
 		if pbft.cdedata.Round >= 2 {
@@ -1520,7 +1563,6 @@ func (pbft *PBFT) delaySelfMonitor() {
 }
 
 func (pbft *PBFT) broadcastMeasurementResult(mrmsg datastruc.MeasurementResultMsg) {
-	// todo
 	var buff bytes.Buffer
 	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&buff)

@@ -15,7 +15,6 @@ type BlockChainCacheDB struct {
 	BucketHeighttoHash map[int][32]byte
 	BucketHashToBlock map[[32]byte]datastruc.Block
 	BucketNumToConfgi map[int][]datastruc.PeerIdentity
-	//BucketCurUTXO []datastruc.UTXO
 	BucketPrepareQC map[[32]byte]datastruc.PrepareQC
 	BucketCommitQC map[[32]byte]datastruc.CommitQC
 	BucketAccountBalanceHistory map[int]map[string]int
@@ -30,7 +29,6 @@ func (bccdb *BlockChainCacheDB) Initialize(id int) {
 	bccdb.BucketHeighttoHash = make(map[int][32]byte)
 	bccdb.BucketHashToBlock = make(map[[32]byte]datastruc.Block)
 	bccdb.BucketNumToConfgi = make(map[int][]datastruc.PeerIdentity)
-	//bccdb.BucketCurUTXO = make([]datastruc.UTXO, 0)
 	bccdb.BucketPrepareQC = make(map[[32]byte]datastruc.PrepareQC)
 	bccdb.BucketCommitQC = make(map[[32]byte]datastruc.CommitQC)
 	bccdb.BucketAccountBalanceHistory = make(map[int]map[string]int)
@@ -48,14 +46,6 @@ func (bccdb *BlockChainCacheDB) UpdateFromGenesisb(genesis datastruc.Block) {
 	bccdb.BucketHashToBlock[genesis.GetHash()] = genesis
 
 	bccdb.BucketNumToConfgi[0] = genesis.Configure
-
-	//for _, tx := range genesis.TransactionList {
-	//	pub := tx.Vout[0].PubKey
-	//	value := tx.Vout[0].Value
-	//	theutxo :=  datastruc.UTXO{tx, pub, value}
-	//	bccdb.BucketCurUTXO = append(bccdb.BucketCurUTXO, theutxo)
-	//}
-
 	bccdb.BucketPrepareQC[genesis.GetHash()] = datastruc.PrepareQC{}
 	bccdb.BucketCommitQC[genesis.GetHash()] = datastruc.CommitQC{}
 }
@@ -76,8 +66,6 @@ func (bccdb *BlockChainCacheDB) UpdateAfterCommit(heigh int, block *datastruc.Bl
 		bccdb.BucketMarginalInfo["commitHeight"] = heigh
 		bccdb.BucketHeighttoHash[heigh] = block.GetHash()
 		bccdb.BucketHashToBlock[block.GetHash()] = *block
-		//bccdb.BucketCurUTXO = []datastruc.UTXO{}
-		//bccdb.BucketCurUTXO = curUtxo.Set
 		bccdb.BucketCommitQC[block.GetHash()] = commitqc
 		bccdb.BucketAccountBalanceHistory[heigh] = accountbalance
 	} else if block.Blockhead.Kind=="configblock" {
@@ -107,7 +95,13 @@ func (bccdb *BlockChainCacheDB) UpdateAfterConfirmB(cbloc datastruc.ConfirmedBlo
 	bccdb.BucketHashToBlock[cbloc.Bloc.GetHash()] = cbloc.Bloc
 	bccdb.BucketCommitQC[cbloc.Bloc.GetHash()] = cbloc.CommiQC
 
-	// todo, accountbalance
+}
+
+func (bccdb *BlockChainCacheDB) UpdateAccountBalanceAtHeight(height int, accbalance map[string]int) {
+	bccdb.dbmu.Lock()
+	defer bccdb.dbmu.Unlock()
+
+	bccdb.BucketAccountBalanceHistory[height] = accbalance
 }
 
 func (bccdb *BlockChainCacheDB) ReadBlockFromDB(startheigh int, endheigh int) []datastruc.Block {

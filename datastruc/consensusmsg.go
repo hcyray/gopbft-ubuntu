@@ -1,11 +1,7 @@
 package datastruc
 
 import (
-	"bytes"
 	"crypto/ecdsa"
-	"crypto/elliptic"
-	"encoding/gob"
-	"fmt"
 	"log"
 )
 
@@ -251,20 +247,7 @@ func NewNewViewMsgWithoutBlock(ver int, view int, pubkey string, vcset []ViewCha
 		nvmsg.PPMsgSet = append(nvmsg.PPMsgSet, prepremsg)
 	}
 
-	//// add leave-tx to new-view msg
-	//nvmsg.LtxSet = make([]LeaveTx, 0)
-	//for _, vcmsg := range nvmsg.VCMsgSet {
-	//	if len(vcmsg.LtxSet)>0 {
-	//		theltx := vcmsg.LtxSet[0]
-	//		nvmsg.LtxSet = append(nvmsg.LtxSet, theltx)
-	//		break
-	//		// todo, very informal and simple methode, need further polishing up
-	//	}
-	//}
 
-
-	//datatosign := sha256.Sum256(nvmsg.Serialize())
-	//nvmsg.Sig.Sign(datatosign[:], prvkey)
 	datatosign := "newviewmsg," + string(nvmsg.Ver) + "," + string(nvmsg.View)
 	nvmsg.Sig.Sign([]byte(datatosign), prvkey)
 	nvmsg.Pubkey = pubkey
@@ -313,108 +296,108 @@ func AddVcmsg(vcmset *[]ViewChangeMsg, vcmsg ViewChangeMsg) {
 	}
 }
 
-func (prepreparemsg PrePrepareMsg) Serialize() []byte {
-	var encoded bytes.Buffer
+//func (prepreparemsg PrePrepareMsg) Serialize() []byte {
+//	var encoded bytes.Buffer
+//
+//	gob.Register(elliptic.P256())
+//	enc := gob.NewEncoder(&encoded)
+//	err := enc.Encode(prepreparemsg)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//
+//	return encoded.Bytes()
+//}
 
-	gob.Register(elliptic.P256())
-	enc := gob.NewEncoder(&encoded)
-	err := enc.Encode(prepreparemsg)
-	if err != nil {
-		log.Panic(err)
-	}
+//func (preparemsg PrepareMsg) Serialize() []byte {
+//	var encoded bytes.Buffer
+//
+//	gob.Register(elliptic.P256())
+//	enc := gob.NewEncoder(&encoded)
+//	err := enc.Encode(preparemsg)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//
+//	return encoded.Bytes()
+//}
 
-	return encoded.Bytes()
-}
+//func (commitmsg CommitMsg) Serialize() []byte {
+//	var encoded bytes.Buffer
+//	gob.Register(elliptic.P256())
+//	enc := gob.NewEncoder(&encoded)
+//	err := enc.Encode(commitmsg)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//
+//	return encoded.Bytes()
+//}
 
-func (preparemsg PrepareMsg) Serialize() []byte {
-	var encoded bytes.Buffer
+//func (vcmsg *ViewChangeMsg) Serialize() []byte {
+//	var encoded bytes.Buffer
+//	gob.Register(elliptic.P256())
+//	enc := gob.NewEncoder(&encoded)
+//	err := enc.Encode(vcmsg)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//
+//	return encoded.Bytes()
+//}
 
-	gob.Register(elliptic.P256())
-	enc := gob.NewEncoder(&encoded)
-	err := enc.Encode(preparemsg)
-	if err != nil {
-		log.Panic(err)
-	}
+//func (nvmsg NewViewMsg) Serialize() []byte {
+//	var encoded bytes.Buffer
+//	gob.Register(elliptic.P256())
+//	enc := gob.NewEncoder(&encoded)
+//	err := enc.Encode(nvmsg)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//
+//	return encoded.Bytes()
+//}
+//
+//func (prepareqc *PrepareQC) Serialize() []byte {
+//	var encoded bytes.Buffer
+//	enc := gob.NewEncoder(&encoded)
+//	err := enc.Encode(*prepareqc)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//	return encoded.Bytes()
+//}
 
-	return encoded.Bytes()
-}
+//func (prepareqc *PrepareQC) Deserialize(conten []byte) {
+//	var buff bytes.Buffer
+//	var theqc PrepareQC
+//	buff.Write(conten)
+//	dec := gob.NewDecoder(&buff)
+//	err := dec.Decode(&theqc)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//	prepareqc.PrepareMsgSet = theqc.PrepareMsgSet
+//}
 
-func (commitmsg CommitMsg) Serialize() []byte {
-	var encoded bytes.Buffer
-	gob.Register(elliptic.P256())
-	enc := gob.NewEncoder(&encoded)
-	err := enc.Encode(commitmsg)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	return encoded.Bytes()
-}
-
-func (vcmsg *ViewChangeMsg) Serialize() []byte {
-	var encoded bytes.Buffer
-	gob.Register(elliptic.P256())
-	enc := gob.NewEncoder(&encoded)
-	err := enc.Encode(vcmsg)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	return encoded.Bytes()
-}
-
-func (nvmsg NewViewMsg) Serialize() []byte {
-	var encoded bytes.Buffer
-	gob.Register(elliptic.P256())
-	enc := gob.NewEncoder(&encoded)
-	err := enc.Encode(nvmsg)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	return encoded.Bytes()
-}
-
-func (prepareqc *PrepareQC) Serialize() []byte {
-	var encoded bytes.Buffer
-	enc := gob.NewEncoder(&encoded)
-	err := enc.Encode(*prepareqc)
-	if err != nil {
-		log.Panic(err)
-	}
-	return encoded.Bytes()
-}
-
-func (prepareqc *PrepareQC) Deserialize(conten []byte) {
-	var buff bytes.Buffer
-	var theqc PrepareQC
-	buff.Write(conten)
-	dec := gob.NewDecoder(&buff)
-	err := dec.Decode(&theqc)
-	if err != nil {
-		log.Panic(err)
-	}
-	prepareqc.PrepareMsgSet = theqc.PrepareMsgSet
-}
-
-func (commitqc *CommitQC) Serialize() []byte {
-	var encoded bytes.Buffer
-	enc := gob.NewEncoder(&encoded)
-	err := enc.Encode(*commitqc)
-	if err != nil {
-		log.Panic(err)
-	}
-	return encoded.Bytes()
-}
-
-func (commitqc *CommitQC) Deserialize(conten []byte) {
-	var buff bytes.Buffer
-	buff.Write(conten)
-	dec := gob.NewDecoder(&buff)
-	err := dec.Decode(&commitqc)
-	if err != nil {
-		fmt.Println("serialized commitqc decoding error")
-		log.Panic(err)
-	}
-}
+//func (commitqc *CommitQC) Serialize() []byte {
+//	var encoded bytes.Buffer
+//	enc := gob.NewEncoder(&encoded)
+//	err := enc.Encode(*commitqc)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//	return encoded.Bytes()
+//}
+//
+//func (commitqc *CommitQC) Deserialize(conten []byte) {
+//	var buff bytes.Buffer
+//	buff.Write(conten)
+//	dec := gob.NewDecoder(&buff)
+//	err := dec.Decode(&commitqc)
+//	if err != nil {
+//		fmt.Println("serialized commitqc decoding error")
+//		log.Panic(err)
+//	}
+//}
 
