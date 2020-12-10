@@ -309,13 +309,13 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	}
 	pbft.currentHeight = cblock.Bloc.Blockhead.Height
 	balancehash := pbft.generateaccountbalancehash()
-	fmt.Println("new instance balance hash:", balancehash)
-	fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
-	pbft.succLine.SucclinePrint()
+	//fmt.Println("new instance balance hash:", balancehash)
+	//fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
+	//pbft.succLine.SucclinePrint()
 	confighash := pbft.succLine.GetHash()
-	fmt.Println("new instance config hash:", confighash)
+	//fmt.Println("new instance config hash:", confighash)
 	cdedatahash := pbft.cdedata.GenerateStateHash()
-	fmt.Println("new instance cdedatahash:", cdedatahash)
+	//fmt.Println("new instance cdedatahash:", cdedatahash)
 	pbft.vernumber = cblock.Bloc.Blockhead.Ver
 	pbft.viewnumber = cblock.CommiQC.CommitMsgSet[0].View
 	fmt.Println("new instance ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
