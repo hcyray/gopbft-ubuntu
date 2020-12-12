@@ -229,7 +229,7 @@ func (pbft *PBFT) InitialSetup() {
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
 	if pbft.curleaderPubKeystr==pbft.PubKeystr {
 		pbft.isleader = true
-		//pbft.cdeupdateflag = true
+		pbft.cdeupdateflag = true
 	}
 
 	// print leader succession line
@@ -988,7 +988,7 @@ func (pbft *PBFT) resetVariForViewChange() {
 	}
 	pbft.curblockhash = [32]byte{}
 	pbft.curblock = &datastruc.Block{}
-	//pbft.cdeupdateflag = true
+	pbft.cdeupdateflag = true
 }
 
 func (pbft *PBFT) resetVariForViewChangeAfterReconfig() {
