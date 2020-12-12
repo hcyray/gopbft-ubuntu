@@ -370,7 +370,7 @@ func (pbft *PBFT) Run() {
 					pbft.remainblocknuminnewview -= 1
 					pbft.leaderlease -= 1
 				} else {
-					if pbft.cdeupdateflag && 1<0 {
+					if pbft.cdeupdateflag {
 						// invoke a CDE dalay data update
 						start:=time.Now()
 						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)

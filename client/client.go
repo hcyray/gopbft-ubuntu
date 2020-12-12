@@ -158,15 +158,22 @@ func (client *Client) sendloop() {
 }
 
 func (client *Client) sendtooneloop(destid int) {
+	trytime := 0
 	for {
 
 		destip := client.minerIPAddress[destid]
 		conn, err := net.Dial("tcp", destip)
 		if err != nil {
 			fmt.Println("connect failed, will retry later\n", err.Error())
-			t := rand.Intn(1000)
-			fmt.Println("will re connect soon")
-			time.Sleep(time.Millisecond * time.Duration(t))
+			if trytime<=3 {
+				fmt.Println("will re connect soon")
+				t := rand.Intn(1000)
+				time.Sleep(time.Millisecond * time.Duration(t))
+				trytime += 1
+			} else {
+				fmt.Println("try time reaches the upper bound, stops")
+				time.Sleep(time.Second * 30)
+			}
 		} else {
 		innerloop:
 			for {
