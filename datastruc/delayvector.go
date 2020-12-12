@@ -159,6 +159,22 @@ theloop:
 				delayv.ProposeDelaydata[ppr.Testee] = int(time.Since(starttime).Milliseconds()) / 2
 				//fmt.Println("instance", delayv.Tester, "measures a new propose-without-validation delay", delayv.Tester, " --> ", ppr.Testee, ":", delayv.ProposeDelaydata[ppr.Testee])
 				//gotresponse[ppr.Testee] = true
+
+				// check if all items updated, if so, exit
+				flag := true
+				for _,v:= range delayv.ProposeDelaydata {
+					if v==MAXWAITTIME {
+						flag = false
+					}
+				}
+				for _,v:= range delayv.ValidationDelaydata {
+					if v==MAXWAITTIME {
+						flag = false
+					}
+				}
+				if flag{
+					break theloop
+				}
 			} else {
 				fmt.Println("the received propose-response-wo round number not match, current round:", delayv.Round, "response round:", ppr.Round)
 			}
@@ -170,6 +186,22 @@ theloop:
 				delayv.ValidationDelaydata[ppr.Testee] = int(time.Since(starttime).Milliseconds()) - t1[ppr.Testee]
 				//fmt.Println("instance", delayv.Tester, "measures a new propose-response-with-validation delay", delayv.Tester, " --> ", ppr.Testee, ":", delayv.ValidationDelaydata[ppr.Testee])
 				//gotresponse[ppr.Testee] = true
+
+				// check if all items updated, if so, exit
+				flag := true
+				for _,v:= range delayv.ProposeDelaydata {
+					if v==MAXWAITTIME {
+						flag = false
+					}
+				}
+				for _,v:= range delayv.ValidationDelaydata {
+					if v==MAXWAITTIME {
+						flag = false
+					}
+				}
+				if flag{
+					break theloop
+				}
 			}
 		}
 	}
@@ -211,6 +243,17 @@ theloop:
 			if delayv.Round==wrr.Round {
 				// update delay vector
 				delayv.WriteDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()/2)
+
+				// check if all delay data is updated
+				flag := true
+				for _,v:= range delayv.WriteDelaydata {
+					if v==MAXWAITTIME {
+						flag = false
+					}
+				}
+				if flag{
+					break theloop
+				}
 			} else {
 				fmt.Println("the received write-response round number not matchs, current round:", delayv.Round, "response round:", wrr.Round)
 			}
