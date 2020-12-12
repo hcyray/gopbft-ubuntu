@@ -370,7 +370,8 @@ func (pbft *PBFT) Run() {
 					pbft.remainblocknuminnewview -= 1
 					pbft.leaderlease -= 1
 				} else {
-					if pbft.cdeupdateflag && 0<1 {
+					// update delay data before sending the first block
+					if pbft.cdeupdateflag && false {
 						// invoke a CDE dalay data update
 						start:=time.Now()
 						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
@@ -397,55 +398,57 @@ func (pbft *PBFT) Run() {
 						fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes, time costs: ", elapsed, "ms" )
 						pbft.cdedata.Round += 1
 						pbft.cdeupdateflag = false
-					} else {
-						fmt.Println("leader ", pbft.Id," now starts driving consensus in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
-						pbft.mu.Lock()
-						var bloc datastruc.Block
-						var blockhash [32]byte
-						tmpres := pbft.MsgBuff.ConfigTxIsEmpty()
-						if tmpres=="bothempty" {
+					}
 
+
+					fmt.Println("leader ", pbft.Id," now starts driving consensus in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
+					pbft.mu.Lock()
+					var bloc datastruc.Block
+					var blockhash [32]byte
+					tmpres := pbft.MsgBuff.ConfigTxIsEmpty()
+					if tmpres=="bothempty" {
+
+						thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+						fmt.Println("leader", pbft.Id, "has", len(pbft.MsgBuff.TxPool), "txs in its buffer, packing tx-block, reading tx number:", len(thetxpool))
+						themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
+						bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
+							pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+						blockhash = bloc.GetHash()
+						go pbft.broadcastTxBlock(&bloc)
+					} else if tmpres=="leavetxexists" {
+						if !pbft.isbyzantine {
+							theleavetx := pbft.MsgBuff.ReadLeaveTx()[0]
+							peers := datastruc.GenerateNewConfigForLeave(pbft.succLine.ConverToList(), theleavetx)
+							fmt.Println("leader", pbft.Id, "has leave-tx in its buffer, packing config-block for instance leaving at height",
+								pbft.currentHeight, "the new config has", len(peers), "instances")
+							bloc = datastruc.NewLeaveConfigBlock(pbft.PubKeystr, pbft.PriKey, theleavetx, peers, pbft.currentHeight, pbft.vernumber,
+								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+							blockhash = bloc.GetHash()
+							go pbft.broadcastConfigBlock(&bloc)
+						} else {
+							fmt.Println("byzantine leader", pbft.Id, "censors the leave-tx")
 							thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
-							fmt.Println("leader", pbft.Id, "has", len(pbft.MsgBuff.TxPool), "txs in its buffer, packing tx-block, reading tx number:", len(thetxpool))
 							themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
 							bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
 								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
 							blockhash = bloc.GetHash()
 							go pbft.broadcastTxBlock(&bloc)
-						} else if tmpres=="leavetxexists" {
-							if !pbft.isbyzantine {
-								theleavetx := pbft.MsgBuff.ReadLeaveTx()[0]
-								peers := datastruc.GenerateNewConfigForLeave(pbft.succLine.ConverToList(), theleavetx)
-								fmt.Println("leader", pbft.Id, "has leave-tx in its buffer, packing config-block for instance leaving at height",
-									pbft.currentHeight, "the new config has", len(peers), "instances")
-								bloc = datastruc.NewLeaveConfigBlock(pbft.PubKeystr, pbft.PriKey, theleavetx, peers, pbft.currentHeight, pbft.vernumber,
-									pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
-								blockhash = bloc.GetHash()
-								go pbft.broadcastConfigBlock(&bloc)
-							} else {
-								fmt.Println("byzantine leader", pbft.Id, "censors the leave-tx")
-								thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
-								themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
-								bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
-									pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
-								blockhash = bloc.GetHash()
-								go pbft.broadcastTxBlock(&bloc)
-							}
-						} else if tmpres=="jointxexists" {
-							thejointx := pbft.MsgBuff.ReadJoinTx()[0]
-							fmt.Println("leader", pbft.Id, "has join-tx in its buffer, packing config-block for instance", thejointx.Id, "joining at height", pbft.currentHeight)
-							peers := datastruc.GenerateNewConfigForJoin(pbft.succLine.ConverToList(), thejointx)
-							bloc = datastruc.NewJoinConfigBlock(pbft.PubKeystr, pbft.PriKey, thejointx, peers, pbft.currentHeight, pbft.vernumber,
-								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
-							blockhash = bloc.GetHash()
-							go pbft.broadcastConfigBlock(&bloc)
-						} else {
-							fmt.Println("leader buffer wrong!")
 						}
-						go pbft.broadcastPreprepare(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.PriKey, blockhash)
-						pbft.mu.Unlock()
-						pbft.leaderlease -= 1
+					} else if tmpres=="jointxexists" {
+						thejointx := pbft.MsgBuff.ReadJoinTx()[0]
+						fmt.Println("leader", pbft.Id, "has join-tx in its buffer, packing config-block for instance", thejointx.Id, "joining at height", pbft.currentHeight)
+						peers := datastruc.GenerateNewConfigForJoin(pbft.succLine.ConverToList(), thejointx)
+						bloc = datastruc.NewJoinConfigBlock(pbft.PubKeystr, pbft.PriKey, thejointx, peers, pbft.currentHeight, pbft.vernumber,
+							pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+						blockhash = bloc.GetHash()
+						go pbft.broadcastConfigBlock(&bloc)
+					} else {
+						fmt.Println("leader buffer wrong!")
 					}
+					go pbft.broadcastPreprepare(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.PriKey, blockhash)
+					pbft.mu.Unlock()
+					pbft.leaderlease -= 1
+
 				}
 			} else {
 				pbft.leaderlease = LeaderLease
