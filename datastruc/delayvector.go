@@ -132,6 +132,10 @@ func (delayv *DelayVector) UpdatePropose() {
 	//for _, v := range delayv.Peers {
 	//	gotresponse[v] = false
 	//}
+	for _,v:=range delayv.Peers {
+		delayv.ProposeDelaydata[v] = MAXWAITTIME
+		delayv.ValidationDelaydata[v] = MAXWAITTIME
+	}
 	delayv.ProposeDelaydata[delayv.Tester] = 0
 	delayv.ValidationDelaydata[delayv.Tester] = 0
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
@@ -227,6 +231,9 @@ func (delayv *DelayVector) UpdateWrite() {
 	datatosend := Datatosend{delayv.Peerexceptme, "writetest", content}
 	delayv.BroadcastCh <- datatosend // question, hope this won't block or take too much time
 
+	for _,v:=range delayv.Peers {
+		delayv.WriteDelaydata[v] = MAXWAITTIME
+	}
 	delayv.WriteDelaydata[delayv.Tester] = 0
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
 theloop:
@@ -276,13 +283,15 @@ func (delayv *DelayVector) UpdateWriteAtNew() {
 	fmt.Println("new instance invoke update-write-at-new, peers:", delayv.Peers, "its own id:", delayv.Tester, "write-msg:", wrmsg)
 	datatosend := Datatosend{delayv.Peers, "writetestfromnew", content}
 	delayv.BroadcastCh <- datatosend
+	for _,v:=range delayv.Peers {
+		delayv.WriteDelaydata[v] = MAXWAITTIME
+	} // note do not need to set delayv.WriteDelaydata[v] = 0, because delayv.peers doesn't contain tester.
 
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
 theloop:
 	for {
 		select {
 		case <-thetimer.C:
-			//fmt.Println("update write at new timer expires, breaks")
 			break theloop
 		case theresponse :=<- delayv.RecvWriteResponFromOldCh:
 			// decode response
@@ -291,18 +300,7 @@ theloop:
 			// check correctness
 			// update delay vector
 			delayv.WriteDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()/2)
-			//fmt.Println("new instance received a write-response, delay", delayv.Tester, " --> ", wrr.Testee, ":", delayv.WriteDelaydata[wrr.Testee])
-			//gotresponse[wrr.Testee] = true
-			//// decide to break or not
-			//shouldbreak := true
-			//for _,v := range gotresponse {
-			//	if !v {
-			//		shouldbreak = false
-			//	}
-			//}
-			//if shouldbreak {
-			//	break theloop
-			//}
+
 		}
 	}
 }
