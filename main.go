@@ -132,7 +132,7 @@ func main() {
 		}
 	} else {
 		//invoke clients
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 4)
 		for i:=0; i<clientnumber; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*instanceoneachserver, privatekey, allips[0:totalserver], instanceoneachserver)
