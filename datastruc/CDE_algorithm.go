@@ -463,7 +463,7 @@ func (cdedata *CDEdata) UpdateUsingNewMeasurementRes(mrrlist []MeasurementResult
 		}
 	}
 	if sanitize {
-		//cdedata.Sanitization()
+		cdedata.Sanitization()
 	}
 }
 
