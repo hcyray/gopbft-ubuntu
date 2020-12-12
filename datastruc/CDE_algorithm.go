@@ -262,6 +262,7 @@ func (cdedata *CDEdata) CDETestMonitor() {
 			case "writetestfromnew":
 				var writetest WriteTestMsg
 				writetest.Deserialize(thetest.Msg)
+				fmt.Println("instance", cdedata.Id, "receives a write-test from new")
 				go cdedata.responseWrite(writetest, true)
 			case "proposetestfromold":
 				var proposetest ProposeTestMsg

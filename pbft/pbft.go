@@ -259,7 +259,9 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 
 	//build current leader succession line and config
 	pbft.curConfigure = peerlist
+
 	pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curConfigure)
+
 	//pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
 
 	// test delay to existing node, the result is packed in join-tx
@@ -267,7 +269,10 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	tmp := make([]int, le)
 	copy(tmp, pbft.cdedata.Peers)
 	pbft.cdedata.Peers = tmp[0:(le-1)] // new instance won't send test message to itself before joining the system
+	start := time.Now()
 	newjointx := pbft.cdedata.CollectDelayDataForNew(pbft.MsgBuff.ReadTxBatch(BlockVolume))
+	elapsed := time.Since(start).Milliseconds()
+	fmt.Println("new instance creates join-tx, costs", elapsed, "ms")
 	pbft.cdedata.Peers = make([]int, le)
 	copy(pbft.cdedata.Peers, tmp) // recover peers to include itself
 	fmt.Println("new instance recovers peers: ", pbft.cdedata.Peers)
