@@ -105,6 +105,7 @@ type PBFT struct {
 
 	acctx int
 	starttime time.Time
+	singleconsensusstarttime time.Time
 	consensustimelog []int
 	predictedconsensustimelog []int
 	timelog []int
@@ -345,7 +346,7 @@ func (pbft *PBFT) Run() {
 	go pbft.computeTps()
 
 
-	starttime := time.Now()
+
 	for {
 		//if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=1600 {
 		//	// wants to leave, mechanism 2
@@ -356,22 +357,12 @@ func (pbft *PBFT) Run() {
 		switch pbft.status {
 		case stat_consensus:
 			fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
+			pbft.singleconsensusstarttime =time.Now()
 			consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
-			if pbft.currentHeight%LeaderLease==0 {
+			if pbft.currentHeight%LeaderLease==1 {
 				pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
 			} else {
 				pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
-			}
-			if pbft.currentHeight>1 {
-				// record consensus time at each height
-				elapsed := time.Since(starttime).Milliseconds()
-				pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
-				starttime = time.Now()
-			}
-			if pbft.currentHeight%LeaderLease==0 && pbft.currentHeight>=LeaderLease {
-				fmt.Println("consensustime =", pbft.consensustimelog)
-				l := len(pbft.predictedconsensustimelog)
-				fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog[0:l])
 			}
 			if pbft.isleader && pbft.leaderlease>0 {
 				if pbft.remainblocknuminnewview>0 {
@@ -546,10 +537,17 @@ func (pbft *PBFT) Run() {
 					if prog.Ver==pbft.vernumber && prog.View==pbft.viewnumber && prog.Height==pbft.currentHeight && pbft.consenstatus==Prepared {
 						pbft.consenstatus = Commited
 						pbft.persis.commitlock.LockedHeight = pbft.currentHeight
+						curheight := pbft.currentHeight
 						pbft.CommitCurConsensOb()
 						//time.Sleep(time.Millisecond * 50)
+						elapsed := time.Since(pbft.singleconsensusstarttime).Milliseconds()
+						pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", pbft.currentHeight-1, "\n")
+						if curheight%LeaderLease==0 && curheight>=LeaderLease {
+							fmt.Println("consensustime =", pbft.consensustimelog)
+							fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
+						}
 					}
 					pbft.mu.Unlock()
 					if pbft.reconfighappen {
