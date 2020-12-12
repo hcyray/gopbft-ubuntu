@@ -765,6 +765,10 @@ func (cdedata *CDEdata) CopyData() CDEdata {
 		newcdedata.ValidationDelayMatrix[v] = cdedata.ValidationDelayMatrix[v]
 		newcdedata.WriteDelayMatrix[v] = cdedata.WriteDelayMatrix[v]
 	}
+	newcdedata.sanitizationflag = make(map[int]bool)
+	for k,v:=range cdedata.sanitizationflag {
+		newcdedata.sanitizationflag[k] = v
+	}
 	return newcdedata
 }
 
