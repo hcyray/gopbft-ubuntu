@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"math/rand"
 	"sync"
 	"time"
 )
@@ -368,7 +367,7 @@ func (pbft *PBFT) Run() {
 					if pbft.cdeupdateflag {
 						// todo, invoke a CDE dalay data update
 
-						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round)
+						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
 						cdedatap := pbft.cdedata
 						thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
 						delayv := pbft.cdedata.CreateDelayVector(thetxs)
@@ -376,7 +375,8 @@ func (pbft *PBFT) Run() {
 						closech := make(chan bool)
 						pbft.cdedata.Recvmu.Lock()
 						go pbft.cdedata.CDEResponseMonitor(closech)
-						delayv.Update("both")
+						delayv.UpdateWrite()
+						delayv.UpdatePropose()
 						mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
 						closech<-true
 						pbft.cdedata.Recvmu.Unlock()
@@ -528,7 +528,7 @@ func (pbft *PBFT) Run() {
 						pbft.consenstatus = Commited
 						pbft.persis.commitlock.LockedHeight = pbft.currentHeight
 						pbft.CommitCurConsensOb()
-						time.Sleep(time.Millisecond * 50)
+						//time.Sleep(time.Millisecond * 50)
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", pbft.currentHeight-1, "\n")
 					}
@@ -1031,7 +1031,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
 			consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.Id, pbft.succLine.Leng, pbft.quorumsize)
 			if pbft.Id==0 {
-				fmt.Println("consensus delay when instance", pbft.Id, "as leader is", consensusdelay)
+				fmt.Println("consensus-delay when instance", pbft.Id, "as leader is", consensusdelay)
 			}
 			if pbft.Id==0 {
 				pbft.cdedata.PrintResult()
@@ -1526,41 +1526,41 @@ func (pbft *PBFT) ReplyStateTransfer(height, id int) {
 	fmt.Println("instance", pbft.Id, "sends state-transfer-reply to instance", id)
 }
 
-func (pbft *PBFT) delaySelfMonitor() {
-
-
-
-	for {
-		if pbft.cdedata.Round >= 2 {
-			fmt.Println("instance", pbft.Id, "finish all predefined delay data shares")
-			break
-		}
-		// sleep random time, then invoke delay data update process
-		ra := rand.Intn(10000)
-		time.Sleep(time.Millisecond * time.Duration(ra))
-		if !pbft.isleader {
-			fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round)
-			// update measurement
-			cdedatap := pbft.cdedata
-			thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
-			delayv := pbft.cdedata.CreateDelayVector(thetxs)
-			fmt.Println("instance", delayv.Tester, "peers: ", delayv.Peers)
-			var mrmsg datastruc.MeasurementResultMsg
-			closech := make(chan bool)
-			pbft.cdedata.Recvmu.Lock()
-			go pbft.cdedata.CDEResponseMonitor(closech)
-			delayv.Update("both")
-			mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
-
-			closech<-true
-			pbft.cdedata.Recvmu.Unlock()
-			// broadcast most recent measurement
-			pbft.broadcastMeasurementResult(mrmsg)
-			fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes")
-			pbft.cdedata.Round += 1
-		}
-	}
-}
+//func (pbft *PBFT) delaySelfMonitor() {
+//
+//
+//
+//	for {
+//		if pbft.cdedata.Round >= 2 {
+//			fmt.Println("instance", pbft.Id, "finish all predefined delay data shares")
+//			break
+//		}
+//		// sleep random time, then invoke delay data update process
+//		ra := rand.Intn(10000)
+//		time.Sleep(time.Millisecond * time.Duration(ra))
+//		if !pbft.isleader {
+//			fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round)
+//			// update measurement
+//			cdedatap := pbft.cdedata
+//			thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+//			delayv := pbft.cdedata.CreateDelayVector(thetxs)
+//			fmt.Println("instance", delayv.Tester, "peers: ", delayv.Peers)
+//			var mrmsg datastruc.MeasurementResultMsg
+//			closech := make(chan bool)
+//			pbft.cdedata.Recvmu.Lock()
+//			go pbft.cdedata.CDEResponseMonitor(closech)
+//			delayv.Update("both")
+//			mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
+//
+//			closech<-true
+//			pbft.cdedata.Recvmu.Unlock()
+//			// broadcast most recent measurement
+//			pbft.broadcastMeasurementResult(mrmsg)
+//			fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes")
+//			pbft.cdedata.Round += 1
+//		}
+//	}
+//}
 
 func (pbft *PBFT) broadcastMeasurementResult(mrmsg datastruc.MeasurementResultMsg) {
 	var buff bytes.Buffer

@@ -29,6 +29,7 @@ type CDEdata struct {
 	ValidationDelayMatrix map[int]map[int]int
 
 	sanitizationflag map[int]bool
+	validatetxbatachtime []int
 
 	SendCh chan DatatosendWithIp
 	BroadcastCh chan Datatosend
@@ -151,7 +152,6 @@ func (cdedata *CDEdata) responseProposeWoValidate(proposetestmsg ProposeTestMsg,
 		cdedata.BroadcastCh <- datatosend
 	}
 
-
 	//fmt.Println("instance", cdedata.Id, "responses without validation to propose-test-", proposetestmsg.Round)
 }
 
@@ -162,7 +162,20 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 	//	reslist = append(reslist, tx.Verify(cdedata.Clientacctopuk[tx.Source]))
 	//}
 
-	cdedata.TxListValidateMultiThread(proposetestmsg.TxBatch)
+	if replytonew {
+		t := 0
+		for _,v := range cdedata.validatetxbatachtime {
+			t += v
+		}
+		t = t/len(cdedata.validatetxbatachtime)
+		time.Sleep(time.Duration(t))
+	} else {
+		start := time.Now()
+		cdedata.TxListValidateMultiThread(proposetestmsg.TxBatch)
+		elapsed := time.Since(start).Milliseconds()
+		cdedata.validatetxbatachtime = append(cdedata.validatetxbatachtime, int(elapsed))
+		// sleep for time t, t equals the time to validate tx batach
+	}
 
 	pprmsg := NewProposeResponseWithValidateMsg(cdedata.Id, proposetestmsg.Round, proposetestmsg.Challange, reslist, proposetestmsg.TxBatch)
 	var buff bytes.Buffer
@@ -445,7 +458,7 @@ func (cdedata *CDEdata) UpdateUsingNewMeasurementRes(mrrlist []MeasurementResult
 		}
 	}
 	if sanitize {
-		cdedata.Sanitization()
+		//cdedata.Sanitization()
 	}
 }
 
@@ -563,12 +576,12 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	closech := make(chan bool)
 	go cdedata.CDEResponseMonitor(closech)
 	delayv := cdedata.CreateDelayVector(txbatch)
-	//
-	delayv.UpdateAtNew("write")
+
+	//delayv.UpdateAtNew("write")
+	delayv.UpdateWriteAtNew()
 	//delayv.PrintResult()
 	closech<-true
 	//fmt.Println("new instance updates write-delay completes-----------------------------------------------------------------------------------------------------")
-
 
 	// for node in system: update node->new one by one
 	go cdedata.CDETestMonitor()
@@ -590,7 +603,7 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 
 	// update propose new->sytem
 	go cdedata.CDEResponseMonitor(closech)
-	delayv.UpdateAtNew("propose")
+	delayv.UpdateProposeAtNew()
 	delayv.PrintResult()
 	closech<-true
 	mrmsg := NewMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, delayv.ProposeDelaydata,
@@ -827,7 +840,6 @@ func (cdedata *CDEdata) UpdateUsingPureDelayData(cdep CDEPureDelayData) {
 		}
 	}
 }
-
 
 func (cdedata *CDEdata) TxListValidateMultiThread(txlist []Transaction) bool {
 	ThreadNum := 4 // Thread number for tx validation

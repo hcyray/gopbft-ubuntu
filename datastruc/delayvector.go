@@ -74,38 +74,38 @@ type DelayVector struct
 	RecvWriteResponFromNewCh chan DataReceived
 }
 
-func (delayv *DelayVector) Update(testop string) {
+//func (delayv *DelayVector) Update(testop string) {
+//
+//	fmt.Println("instance", delayv.Tester, "starts updating", testop, "delay vector at round", delayv.Round)
+//	if testop=="both" {
+//		delayv.UpdateWrite()
+//		delayv.UpdatePropose()
+//		//if delayv.Tester==0 {
+//		//	fmt.Println("propose-delay and validate-delay measurement result----------------------------------------")
+//		//	delayv.PrintResult()
+//		//}
+//	} else if testop=="write" {
+//		delayv.UpdateWrite()
+//
+//	} else if testop=="propose" {
+//		delayv.UpdatePropose()
+//	} else {
+//		log.Panic("wrong option")
+//	}
+//}
 
-	fmt.Println("instance", delayv.Tester, "starts updating", testop, "delay vector at round", delayv.Round)
-	if testop=="both" {
-		delayv.UpdateWrite()
-		delayv.UpdatePropose()
-		//if delayv.Tester==0 {
-		//	fmt.Println("propose-delay and validate-delay measurement result----------------------------------------")
-		//	delayv.PrintResult()
-		//}
-	} else if testop=="write" {
-		delayv.UpdateWrite()
-
-	} else if testop=="propose" {
-		delayv.UpdatePropose()
-	} else {
-		log.Panic("wrong option")
-	}
-}
-
-func (delayv *DelayVector) UpdateAtNew(testop string) {
-	if testop=="both" {
-		delayv.UpdateWriteAtNew()
-		delayv.UpdateProposeAtNew()
-	} else if testop=="write" {
-		delayv.UpdateWriteAtNew()
-	} else if testop=="propose" {
-		delayv.UpdateProposeAtNew()
-	} else {
-		log.Panic("wrong option")
-	}
-}
+//func (delayv *DelayVector) UpdateAtNew(testop string) {
+//	if testop=="both" {
+//		delayv.UpdateWriteAtNew()
+//		delayv.UpdateProposeAtNew()
+//	} else if testop=="write" {
+//		delayv.UpdateWriteAtNew()
+//	} else if testop=="propose" {
+//		delayv.UpdateProposeAtNew()
+//	} else {
+//		log.Panic("wrong option")
+//	}
+//}
 
 func (delayv *DelayVector) UpdatePropose() {
 	// this func blocks when executing, this func tends to overestimate propose
