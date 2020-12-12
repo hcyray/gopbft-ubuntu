@@ -367,6 +367,7 @@ func (pbft *PBFT) Run() {
 				} else {
 					if pbft.cdeupdateflag {
 						// invoke a CDE dalay data update
+						start:=time.Now()
 						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
 						cdedatap := pbft.cdedata
 						thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
@@ -387,7 +388,8 @@ func (pbft *PBFT) Run() {
 						pbft.MsgBuff.MeasurementResPool[hval] = mrmsg
 						pbft.MsgBuff.Msgbuffmu.Unlock()
 
-						fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes")
+						elapsed := time.Since(start).Milliseconds()
+						fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes, time costs: ", elapsed, "ms" )
 						pbft.cdedata.Round += 1
 						pbft.cdeupdateflag = false
 					} else {
