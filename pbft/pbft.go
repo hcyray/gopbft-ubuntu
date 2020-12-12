@@ -229,6 +229,7 @@ func (pbft *PBFT) InitialSetup() {
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
 	if pbft.curleaderPubKeystr==pbft.PubKeystr {
 		pbft.isleader = true
+		pbft.cdeupdateflag = true
 	}
 
 	// print leader succession line
@@ -365,8 +366,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					if pbft.cdeupdateflag {
-						// todo, invoke a CDE dalay data update
-
+						// invoke a CDE dalay data update
 						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
 						cdedatap := pbft.cdedata
 						thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
