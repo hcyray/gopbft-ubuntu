@@ -172,7 +172,7 @@ func (client *Client) sendtooneloop(destid int) {
 				trytime += 1
 			} else {
 				fmt.Println("try time reaches the upper bound, stops")
-				time.Sleep(time.Second * 30)
+				time.Sleep(time.Second * 40)
 			}
 		} else {
 		innerloop:

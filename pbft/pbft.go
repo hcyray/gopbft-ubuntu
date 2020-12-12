@@ -234,7 +234,7 @@ func (pbft *PBFT) InitialSetup() {
 
 	// print leader succession line
 	//fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
-	pbft.succLine.SucclinePrint()
+	//pbft.succLine.SucclinePrint()
 	//fmt.Println("instance", pbft.Id, "pubkey string is", pbft.PubKeystr)
 
 	// construct genesis block
