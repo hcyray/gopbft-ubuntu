@@ -106,6 +106,7 @@ type PBFT struct {
 	acctx int
 	starttime time.Time
 	consensustimelog []int
+	predictedconsensustimelog []int
 	timelog []int
 	tps []int
 	leaverequeststarttime time.Time
@@ -360,8 +361,11 @@ func (pbft *PBFT) Run() {
 				elapsed := time.Since(starttime).Milliseconds()
 				pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
 				starttime = time.Now()
+				consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
+				pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
 				if pbft.currentHeight%LeaderLease==0 {
 					fmt.Println("consensustime =", pbft.consensustimelog)
+					fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
 				}
 			}
 			if pbft.isleader && pbft.leaderlease>0 {
@@ -1039,10 +1043,10 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.MsgBuff.UpdateMeasurementResAfterCommitBlock(pbft.curblock)
 			pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
-			consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.Id, pbft.succLine.Leng, pbft.quorumsize)
-			if pbft.Id==0 {
-				fmt.Println("consensus-delay when instance", pbft.Id, "as leader is", consensusdelay)
-			}
+			//consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.Id, pbft.succLine.Leng, pbft.quorumsize)
+			//if pbft.Id==0 {
+			//	fmt.Println("consensus-delay when instance", pbft.Id, "as leader is", consensusdelay)
+			//}
 			if pbft.Id==0 {
 				pbft.cdedata.PrintResult()
 			}
@@ -1152,7 +1156,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				balancehash := pbft.generateaccountbalancehash()
 				fmt.Println("INSTANCE", pbft.Id, "balance hash:", balancehash)
 				fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
-				pbft.succLine.SucclinePrint()
+				//pbft.succLine.SucclinePrint()
 				confighash := pbft.succLine.GetHash()
 				fmt.Println("INSTANCE", pbft.Id, "confighash:", confighash)
 				cdedatahash := pbft.cdedata.GenerateStateHash()
