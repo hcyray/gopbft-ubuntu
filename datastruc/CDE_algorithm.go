@@ -456,10 +456,10 @@ func (cdedata *CDEdata) UpdateUsingNewMeasurementRes(mrrlist []MeasurementResult
 		cdedata.sanitizationflag[tester] = true
 	}
 
-	sanitize := false
+	sanitize := true
 	for _, id := range cdedata.Peers {
 		if cdedata.sanitizationflag[id] == false {
-			break
+			sanitize =false
 		}
 	}
 	if sanitize {
@@ -790,6 +790,7 @@ func (cdedata *CDEdata) Sanitization() {
 func (cdedata *CDEdata) AddNewInstanceData(jtx JoinTx) {
 	newid := jtx.Id
 	cdedata.Peers = append(cdedata.Peers, newid)
+	cdedata.sanitizationflag[newid] = true
 	cdedata.ProposeDelayMatrix[newid] = make(map[int]int)
 	cdedata.ValidationDelayMatrix[newid] = make(map[int]int)
 	cdedata.WriteDelayMatrix[newid] = make(map[int]int)
@@ -814,6 +815,18 @@ func (cdedata *CDEdata) AddNewInstanceData(jtx JoinTx) {
 	cdedata.ProposeDelayMatrix[newid][newid] = 0
 	cdedata.ValidationDelayMatrix[newid][newid] = 0
 	cdedata.WriteDelayMatrix[newid][newid] = 0
+
+	sanitize := true
+	for _, id := range cdedata.Peers {
+		if cdedata.sanitizationflag[id] == false {
+			sanitize = false
+		}
+	}
+	if sanitize {
+		cdedata.Sanitization()
+		fmt.Println("sanitization happens")
+	}
+
 }
 
 func (cdedata *CDEdata) GeneratePureDelayData() CDEPureDelayData {
