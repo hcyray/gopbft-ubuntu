@@ -163,12 +163,16 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 	//}
 
 	if replytonew {
-		t := 0
-		for _,v := range cdedata.validatetxbatachtime {
-			t += v
+		if len(cdedata.validatetxbatachtime)==0 {
+			time.Sleep(time.Duration(200))
+		} else {
+			t := 0
+			for _,v := range cdedata.validatetxbatachtime {
+				t += v
+			}
+			t = t/len(cdedata.validatetxbatachtime)
+			time.Sleep(time.Duration(t))
 		}
-		t = t/len(cdedata.validatetxbatachtime)
-		time.Sleep(time.Duration(t))
 	} else {
 		start := time.Now()
 		cdedata.TxListValidateMultiThread(proposetestmsg.TxBatch)
