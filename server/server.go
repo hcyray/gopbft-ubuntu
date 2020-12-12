@@ -132,7 +132,7 @@ func (serv *Server) Start() {
 	time.Sleep(time.Second * 1)
 	serv.pbft.InitialSetup()
 	time.Sleep(time.Second * 5)
-	go serv.pbft.Run()
+	//go serv.pbft.Run()
 }
 
 func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
