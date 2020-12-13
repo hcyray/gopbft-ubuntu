@@ -1163,10 +1163,10 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
 				//pbft.succLine.SucclinePrint()
 				confighash := pbft.succLine.GetHash()
-				fmt.Println("INSTANCE", pbft.Id, "confighash:", confighash)
+				//fmt.Println("INSTANCE", pbft.Id, "confighash:", confighash)
 				cdedatahash := pbft.cdedata.GenerateStateHash()
-				fmt.Println("INSTANCE", pbft.Id, "cdedatahash:", cdedatahash)
-				fmt.Println("INSTANCE", pbft.Id, "ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
+				//fmt.Println("INSTANCE", pbft.Id, "cdedatahash:", cdedatahash)
+				//fmt.Println("INSTANCE", pbft.Id, "ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
 				pbft.systemhash[pbft.currentHeight] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
 				pbft.persis.blockhashlist[pbft.currentHeight] = pbft.curblockhash
 				pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
