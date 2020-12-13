@@ -176,7 +176,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	//	pbft.isjoining = true
 	//} // 机制1测试
 
-	if pbft.Id==total+1 {
+	if pbft.Id==total-1 {
 		pbft.isleaving = true
 		fmt.Println("instance", pbft.Id, "will leave the system after a while")
 	} // 机制2测试
@@ -348,21 +348,16 @@ func (pbft *PBFT) Run() {
 
 
 	for {
-		//if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=1600 {
-		//	// wants to leave, mechanism 2
-		//	pbft.broadcastLeavingTx()
-		//	pbft.sentleavingtx = true
-		//	pbft.leaverequeststarttime = time.Now()
-		//}
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=30 {
+			// wants to leave, mechanism 2
+			pbft.broadcastLeavingTx()
+			pbft.sentleavingtx = true
+			pbft.leaverequeststarttime = time.Now()
+		}
 		switch pbft.status {
 		case stat_consensus:
 			fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
 			pbft.singleconsensusstarttime =time.Now()
-			//if pbft.currentHeight%LeaderLease==1 {
-			//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
-			//} else {
-			//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
-			//}
 			if pbft.isleader && pbft.leaderlease>0 {
 				if pbft.remainblocknuminnewview>0 {
 					fmt.Println("node", pbft.Id, "is leader, dealing with pre-prepare msg in new-view msg in ver", pbft.vernumber, "view", pbft.viewnumber, "height", pbft.currentHeight)
