@@ -1052,9 +1052,8 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			//if pbft.Id==0 {
 			//	fmt.Println("consensus-delay when instance", pbft.Id, "as leader is", consensusdelay)
 			//}
-			if pbft.Id==0 {
-				pbft.cdedata.PrintResult()
-			}
+			pbft.cdedata.PrintResult()
+			
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 			commqc := datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, pbft.currentHeight, pbft.quorumsize)}
 			pbft.cachedb.UpdateAfterCommit(pbft.currentHeight, pbft.curblock, pbft.accountbalance, commqc)
@@ -1159,7 +1158,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				//}
 
 				balancehash := pbft.generateaccountbalancehash()
-				fmt.Println("INSTANCE", pbft.Id, "balance hash:", balancehash)
+				//fmt.Println("INSTANCE", pbft.Id, "balance hash:", balancehash)
 				fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
 				//pbft.succLine.SucclinePrint()
 				confighash := pbft.succLine.GetHash()
