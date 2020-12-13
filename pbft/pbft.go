@@ -348,7 +348,7 @@ func (pbft *PBFT) Run() {
 
 
 	for {
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=30 {
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=25 {
 			// wants to leave, mechanism 2
 			pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
