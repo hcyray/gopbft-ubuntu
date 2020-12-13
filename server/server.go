@@ -154,8 +154,10 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 		serv.broadcastCh, serv.memberidchangeCh, serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh,
 		serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh)
 
+	start := time.Now()
 	serv.pbft.LateSetup(peerlist)
-	fmt.Println("the new instance late setup completes, start consensing")
+	elapsed := time.Since(start).Milliseconds()
+	fmt.Println("the new instance late setup completes, time costs", int(elapsed), "start consensing")
 	go serv.pbft.Run()
 }
 
