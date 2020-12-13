@@ -859,7 +859,9 @@ func (cdedata *CDEdata) UpdateUsingPureDelayData(cdep CDEPureDelayData) {
 			cdedata.ValidationDelayMatrix[u][v] = cdep.ValidationDelayMatrix[u][v]
 			cdedata.WriteDelayMatrix[u][v] = cdep.WriteDelayMatrix[u][v]
 		}
+		cdedata.sanitizationflag[u] = true
 	}
+
 }
 
 func (cdedata *CDEdata) TxListValidateMultiThread(txlist []Transaction) bool {
