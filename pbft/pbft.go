@@ -844,7 +844,7 @@ func (pbft *PBFT) scanCommit(ver, view, heigh int, digest [32]byte, quorumsize i
 }
 
 func (pbft *PBFT) scanViewChange(ver, view, quorumsize int) {
-	//fmt.Println("instance", pbft.Id, "scans view-change msg in ver", ver, "view", view)
+	fmt.Println("instance", pbft.Id, "scans view-change msg in ver", ver, "view", view)
 	timeouter := time.NewTimer(time.Second*ThreadExit)
 	theterm := datastruc.Term{ver, view}
 	for {
