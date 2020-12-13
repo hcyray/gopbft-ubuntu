@@ -699,7 +699,6 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 
 	newcdedata := cdedata.CopyData()
 	newcdedata.AddNewInstanceData(jtx)
-	//newcdedata.Sanitization()
 
 	blockdelay := newcdedata.ProposeDelayConvertToMatrix()
 	validatedelay := newcdedata.ValidationDelayConverToMatrix()
@@ -828,9 +827,8 @@ func (cdedata *CDEdata) AddNewInstanceData(jtx JoinTx) {
 	}
 	if sanitize {
 		cdedata.Sanitization()
-		fmt.Println("sanitization happens")
+		fmt.Println("sanitization happens when adding new instance")
 	}
-
 }
 
 func (cdedata *CDEdata) GeneratePureDelayData() CDEPureDelayData {

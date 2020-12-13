@@ -300,7 +300,15 @@ theloop:
 			// check correctness
 			// update delay vector
 			delayv.WriteDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()/2)
-
+			flag := true
+			for _,v:= range delayv.WriteDelaydata {
+				if v==MAXWAITTIME {
+					flag = false
+				}
+			}
+			if flag{
+				break theloop
+			}
 		}
 	}
 }
@@ -327,10 +335,12 @@ func (delayv *DelayVector) UpdateProposeAtNew() {
 	delayv.BroadcastCh <- datatosend // question, hope this won't block or take too much time
 
 	// wait for reponse
-	gotresponse := make(map[int]bool)
-	for _, v := range delayv.Peers {
-		gotresponse[v] = false
+	for _,v:=range delayv.Peers {
+		delayv.ProposeDelaydata[v] = MAXWAITTIME
+		delayv.ValidationDelaydata[v] = MAXWAITTIME
 	}
+	delayv.ProposeDelaydata[delayv.Tester] = 0
+	delayv.ValidationDelaydata[delayv.Tester] = 0
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
 	t1 := make(map[int]int)
 	for _, v := range delayv.Peers {
@@ -352,7 +362,20 @@ theloop:
 				t1[ppr.Testee] = int(time.Since(starttime).Milliseconds())
 				// tend to overestimate propose-delay
 				delayv.ProposeDelaydata[ppr.Testee] = int(time.Since(starttime).Milliseconds()) / 2
-				gotresponse[ppr.Testee] = true
+			}
+			flag := true
+			for _,v:= range delayv.ProposeDelaydata {
+				if v==MAXWAITTIME {
+					flag = false
+				}
+			}
+			for _,v:= range delayv.ValidationDelaydata {
+				if v==MAXWAITTIME {
+					flag = false
+				}
+			}
+			if flag{
+				break theloop
 			}
 		case theresponse :=<- delayv.RecvProposeResponWFromOldCh:
 			var ppr ProposeResponseWithValidateMsg
@@ -361,7 +384,20 @@ theloop:
 				// update delay vector
 				//fmt.Println("delay vector instance receives propose-response-with-validation, updating validaton delay data")
 				delayv.ValidationDelaydata[ppr.Testee] = int(time.Since(starttime).Milliseconds()) - t1[ppr.Testee]
-				gotresponse[ppr.Testee] = true
+			}
+			flag := true
+			for _,v:= range delayv.ProposeDelaydata {
+				if v==MAXWAITTIME {
+					flag = false
+				}
+			}
+			for _,v:= range delayv.ValidationDelaydata {
+				if v==MAXWAITTIME {
+					flag = false
+				}
+			}
+			if flag{
+				break theloop
 			}
 		}
 	}
