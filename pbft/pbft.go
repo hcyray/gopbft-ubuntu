@@ -370,7 +370,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag {
+					if pbft.cdeupdateflag && pbft.cdedata.Round==1 {
 						// invoke a CDE dalay data update
 						start:=time.Now()
 						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
@@ -542,11 +542,12 @@ func (pbft *PBFT) Run() {
 						elapsed := time.Since(pbft.singleconsensusstarttime).Milliseconds()
 						pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
 						consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
-						if pbft.currentHeight%LeaderLease==1 {
-							pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
-						} else {
-							pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
-						}
+						//if pbft.currentHeight%LeaderLease==1 {
+						//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
+						//} else {
+						//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
+						//}
+						pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", curheight, "\n")
 						if curheight%LeaderLease==0 && curheight>=LeaderLease {
@@ -1055,9 +1056,11 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			//if pbft.Id==0 {
 			//	fmt.Println("consensus-delay when instance", pbft.Id, "as leader is", consensusdelay)
 			//}
-			if pbft.Id==0 {
-				pbft.cdedata.PrintResult()
-			}
+			//if pbft.Id==0 {
+			//	pbft.cdedata.PrintResult()
+			//}
+			pbft.cdedata.PrintResult()
+
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 			commqc := datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, pbft.currentHeight, pbft.quorumsize)}
 			pbft.cachedb.UpdateAfterCommit(pbft.currentHeight, pbft.curblock, pbft.accountbalance, commqc)
