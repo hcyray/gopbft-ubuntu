@@ -358,12 +358,11 @@ func (pbft *PBFT) Run() {
 		case stat_consensus:
 			fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
 			pbft.singleconsensusstarttime =time.Now()
-			consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
-			if pbft.currentHeight%LeaderLease==1 {
-				pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
-			} else {
-				pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
-			}
+			//if pbft.currentHeight%LeaderLease==1 {
+			//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
+			//} else {
+			//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
+			//}
 			if pbft.isleader && pbft.leaderlease>0 {
 				if pbft.remainblocknuminnewview>0 {
 					fmt.Println("node", pbft.Id, "is leader, dealing with pre-prepare msg in new-view msg in ver", pbft.vernumber, "view", pbft.viewnumber, "height", pbft.currentHeight)
@@ -542,6 +541,8 @@ func (pbft *PBFT) Run() {
 						//time.Sleep(time.Millisecond * 50)
 						elapsed := time.Since(pbft.singleconsensusstarttime).Milliseconds()
 						pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
+						consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
+						pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", curheight, "\n")
 						if curheight%LeaderLease==0 && curheight>=LeaderLease {
