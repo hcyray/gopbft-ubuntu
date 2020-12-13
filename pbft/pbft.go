@@ -366,29 +366,31 @@ func (pbft *PBFT) Run() {
 					// update delay data before sending the first block
 					if pbft.cdeupdateflag {
 						// invoke a CDE dalay data update
-						start:=time.Now()
-						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
-						cdedatap := pbft.cdedata
-						thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
-						delayv := pbft.cdedata.CreateDelayVector(thetxs)
-						var mrmsg datastruc.MeasurementResultMsg
-						closech := make(chan bool)
-						pbft.cdedata.Recvmu.Lock()
-						go pbft.cdedata.CDEResponseMonitor(closech)
-						delayv.UpdateWrite()
-						delayv.UpdatePropose()
-						mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
-						closech<-true
-						pbft.cdedata.Recvmu.Unlock()
+						if pbft.cdedata.Round==0 {
+							start:=time.Now()
+							fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
+							cdedatap := pbft.cdedata
+							thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+							delayv := pbft.cdedata.CreateDelayVector(thetxs)
+							var mrmsg datastruc.MeasurementResultMsg
+							closech := make(chan bool)
+							pbft.cdedata.Recvmu.Lock()
+							go pbft.cdedata.CDEResponseMonitor(closech)
+							delayv.UpdateWrite()
+							delayv.UpdatePropose()
+							mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
+							closech<-true
+							pbft.cdedata.Recvmu.Unlock()
 
-						// record the result to msgbuff, so that it will be packed in the forthcoming block, it does not need to be broadcasted to others
-						pbft.MsgBuff.Msgbuffmu.Lock()
-						hval := mrmsg.GetHash()
-						pbft.MsgBuff.MeasurementResPool[hval] = mrmsg
-						pbft.MsgBuff.Msgbuffmu.Unlock()
+							// record the result to msgbuff, so that it will be packed in the forthcoming block, it does not need to be broadcasted to others
+							pbft.MsgBuff.Msgbuffmu.Lock()
+							hval := mrmsg.GetHash()
+							pbft.MsgBuff.MeasurementResPool[hval] = mrmsg
+							pbft.MsgBuff.Msgbuffmu.Unlock()
 
-						elapsed := time.Since(start).Milliseconds()
-						fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes, time costs: ", elapsed, "ms" )
+							elapsed := time.Since(start).Milliseconds()
+							fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes, time costs: ", elapsed, "ms" )
+						}
 						pbft.cdedata.Round += 1
 						pbft.cdeupdateflag = false
 					}
