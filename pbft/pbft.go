@@ -366,7 +366,7 @@ func (pbft *PBFT) Run() {
 					// update delay data before sending the first block
 					if pbft.cdeupdateflag {
 						// invoke a CDE dalay data update
-						if pbft.cdedata.Round==0 {
+						if pbft.cdedata.Round==1 {
 							start:=time.Now()
 							fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
 							cdedatap := pbft.cdedata
