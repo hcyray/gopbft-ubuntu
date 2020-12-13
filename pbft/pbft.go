@@ -346,6 +346,7 @@ func (pbft *PBFT) Run() {
 	go pbft.computeTps()
 
 
+
 	for {
 		//if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=1600 {
 		//	// wants to leave, mechanism 2
@@ -357,6 +358,11 @@ func (pbft *PBFT) Run() {
 		case stat_consensus:
 			fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
 			pbft.singleconsensusstarttime =time.Now()
+			//if pbft.currentHeight%LeaderLease==1 {
+			//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
+			//} else {
+			//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
+			//}
 			if pbft.isleader && pbft.leaderlease>0 {
 				if pbft.remainblocknuminnewview>0 {
 					fmt.Println("node", pbft.Id, "is leader, dealing with pre-prepare msg in new-view msg in ver", pbft.vernumber, "view", pbft.viewnumber, "height", pbft.currentHeight)
@@ -366,31 +372,29 @@ func (pbft *PBFT) Run() {
 					// update delay data before sending the first block
 					if pbft.cdeupdateflag {
 						// invoke a CDE dalay data update
-						if pbft.cdedata.Round==1 {
-							start:=time.Now()
-							fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
-							cdedatap := pbft.cdedata
-							thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
-							delayv := pbft.cdedata.CreateDelayVector(thetxs)
-							var mrmsg datastruc.MeasurementResultMsg
-							closech := make(chan bool)
-							pbft.cdedata.Recvmu.Lock()
-							go pbft.cdedata.CDEResponseMonitor(closech)
-							delayv.UpdateWrite()
-							delayv.UpdatePropose()
-							mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
-							closech<-true
-							pbft.cdedata.Recvmu.Unlock()
+						start:=time.Now()
+						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
+						cdedatap := pbft.cdedata
+						thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+						delayv := pbft.cdedata.CreateDelayVector(thetxs)
+						var mrmsg datastruc.MeasurementResultMsg
+						closech := make(chan bool)
+						pbft.cdedata.Recvmu.Lock()
+						go pbft.cdedata.CDEResponseMonitor(closech)
+						delayv.UpdateWrite()
+						delayv.UpdatePropose()
+						mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
+						closech<-true
+						pbft.cdedata.Recvmu.Unlock()
 
-							// record the result to msgbuff, so that it will be packed in the forthcoming block, it does not need to be broadcasted to others
-							pbft.MsgBuff.Msgbuffmu.Lock()
-							hval := mrmsg.GetHash()
-							pbft.MsgBuff.MeasurementResPool[hval] = mrmsg
-							pbft.MsgBuff.Msgbuffmu.Unlock()
+						// record the result to msgbuff, so that it will be packed in the forthcoming block, it does not need to be broadcasted to others
+						pbft.MsgBuff.Msgbuffmu.Lock()
+						hval := mrmsg.GetHash()
+						pbft.MsgBuff.MeasurementResPool[hval] = mrmsg
+						pbft.MsgBuff.Msgbuffmu.Unlock()
 
-							elapsed := time.Since(start).Milliseconds()
-							fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes, time costs: ", elapsed, "ms" )
-						}
+						elapsed := time.Since(start).Milliseconds()
+						fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes, time costs: ", elapsed, "ms" )
 						pbft.cdedata.Round += 1
 						pbft.cdeupdateflag = false
 					}
@@ -538,12 +542,11 @@ func (pbft *PBFT) Run() {
 						elapsed := time.Since(pbft.singleconsensusstarttime).Milliseconds()
 						pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
 						consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
-						pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
-						//if pbft.currentHeight%LeaderLease==1 {
-						//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
-						//} else {
-						//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
-						//}
+						if pbft.currentHeight%LeaderLease==1 {
+							pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
+						} else {
+							pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
+						}
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", curheight, "\n")
 						if curheight%LeaderLease==0 && curheight>=LeaderLease {
