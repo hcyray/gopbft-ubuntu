@@ -366,7 +366,7 @@ func (pbft *PBFT) Run() {
 					// update delay data before sending the first block
 					if pbft.cdeupdateflag {
 						// invoke a CDE dalay data update
-						if pbft.cdedata.Round==1 {
+						if pbft.cdedata.Round==0 {
 							start:=time.Now()
 							fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
 							cdedatap := pbft.cdedata
@@ -1052,8 +1052,9 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			//if pbft.Id==0 {
 			//	fmt.Println("consensus-delay when instance", pbft.Id, "as leader is", consensusdelay)
 			//}
-			pbft.cdedata.PrintResult()
-			
+			if pbft.Id==0 {
+				pbft.cdedata.PrintResult()
+			}
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 			commqc := datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, pbft.currentHeight, pbft.quorumsize)}
 			pbft.cachedb.UpdateAfterCommit(pbft.currentHeight, pbft.curblock, pbft.accountbalance, commqc)
@@ -1158,14 +1159,14 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				//}
 
 				balancehash := pbft.generateaccountbalancehash()
-				//fmt.Println("INSTANCE", pbft.Id, "balance hash:", balancehash)
+				fmt.Println("INSTANCE", pbft.Id, "balance hash:", balancehash)
 				fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
 				//pbft.succLine.SucclinePrint()
 				confighash := pbft.succLine.GetHash()
-				//fmt.Println("INSTANCE", pbft.Id, "confighash:", confighash)
+				fmt.Println("INSTANCE", pbft.Id, "confighash:", confighash)
 				cdedatahash := pbft.cdedata.GenerateStateHash()
-				//fmt.Println("INSTANCE", pbft.Id, "cdedatahash:", cdedatahash)
-				//fmt.Println("INSTANCE", pbft.Id, "ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
+				fmt.Println("INSTANCE", pbft.Id, "cdedatahash:", cdedatahash)
+				fmt.Println("INSTANCE", pbft.Id, "ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
 				pbft.systemhash[pbft.currentHeight] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
 				pbft.persis.blockhashlist[pbft.currentHeight] = pbft.curblockhash
 				pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
