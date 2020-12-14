@@ -344,7 +344,7 @@ func (pbft *PBFT) Run() {
 	fmt.Println("instance", pbft.Id, "starts running")
 	pbft.starttime = time.Now()
 	go pbft.statetransfermonitor()
-	//go pbft.censorshipmonitor()
+	go pbft.censorshipmonitor()
 	go pbft.cdedata.CDEInformTestMonitor()
 	go pbft.cdedata.CDETestMonitor()
 	go pbft.computeTps()
@@ -354,7 +354,6 @@ func (pbft *PBFT) Run() {
 	for {
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=33 {
 			// wants to leave, mechanism 2
-			fmt.Println("instance", pbft.Id, "sends a leave-tx, outlayer")
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
 			pbft.leaverequeststarttime = time.Now()
@@ -1096,7 +1095,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				} else {
 					datatosend := datastruc.DataMemberChange{"leave", theleavingid, ""}
 					pbft.memberidchangeCh <- datatosend
-					//pbft.censorshipnothappenCh <- true
+					pbft.censorshipnothappenCh <- true
 
 					// update member and memberexceptme
 					tmp1 := make([]int, 0)
@@ -1258,7 +1257,6 @@ func (pbft *PBFT) broadcastLeavingTx() {
 
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "leavetx", content}
 	pbft.broadcdataCh <- datatosend
-	fmt.Println("instance", pbft.Id, "sends a leave-tx, inlayer")
 	pbft.censorshipmonitorCh <- ltx.TxHash
 }
 
