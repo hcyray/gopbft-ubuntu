@@ -1385,7 +1385,7 @@ func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.Leav
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "viewchangemsg", content}
 	//fmt.Println("instance", pbft.Id, "broadcasts the view chagne msg to", pbft.membersexceptme)
 	pbft.broadcdataCh <- datatosend
-	fmt.Println("instance", pbft.Id, "broadcast view-change msg at ver", ver, "view 0")
+	fmt.Println("instance", pbft.Id, "broadcast view-change msg at ver", vcmsg.Ver, "view", vcmsg.View)
 }
 
 func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string, datastruc.Block){
