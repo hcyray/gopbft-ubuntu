@@ -832,8 +832,6 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 		fmt.Println("serve", serv.id, "receives a view-change msg, but the signature is wrong!")
 		//fmt.Println("sender id is ", vcmsg.SenderId, " singed data is ", datatoverify, "\n")
 		return
-	} else {
-		fmt.Println("serve", serv.id, "receives a view-change msg of ver", vcmsg.Ver)
 	}
 	serv.msgbuff.Msgbuffmu.Lock()
 	theterm := datastruc.Term{vcmsg.Ver, vcmsg.View}
@@ -843,7 +841,7 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 	delete(serv.msgbuff.Vcmsg, theterm)
 	serv.msgbuff.Vcmsg[theterm] = make([]datastruc.ViewChangeMsg, len(tmp))
 	copy(serv.msgbuff.Vcmsg[theterm], tmp)
-	fmt.Println("serve", serv.id, "now has", len(serv.msgbuff.Vcmsg[theterm]), "view-change msg at ver", theterm.Ver, "view", theterm.View)
+	//fmt.Println("serve", serv.id, "now has", len(serv.msgbuff.Vcmsg[theterm]), "view-change msg at ver", theterm.Ver, "view", theterm.View)
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
