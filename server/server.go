@@ -56,6 +56,8 @@ type Server struct {
 
 	recvconfigCh chan datastruc.ReadConfigReply
 	bytesended int
+	byterecvfserver int
+	byterecvfclient int
 
 }
 
@@ -228,6 +230,7 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 		if err != nil {
 			log.Panic(err)
 		}
+		serv.byterecvfserver += len(request)
 		switch commanType {
 		case "idportpubkey":
 			go serv.handleIdPortPubkey(request[commandLength:])
@@ -333,9 +336,6 @@ func (serv *Server) BroadcastLoop() {
 				request := append(datastruc.CommandToBytes(data.MsgType), data.Msg...)
 				serv.mu.Lock()
 				if serv.remoteallips[i]!="" {
-					if data.MsgType=="viewchangemsg" {
-						fmt.Println("server",serv.id, "sends a view change msg to", serv.remoteallips[i])
-					}
 					go sendData(request, serv.remoteallips[i])
 					serv.bytesended += len(request)
 				} else {
@@ -344,8 +344,9 @@ func (serv *Server) BroadcastLoop() {
 				serv.mu.Unlock()
 			}
 		case <-serv.stopCh:
-			res := serv.bytesended/(1024)
-			fmt.Println("server",serv.id, "stops its broadcasting loop, total bytes send:", res, "KB")
+			fmt.Println("server",serv.id, "stops its broadcasting loop, total Bytes send:", serv.bytesended/(1024),
+				"KB, total Bytes received from servers:", serv.byterecvfserver/1024, "KB, total Bytes received from clients:",
+				serv.byterecvfclient/1024, "KB")
 			break theloop
 		}
 	}
@@ -479,6 +480,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	mergedbuf := make([]byte, 0)
 	for {
 		n, err := conn.Read(readbuf[0:])
+		serv.byterecvfclient += n
 		if n==0 {
 			continue
 		}
