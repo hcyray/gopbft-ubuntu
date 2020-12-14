@@ -75,6 +75,8 @@ type PBFT struct {
 	statetransferquerymonitorCh chan datastruc.QueryStateTransMsg
 	statetransferreplyCh chan datastruc.ReplyStateTransMsg
 
+	stopCh chan bool
+
 	sentviewchangemsg map[datastruc.Term]bool
 	sentnewviewmsg map[datastruc.Term]bool
 	remainblocknuminnewview int
@@ -120,7 +122,8 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	broadCh chan datastruc.Datatosend, memberidchangeCh chan datastruc.DataMemberChange, censorshipmonitorCh chan [32]byte,
 	statetransferqueryCh chan datastruc.QueryStateTransMsg, statetransferreplyCh chan datastruc.ReplyStateTransMsg,
 	cdetestrecvch chan datastruc.DataReceived, cderesponserecvch chan datastruc.DataReceived,
-	RecvInformTestCh chan datastruc.RequestTestMsg, recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB) *PBFT {
+	RecvInformTestCh chan datastruc.RequestTestMsg, recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB,
+	stopCh chan bool) *PBFT {
 	pbft := &PBFT{}
 	pbft.Id = id
 	pbft.IpPortAddr = ipaddr
@@ -158,6 +161,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.censorshipmonitorCh = censorshipmonitorCh
 	pbft.statetransferquerymonitorCh = statetransferqueryCh
 	pbft.statetransferreplyCh = statetransferreplyCh
+	pbft.stopCh = stopCh
 	pbft.status = stat_consensus
 	pbft.consenstatus = Unstarted
 	pbft.leaderlease = LeaderLease
@@ -1086,7 +1090,8 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				if pbft.Id==theleavingid {
 					requestprocessingtime := time.Since(pbft.leaverequeststarttime).Milliseconds()
 					fmt.Println("instance", pbft.Id, "blocks here permanentally, the leaving-tx processing time is", requestprocessingtime, "ms")
-					time.Sleep(time.Second * 100) // block here
+					pbft.stopCh<-true
+					pbft.stopCh<-true
 				} else {
 					datatosend := datastruc.DataMemberChange{"leave", theleavingid, ""}
 					pbft.memberidchangeCh <- datatosend

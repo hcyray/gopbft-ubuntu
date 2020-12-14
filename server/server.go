@@ -52,8 +52,11 @@ type Server struct {
 	RecvInformTestCh chan datastruc.RequestTestMsg
 	recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB
 
+	stopCh chan bool
+
 	recvconfigCh chan datastruc.ReadConfigReply
 	bytesended int
+
 }
 
 func CreateServer(id int, localip string, clientpukstr map[int]string, serverips []string, inseach int) *Server {
@@ -82,7 +85,7 @@ func CreateServer(id int, localip string, clientpukstr map[int]string, serverips
 
 	serv.pbft = pbft.CreatePBFTInstance(id, serv.ipportaddr, serv.totalserver, clientpukstr, &serv.msgbuff, serv.sendCh, serv.broadcastCh, serv.memberidchangeCh,
 		serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh, serv.cdetestrecvCh,
-		serv.cderesponserecvCh,	serv.RecvInformTestCh, serv.recvsinglemeasurementCh)
+		serv.cderesponserecvCh,	serv.RecvInformTestCh, serv.recvsinglemeasurementCh, serv.stopCh)
 	return serv
 }
 
@@ -125,7 +128,8 @@ func (serv *Server) InitializeMapandChan() {
 	serv.RecvInformTestCh = make(chan datastruc.RequestTestMsg)
 	serv.recvsinglemeasurementCh = make(chan datastruc.SingleMeasurementAToB)
 	serv.recvconfigCh = make(chan datastruc.ReadConfigReply)
-	}
+	serv.stopCh = make(chan bool)
+}
 
 func (serv *Server) Start() {
 	go serv.Run()
@@ -153,7 +157,7 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 	fmt.Println("server", serv.id, "remote all ips:", serv.remoteallips)
 	serv.pbft = pbft.CreatePBFTInstance(serv.id, serv.ipportaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.sendCh,
 		serv.broadcastCh, serv.memberidchangeCh, serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh,
-		serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh)
+		serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh, serv.stopCh)
 
 	start := time.Now()
 	serv.pbft.LateSetup(peerlist)
@@ -321,6 +325,7 @@ func (serv *Server) ListenLocalForClient(localipport string) {
 
 func (serv *Server) BroadcastLoop() {
 	// send data according to id, this only applies to closed members in server class.
+	theloop:
 	for {
 		select {
 		case data := <-serv.broadcastCh:
@@ -334,12 +339,15 @@ func (serv *Server) BroadcastLoop() {
 				}
 				serv.mu.Unlock()
 			}
+		case <-serv.stopCh:
+			break theloop
 		}
 	}
 }
 
 func (serv *Server) SendLoop() {
 	// send data according to ip, this applies to those information from new instances.
+	theloop:
 	for {
 		select {
 		case data :=<- serv.sendCh:
@@ -347,6 +355,8 @@ func (serv *Server) SendLoop() {
 				request := append(datastruc.CommandToBytes(data.MsgType), data.Msg...)
 				go sendData(request, destip)
 			}
+		case <-serv.stopCh:
+			break theloop
 		}
 	}
 }
