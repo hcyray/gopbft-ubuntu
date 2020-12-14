@@ -1089,7 +1089,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				} else {
 					datatosend := datastruc.DataMemberChange{"leave", theleavingid, ""}
 					pbft.memberidchangeCh <- datatosend
-					pbft.censorshipnothappenCh <- true
+					//pbft.censorshipnothappenCh <- true
 
 					// update member and memberexceptme
 					tmp1 := make([]int, 0)
