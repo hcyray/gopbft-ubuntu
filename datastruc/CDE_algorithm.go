@@ -603,9 +603,9 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	}
 	imrmsg := NewInverseMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, inverseproposedelay,
 		inversevalidatedelay, inversewritedelay, cdedata.Pubkeystr, cdedata.Prvkey)
-	//fmt.Println("inverse propose-delay is", inverseproposedelay)
-	//fmt.Println("inverse validate-delay is", inversevalidatedelay)
-	//fmt.Println("inverse write-delay is", inversewritedelay)
+	fmt.Println("inverse propose-delay is", inverseproposedelay)
+	fmt.Println("inverse validate-delay is", inversevalidatedelay)
+	fmt.Println("inverse write-delay is", inversewritedelay)
 
 	// update propose new->sytem
 	go cdedata.CDEResponseMonitor(closech)
