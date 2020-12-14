@@ -350,7 +350,7 @@ func (pbft *PBFT) Run() {
 	for {
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=25 {
 			// wants to leave, mechanism 2
-			pbft.broadcastLeavingTx()
+			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
 			pbft.leaverequeststarttime = time.Now()
 		}
@@ -1244,10 +1244,11 @@ func (pbft *PBFT) broadcastLeavingTx() {
 	pbft.MsgBuff.Msgbuffmu.Lock()
 	pbft.MsgBuff.JoinLeavetxSet.LTxSet = append(pbft.MsgBuff.JoinLeavetxSet.LTxSet, ltx)
 	pbft.MsgBuff.Msgbuffmu.Unlock()
-	pbft.censorshipmonitorCh <- ltx.TxHash
+
 
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "leavetx", content}
 	pbft.broadcdataCh <- datatosend
+	pbft.censorshipmonitorCh <- ltx.TxHash
 }
 
 func (pbft *PBFT) broadcastTxBlock(bloc *datastruc.Block) {
