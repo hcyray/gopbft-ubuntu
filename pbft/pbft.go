@@ -1104,8 +1104,9 @@ func (pbft *PBFT) CommitCurConsensOb() {
 					for _,v := range pbft.members {
 						if v!=theleavingid {
 							tmp1 = append(tmp1, v)
-							if v!=pbft.Id {}
-							tmp2 = append(tmp2, v)
+							if v!=pbft.Id {
+								tmp2 = append(tmp2, v)
+							}
 						}
 					}
 					pbft.members = make([]int, len(tmp1))
