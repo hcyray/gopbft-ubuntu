@@ -171,7 +171,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.initializeMapChan()
 	pbft.initializeAccountBalance(clientpubkeystr)
 	pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
-	//pbft.UpdateByzantineIdentity()
+	pbft.UpdateByzantineIdentity()
 	if pbft.isbyzantine {
 		fmt.Println("instance", pbft.Id, "is a byzantine guy")
 	}
@@ -683,11 +683,11 @@ func (pbft *PBFT) statetransfermonitor() {
 }
 
 func (pbft *PBFT) UpdateByzantineIdentity() {
-	start := 2
-	if pbft.Id>=start && pbft.Id<start+pbft.fmax {
-		pbft.isbyzantine = true
-	}
-	if pbft.Id==2 {
+	//start := 2
+	//if pbft.Id>=start && pbft.Id<start+pbft.fmax {
+	//	pbft.isbyzantine = true
+	//}
+	if pbft.Id==3 {
 		pbft.isbyzantine = true
 	}
 }
@@ -1086,6 +1086,9 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.cachedb.UpdateAfterCommit(pbft.currentHeight, pbft.curblock, pbft.accountbalance, commqc)
 
 				theleavingid := pbft.curblock.LeaveTxList[0].Id
+				datatosend := datastruc.DataMemberChange{"leave", theleavingid, ""}
+				pbft.memberidchangeCh <- datatosend
+				pbft.censorshipnothappenCh <- true
 				if pbft.Id==theleavingid {
 					requestprocessingtime := time.Since(pbft.leaverequeststarttime).Milliseconds()
 					pbft.stopCh<-true
@@ -1093,9 +1096,6 @@ func (pbft *PBFT) CommitCurConsensOb() {
 					fmt.Println("instance", pbft.Id, "blocks here permanentally, the leaving-tx processing time is", requestprocessingtime, "ms")
 					time.Sleep(time.Second * 100)
 				} else {
-					datatosend := datastruc.DataMemberChange{"leave", theleavingid, ""}
-					pbft.memberidchangeCh <- datatosend
-					pbft.censorshipnothappenCh <- true
 
 					// update member and memberexceptme
 					tmp1 := make([]int, 0)
