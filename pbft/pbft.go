@@ -1108,10 +1108,12 @@ func (pbft *PBFT) CommitCurConsensOb() {
 							tmp2 = append(tmp2, v)
 						}
 					}
-					pbft.members = make([]int, 0)
-					pbft.membersexceptme = make([]int, 0)
+					pbft.members = make([]int, len(tmp1))
+					pbft.membersexceptme = make([]int, len(tmp2))
 					copy(pbft.members, tmp1)
 					copy(pbft.membersexceptme, tmp2)
+					fmt.Println("instance", pbft.Id,"updates members to", pbft.members, "membersexceptme to", pbft.membersexceptme)
+
 				}
 
 				balancehash := pbft.generateaccountbalancehash()
