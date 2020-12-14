@@ -333,6 +333,9 @@ func (serv *Server) BroadcastLoop() {
 				request := append(datastruc.CommandToBytes(data.MsgType), data.Msg...)
 				serv.mu.Lock()
 				if serv.remoteallips[i]!="" {
+					if data.MsgType=="viewchangemsg" {
+						fmt.Println("server",serv.id, "sends a view change msg to", serv.remoteallips[i])
+					}
 					go sendData(request, serv.remoteallips[i])
 				} else {
 					fmt.Println("not valid destination ip, the dest id is", i)
