@@ -352,7 +352,7 @@ func (pbft *PBFT) Run() {
 
 
 	for {
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=33 {
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=25 {
 			// wants to leave, mechanism 2
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
@@ -687,7 +687,7 @@ func (pbft *PBFT) UpdateByzantineIdentity() {
 	//if pbft.Id>=start && pbft.Id<start+pbft.fmax {
 	//	pbft.isbyzantine = true
 	//}
-	if pbft.Id==3 {
+	if pbft.Id==2 {
 		pbft.isbyzantine = true
 	}
 }
