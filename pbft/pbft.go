@@ -662,7 +662,7 @@ func (pbft *PBFT) censorshipmonitor() {
 				pbft.viewchangeduetocensorship = thehash
 				pbft.censorshiphappenCh<-true
 			case <-pbft.censorshipnothappenCh:
-				fmt.Println(fmt.Println("instance", pbft.Id, "finds the monitored leave-tx consensed, timer stops"))
+				fmt.Println("instance", pbft.Id, "finds the monitored leave-tx consensed, timer stops")
 			}
 		}
 	}
@@ -1385,7 +1385,7 @@ func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.Leav
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "viewchangemsg", content}
 	//fmt.Println("instance", pbft.Id, "broadcasts the view chagne msg to", pbft.membersexceptme)
 	pbft.broadcdataCh <- datatosend
-	fmt.Println("instance", pbft.Id, "broadcast view-change msg after reconfiguration at ver", ver, "view 0")
+	fmt.Println("instance", pbft.Id, "broadcast view-change msg at ver", ver, "view 0")
 }
 
 func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string, datastruc.Block){
@@ -1545,42 +1545,6 @@ func (pbft *PBFT) ReplyStateTransfer(height, id int) {
 	pbft.broadcdataCh <- datatosend
 	fmt.Println("instance", pbft.Id, "sends state-transfer-reply to instance", id)
 }
-
-//func (pbft *PBFT) delaySelfMonitor() {
-//
-//
-//
-//	for {
-//		if pbft.cdedata.Round >= 2 {
-//			fmt.Println("instance", pbft.Id, "finish all predefined delay data shares")
-//			break
-//		}
-//		// sleep random time, then invoke delay data update process
-//		ra := rand.Intn(10000)
-//		time.Sleep(time.Millisecond * time.Duration(ra))
-//		if !pbft.isleader {
-//			fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round)
-//			// update measurement
-//			cdedatap := pbft.cdedata
-//			thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
-//			delayv := pbft.cdedata.CreateDelayVector(thetxs)
-//			fmt.Println("instance", delayv.Tester, "peers: ", delayv.Peers)
-//			var mrmsg datastruc.MeasurementResultMsg
-//			closech := make(chan bool)
-//			pbft.cdedata.Recvmu.Lock()
-//			go pbft.cdedata.CDEResponseMonitor(closech)
-//			delayv.Update("both")
-//			mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
-//
-//			closech<-true
-//			pbft.cdedata.Recvmu.Unlock()
-//			// broadcast most recent measurement
-//			pbft.broadcastMeasurementResult(mrmsg)
-//			fmt.Println("instance", pbft.Id, "updating its delay data at round", pbft.cdedata.Round, "completes")
-//			pbft.cdedata.Round += 1
-//		}
-//	}
-//}
 
 func (pbft *PBFT) broadcastMeasurementResult(mrmsg datastruc.MeasurementResultMsg) {
 	var buff bytes.Buffer
