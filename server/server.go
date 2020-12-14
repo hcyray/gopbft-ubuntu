@@ -815,8 +815,9 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 		fmt.Println("serve", serv.id, "receives a view-change msg, but the signature is wrong!")
 		//fmt.Println("sender id is ", vcmsg.SenderId, " singed data is ", datatoverify, "\n")
 		return
+	} else {
+		fmt.Println("serve", serv.id, "receives a view-change msg of ver", vcmsg.Ver)
 	}
-	fmt.Println("serve", serv.id, "receives a view-change msg of ver", vcmsg.Ver)
 	serv.msgbuff.Msgbuffmu.Lock()
 	theterm := datastruc.Term{vcmsg.Ver, vcmsg.View}
 	tmp := make([]datastruc.ViewChangeMsg, len(serv.msgbuff.Vcmsg[theterm]))
