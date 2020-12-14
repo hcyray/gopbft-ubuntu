@@ -1089,9 +1089,10 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				theleavingid := pbft.curblock.LeaveTxList[0].Id
 				if pbft.Id==theleavingid {
 					requestprocessingtime := time.Since(pbft.leaverequeststarttime).Milliseconds()
+					pbft.stopCh<-true
+					pbft.stopCh<-true
 					fmt.Println("instance", pbft.Id, "blocks here permanentally, the leaving-tx processing time is", requestprocessingtime, "ms")
-					pbft.stopCh<-true
-					pbft.stopCh<-true
+					time.Sleep(time.Second * 100)
 				} else {
 					datatosend := datastruc.DataMemberChange{"leave", theleavingid, ""}
 					pbft.memberidchangeCh <- datatosend
