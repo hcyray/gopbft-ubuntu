@@ -350,10 +350,9 @@ func (pbft *PBFT) Run() {
 	go pbft.computeTps()
 
 
-
 	for {
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=21 {
-			// wants to leave, mechanism 2
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=200 {
+			// trigger this to test mechanism 2
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
 			pbft.leaverequeststarttime = time.Now()
@@ -369,7 +368,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round<0 {
+					if pbft.cdeupdateflag && pbft.cdedata.Round==0 {
 						// invoke a CDE dalay data update
 						start:=time.Now()
 						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
@@ -1057,7 +1056,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			//if pbft.Id==0 {
 			//	pbft.cdedata.PrintResult()
 			//}
-			//pbft.cdedata.PrintResult()
+			pbft.cdedata.PrintResult()
 
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 			commqc := datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, pbft.currentHeight, pbft.quorumsize)}
