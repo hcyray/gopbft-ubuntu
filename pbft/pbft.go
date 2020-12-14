@@ -340,7 +340,7 @@ func (pbft *PBFT) Run() {
 	fmt.Println("instance", pbft.Id, "starts running")
 	pbft.starttime = time.Now()
 	go pbft.statetransfermonitor()
-	go pbft.censorshipmonitor()
+	//go pbft.censorshipmonitor()
 	go pbft.cdedata.CDEInformTestMonitor()
 	go pbft.cdedata.CDETestMonitor()
 	go pbft.computeTps()
@@ -579,7 +579,7 @@ func (pbft *PBFT) Run() {
 				}
 			}
 		case stat_viewchange:
-			fmt.Println("instance ", pbft.Id, " now enters view-change in ver ",pbft.vernumber," view ",pbft.viewnumber, " waiting for vcmsg!\n")
+			fmt.Println("instance ", pbft.Id, " now enters view-change in ver ",pbft.vernumber," view ",pbft.viewnumber, " waiting for vcmsg!")
 			pbft.mu.Lock()
 			go pbft.scanViewChange(pbft.vernumber, pbft.viewnumber, pbft.quorumsize)
 			pbft.mu.Unlock()
