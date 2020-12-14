@@ -350,6 +350,7 @@ func (pbft *PBFT) Run() {
 	for {
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=25 {
 			// wants to leave, mechanism 2
+			fmt.Println("instance", pbft.Id, "sends a leave-tx, outlayer")
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
 			pbft.leaverequeststarttime = time.Now()
@@ -1248,6 +1249,7 @@ func (pbft *PBFT) broadcastLeavingTx() {
 
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "leavetx", content}
 	pbft.broadcdataCh <- datatosend
+	fmt.Println("instance", pbft.Id, "sends a leave-tx, inlayer")
 	pbft.censorshipmonitorCh <- ltx.TxHash
 }
 
