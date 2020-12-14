@@ -337,13 +337,15 @@ func (serv *Server) BroadcastLoop() {
 						fmt.Println("server",serv.id, "sends a view change msg to", serv.remoteallips[i])
 					}
 					go sendData(request, serv.remoteallips[i])
+					serv.bytesended += len(request)
 				} else {
 					fmt.Println("not valid destination ip, the dest id is", i)
 				}
 				serv.mu.Unlock()
 			}
 		case <-serv.stopCh:
-			fmt.Println("server",serv.id, "stops its broadcasting loop")
+			res := serv.bytesended/(1024*1024)
+			fmt.Println("server",serv.id, "stops its broadcasting loop, total bytes send:", res)
 			break theloop
 		}
 	}
