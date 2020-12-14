@@ -352,7 +352,7 @@ func (pbft *PBFT) Run() {
 
 
 	for {
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight<0 {
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=33 {
 			// wants to leave, mechanism 2
 			fmt.Println("instance", pbft.Id, "sends a leave-tx, outlayer")
 			go pbft.broadcastLeavingTx()

@@ -343,6 +343,7 @@ func (serv *Server) BroadcastLoop() {
 				serv.mu.Unlock()
 			}
 		case <-serv.stopCh:
+			fmt.Println("server",serv.id, "stops its broadcasting loop")
 			break theloop
 		}
 	}
@@ -359,6 +360,7 @@ func (serv *Server) SendLoop() {
 				go sendData(request, destip)
 			}
 		case <-serv.stopCh:
+			fmt.Println("server",serv.id, "stops its sending loop")
 			break theloop
 		}
 	}
