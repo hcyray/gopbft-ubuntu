@@ -344,8 +344,8 @@ func (serv *Server) BroadcastLoop() {
 				serv.mu.Unlock()
 			}
 		case <-serv.stopCh:
-			res := serv.bytesended/(1024*1024)
-			fmt.Println("server",serv.id, "stops its broadcasting loop, total bytes send:", res)
+			res := serv.bytesended/(1024)
+			fmt.Println("server",serv.id, "stops its broadcasting loop, total bytes send:", res, "KB")
 			break theloop
 		}
 	}
@@ -360,6 +360,7 @@ func (serv *Server) SendLoop() {
 			for _,destip := range data.DestIp {
 				request := append(datastruc.CommandToBytes(data.MsgType), data.Msg...)
 				go sendData(request, destip)
+				serv.bytesended += len(request)
 			}
 		case <-serv.stopCh:
 			fmt.Println("server",serv.id, "stops its sending loop")
