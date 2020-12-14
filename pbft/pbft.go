@@ -557,7 +557,6 @@ func (pbft *PBFT) Run() {
 						if pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber+1, 0}]==false{
 							ckpqc, plock, clock := pbft.GenerateQCandLockForVC()
 							go pbft.broadcastViewChange(pbft.vernumber+1, 0, pbft.MsgBuff.ReadLeaveTx(), pbft.persis.checkpointheight, ckpqc, plock, clock, pbft.PubKeystr, pbft.PriKey)
-							fmt.Println("instance", pbft.Id, "broadcast view-change msg after reconfiguration at ver", pbft.vernumber+1, "view 0 height", pbft.currentHeight+1)
 							pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber+1, 0}]=true
 						}
 						pbft.resetVariForViewChangeAfterReconfig()
@@ -1386,6 +1385,7 @@ func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.Leav
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "viewchangemsg", content}
 	//fmt.Println("instance", pbft.Id, "broadcasts the view chagne msg to", pbft.membersexceptme)
 	pbft.broadcdataCh <- datatosend
+	fmt.Println("instance", pbft.Id, "broadcast view-change msg after reconfiguration at ver", ver, "view 0")
 }
 
 func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string, datastruc.Block){
