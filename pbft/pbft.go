@@ -1287,8 +1287,6 @@ func (pbft *PBFT) broadcastConfigBlock(bloc *datastruc.Block) {
 	for _, ltx := range bloc.LeaveTxList {
 		if !ltx.Verify() {
 			fmt.Println("leader", pbft.Id, "receives a block, but contains unvalid leave-tx, its content", ltx.Serialize(), "  its hash", ltx.TxHash, " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
-		} else {
-			fmt.Println("leader", pbft.Id, "receives a block, contains valid leave-tx, its content", ltx.Serialize(), "  its hash", ltx.TxHash, " its id ", ltx.Id, " its ip addr ", ltx.IpAddr, " its pubkey ", ltx.Pubkey, " its sig ", ltx.Sig)
 		}
 	}
 	pbft.MsgBuff.Msgbuffmu.Unlock()
