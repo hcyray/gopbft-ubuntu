@@ -541,14 +541,10 @@ func (serv *Server) handleLeaveTx(conten []byte) {
 
 
 	if !leavetx.Verify() {
-		//fmt.Println("**** server", serv.id, "receives thecontent", conten)
-		fmt.Println("**** server", serv.id, "receives unvalid leave-tx", leavetx)
-		//fmt.Println("**** server", serv.id, "receives an unvalid leave-tx, its content", leavetx.Serial(), "  its hash", leavetx.GetHash(), " its id ", leavetx.Id, " its ip addr ", leavetx.IpAddr, " its pubkey ", leavetx.Pubkey, " its sig ", leavetx.Sig)
+		fmt.Println("server", serv.id, "receives unvalid leave-tx", leavetx)
 		return
 	} else {
-		//fmt.Println("**** server", serv.id, "receives thecontent", conten)
-		//fmt.Println("**** server", serv.id, "receives leave-tx", leavetx)
-		//fmt.Println("***** server", serv.id, "receives a valid leave-tx, its content", leavetx.Serial(), "  its hash", leavetx.GetHash(), " its id ", leavetx.Id, " its ip addr ", leavetx.IpAddr, " its pubkey ", leavetx.Pubkey, " its sig ", leavetx.Sig)
+		fmt.Println("server", serv.id, "receives a leave-tx")
 	}
 
 	serv.msgbuff.Msgbuffmu.Lock()
