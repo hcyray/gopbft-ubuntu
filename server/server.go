@@ -53,6 +53,7 @@ type Server struct {
 	recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB
 
 	recvconfigCh chan datastruc.ReadConfigReply
+	bytesended int
 }
 
 func CreateServer(id int, localip string, clientpukstr map[int]string, serverips []string, inseach int) *Server {
