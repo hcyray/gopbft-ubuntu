@@ -37,6 +37,7 @@ type Client struct {
 	nodeaccountstr string // a base64 string
 
 	sendvolume int
+	starttime time.Time
 }
 
 func (clk *ClienKeys) GetSerialize() []byte {
@@ -75,6 +76,7 @@ func (clk *ClienKeys) GetDeserializeFromFile(fn string) {
 
 func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []string, inseach int) *Client {
 	client := &Client{}
+	client.starttime = time.Now()
 	client.id = id
 	client.miners = make([]int, 0)
 	client.minerIPAddress = make(map[int]string)
@@ -110,9 +112,11 @@ func (client *Client) Run() {
 	fmt.Println("client", client.id, "starts")
 	go client.sendloop()
 
+	time.Sleep(time.Second * 4)
+	val := rand.Intn(400)
+	time.Sleep(time.Millisecond*time.Duration(val))
+
 	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))
-	//var hval [32]byte
-	startime := time.Now()
 	for i:=0; i<400000000; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodeaccountstr, client.nodePrvKey)
@@ -123,12 +127,11 @@ func (client *Client) Run() {
 		//fmt.Println("tx recipient", newtx.Recipient, "length:", len(newtx.Recipient))
 		//fmt.Println("tx value", newtx.Value, "length:", unsafe.Sizeof(newtx.Value))
 		//fmt.Println("tx sig", newtx.Sig, "length:", unsafe.Sizeof(newtx.Sig))
-
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
 			if i%1000==0 {
 				//fmt.Println("tx", i, "timestamp is", newtx.Timestamp)
-				elaps := time.Since(startime).Milliseconds()
+				elaps := time.Since(client.starttime).Milliseconds()
 				fmt.Println("client", client.id, "sends", i, "txs in", elaps, "ms")
 			}
 		}

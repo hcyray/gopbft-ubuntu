@@ -118,13 +118,15 @@ type PBFT struct {
 	cdeupdateflag bool
 }
 
-func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[int]string, msgbuf *datastruc.MessageBuffer, sendCh chan datastruc.DatatosendWithIp,
+func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[int]string, msgbuf *datastruc.MessageBuffer,
+	starttime time.Time, sendCh chan datastruc.DatatosendWithIp,
 	broadCh chan datastruc.Datatosend, memberidchangeCh chan datastruc.DataMemberChange, censorshipmonitorCh chan [32]byte,
 	statetransferqueryCh chan datastruc.QueryStateTransMsg, statetransferreplyCh chan datastruc.ReplyStateTransMsg,
 	cdetestrecvch chan datastruc.DataReceived, cderesponserecvch chan datastruc.DataReceived,
 	RecvInformTestCh chan datastruc.RequestTestMsg, recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB,
 	stopCh chan bool) *PBFT {
 	pbft := &PBFT{}
+	pbft.starttime = starttime
 	pbft.Id = id
 	pbft.IpPortAddr = ipaddr
 	pbft.InitialTotalPeer = total
@@ -321,13 +323,8 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	}
 	pbft.currentHeight = cblock.Bloc.Blockhead.Height
 	balancehash := pbft.generateaccountbalancehash()
-	//fmt.Println("new instance balance hash:", balancehash)
-	//fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
-	//pbft.succLine.SucclinePrint()
 	confighash := pbft.succLine.GetHash()
-	//fmt.Println("new instance config hash:", confighash)
 	cdedatahash := pbft.cdedata.GenerateStateHash()
-	//fmt.Println("new instance cdedatahash:", cdedatahash)
 	pbft.vernumber = cblock.Bloc.Blockhead.Ver
 	pbft.viewnumber = cblock.CommiQC.CommitMsgSet[0].View
 	fmt.Println("new instance ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
@@ -342,7 +339,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 
 func (pbft *PBFT) Run() {
 	fmt.Println("instance", pbft.Id, "starts running")
-	pbft.starttime = time.Now()
+
 	go pbft.statetransfermonitor()
 	go pbft.censorshipmonitor()
 	go pbft.cdedata.CDEInformTestMonitor()
@@ -351,6 +348,12 @@ func (pbft *PBFT) Run() {
 
 
 	for {
+		if pbft.currentHeight > 120 {
+			pbft.stopCh<-true
+			pbft.stopCh<-true
+			fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends")
+			time.Sleep(time.Second * 100)
+		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=200 {
 			// trigger this to test mechanism 2
 			go pbft.broadcastLeavingTx()
@@ -1596,7 +1599,7 @@ func (pbft *PBFT) computeTps() {
 		tps := float64(pbft.acctx)/elapsedtime
 		pbft.tps = append(pbft.tps, int(tps))
 		le := len(pbft.tps)
-		if le%10==0 {
+		if le%2==0 {
 			fmt.Println("instance", pbft.Id, "tps at", elapsedtime, "s is", pbft.tps[le-1])
 		}
 		pbft.mu.Unlock()

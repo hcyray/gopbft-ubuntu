@@ -64,6 +64,7 @@ type Server struct {
 func CreateServer(id int, localip string, clientpukstr map[int]string, serverips []string, inseach int) *Server {
 	serv := &Server{}
 
+	serv.starttime = time.Now()
 	serv.id = id
 	serv.ipportaddr = localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
 	serv.totalserver = len(serverips) * inseach
@@ -85,7 +86,8 @@ func CreateServer(id int, localip string, clientpukstr map[int]string, serverips
 		serv.clientacctopukstr[acc] = v
 	}
 
-	serv.pbft = pbft.CreatePBFTInstance(id, serv.ipportaddr, serv.totalserver, clientpukstr, &serv.msgbuff, serv.sendCh, serv.broadcastCh, serv.memberidchangeCh,
+	serv.pbft = pbft.CreatePBFTInstance(id, serv.ipportaddr, serv.totalserver, clientpukstr, &serv.msgbuff, serv.starttime,
+		serv.sendCh, serv.broadcastCh, serv.memberidchangeCh,
 		serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh, serv.cdetestrecvCh,
 		serv.cderesponserecvCh,	serv.RecvInformTestCh, serv.recvsinglemeasurementCh, serv.stopCh)
 	return serv
@@ -94,6 +96,7 @@ func CreateServer(id int, localip string, clientpukstr map[int]string, serverips
 func CreateLateServer(id int, localip string, clientpukstr map[int]string, initialserverips []string, inseach int) *Server {
 	serv := &Server{}
 
+	serv.starttime = time.Now()
 	serv.id = id
 	serv.InitializeMapandChan()
 	serv.ipportaddr = localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
@@ -157,14 +160,16 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 	serv.memberIds = append(serv.memberIds, serv.id)
 	serv.remoteallips[serv.id] = serv.ipportaddr // add itself to members
 	fmt.Println("server", serv.id, "remote all ips:", serv.remoteallips)
-	serv.pbft = pbft.CreatePBFTInstance(serv.id, serv.ipportaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.sendCh,
-		serv.broadcastCh, serv.memberidchangeCh, serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh,
-		serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh, serv.stopCh)
+	serv.pbft = pbft.CreatePBFTInstance(serv.id, serv.ipportaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.starttime,
+		serv.sendCh, serv.broadcastCh, serv.memberidchangeCh, serv.censorshipmonitorCh, serv.statetransferqueryCh,
+		serv.statetransferreplyCh, serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh,
+		serv.stopCh)
 
 	start := time.Now()
 	serv.pbft.LateSetup(peerlist)
-	elapsed := time.Since(start).Milliseconds()
-	fmt.Println("the new instance late setup completes, time costs", int(elapsed), "ms, start consensing")
+	elapsed1 := time.Since(start).Milliseconds()
+	elpased2 := time.Since(serv.starttime).Milliseconds()
+	fmt.Println("the new instance late setup completes, time costs", int(elapsed1), "ms, start consensing at", elpased2, "ms")
 	go serv.pbft.Run()
 }
 
@@ -619,9 +624,6 @@ func (serv *Server) handleTransaction(request []byte) {
 	if tx.Verify(serv.clientacctopukstr[tx.Source]) {
 		serv.msgbuff.Msgbuffmu.Lock()
 		serv.msgbuff.TxPool[tx.GetHash()] = tx
-		if len(serv.msgbuff.TxPool)==1 {
-			serv.starttime = time.Now()
-		}
 		//if len(serv.msgbuff.TxPool)%1==0 {
 		//	//fmt.Println("server receive 1 txs, the last one with timestamp", tx.Timestamp)
 		//	elaps := time.Since(serv.starttime).Milliseconds()

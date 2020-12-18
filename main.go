@@ -2,17 +2,15 @@ package main
 
 import (
 	"./client"
-	"./server"
 	"./datastruc"
+	"./server"
 	"bufio"
 	"encoding/gob"
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
 	"os"
 	"time"
-
 )
 
 // Get preferred outbound ip of this machine
@@ -132,12 +130,9 @@ func main() {
 		}
 	} else {
 		//invoke clients
-		time.Sleep(time.Second * 4)
 		for i:=0; i<clientnumber; i++ {
 			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 			theclient := client.CreateClient(i, totalserver*instanceoneachserver, privatekey, allips[0:totalserver], instanceoneachserver)
-			val := rand.Intn(400)
-			time.Sleep(time.Millisecond*time.Duration(val))
 			go theclient.Run()
 			fmt.Println("the ", i, "client starts")
 		}
