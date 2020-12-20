@@ -197,7 +197,8 @@ func (client *Client) sendtooneloop(destid int) {
 					//blank := make([]byte, 1000-datalen)
 					//packetBuf.Write(blank)
 					if err != nil {
-						fmt.Printf("write failed, time: ", time.Since(client.starttime).Seconds(), "s, err : %v", err)
+						fmt.Println("write failed, time:", time.Since(client.starttime).Seconds(), "s")
+						fmt.Printf("err: %v", err)
 						t := rand.Intn(100)
 						fmt.Println("will re connect soon")
 						time.Sleep(time.Millisecond * time.Duration(t))
