@@ -338,7 +338,8 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 }
 
 func (pbft *PBFT) Run() {
-	fmt.Println("instance", pbft.Id, "starts running")
+	tmp1 := time.Since(pbft.starttime).Seconds()
+	fmt.Println("instance", pbft.Id, "starts running at", tmp1, "s")
 
 	go pbft.statetransfermonitor()
 	go pbft.censorshipmonitor()
