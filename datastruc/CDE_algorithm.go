@@ -178,7 +178,9 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 		start := time.Now()
 		cdedata.TxListValidateMultiThread(proposetestmsg.TxBatch)
 		elapsed := time.Since(start).Milliseconds()
+		fmt.Println("instance", cdedata.Id, "validation_for_test costs", elapsed, "ms")
 		cdedata.validatetxbatachtime = append(cdedata.validatetxbatachtime, int(elapsed))
+		// todo, only add the value when it is in consensus. If it is a new node, do not add that.
 		// sleep for time t, t equals the time to validate tx batach
 	}
 
