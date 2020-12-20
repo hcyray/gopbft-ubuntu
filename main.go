@@ -2,8 +2,8 @@ package main
 
 import (
 	"./client"
-	"./datastruc"
 	"./server"
+	"./datastruc"
 	"bufio"
 	"encoding/gob"
 	"fmt"
@@ -75,7 +75,7 @@ func ReadClientKeys(fn string)  client.ClienKeys {
 }
 
 func main() {
-	fmt.Println("plan to remove separate write delay and propose delay update, backup")
+	fmt.Println("add more user accounts, test performance")
 	fmt.Println("Get the cluster IPs from", os.Args[1])
 	fmt.Println("Get client keys from", os.Args[2])
 	localip := GetOutboundIP().String()
@@ -93,7 +93,7 @@ func main() {
 	//ck := client.ClienKeys{}
 	//ck.Clienprivks = make(map[int]string)
 	//ck.Clientpubkstrs = make(map[int]string)
-	//for i:=0; i<100; i++ {
+	//for i:=0; i<10000; i++ {
 	//	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), crand.Reader)
 	//	if err != nil {
 	//		log.Fatalln(err)
@@ -138,6 +138,6 @@ func main() {
 		}
 	}
 
-	time.Sleep(time.Second * 55)
+	time.Sleep(time.Second * 45)
 	fmt.Println("main thread completes")
 }
