@@ -142,7 +142,7 @@ func (client *Client) Run() {
 		//val := 10000
 		//time.Sleep(time.Millisecond*10)
 	}
-	fmt.Println("client", client.id, "stops")
+	fmt.Println("client", client.id, "stops, time:", time.Since(client.starttime).Seconds(), "s")
 }
 
 func (client *Client) sendloop() {
