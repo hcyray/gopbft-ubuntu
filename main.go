@@ -106,7 +106,7 @@ func main() {
 	// ***************************************generate client keys and save
 
 
-	clientnumber := 12
+	clientnumber := 15
 	instanceoneachserver := 1
 	initialserver := 5
 	lateserver := 0 // 机制1测试

@@ -131,12 +131,12 @@ func (client *Client) Run() {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
 			if i%1000==0 {
 				//fmt.Println("tx", i, "timestamp is", newtx.Timestamp)
-				elaps := time.Since(client.starttime).Milliseconds()
-				fmt.Println("client", client.id, "sends", i, "txs in", elaps, "ms")
+				elaps := time.Since(client.starttime).Seconds()
+				fmt.Println("client", client.id, "sends", i, "txs in", elaps, "s")
 			}
 		}
 		if i%10==0 {
-			time.Sleep(time.Millisecond*25) // 25ms seems good, 30ms also good for test.
+			time.Sleep(time.Millisecond*30) // 25ms seems good, 30ms also good for test.
 		}
 		//val := rand.Intn(2) + 1
 		//val := 10000
