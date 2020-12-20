@@ -110,6 +110,10 @@ type PBFT struct {
 	tpsstarttime time.Time
 	singleconsensusstarttime time.Time
 	consensustimelog []int
+	singleviewchangestarttime time.Time
+	viewchangetimelog []int
+	singleinauguratestarttime time.Time
+	inauguratetimelog []int
 	predictedconsensustimelog []int
 	timelog []int
 	tps []int
@@ -352,7 +356,7 @@ func (pbft *PBFT) Run() {
 
 
 	for {
-		if pbft.currentHeight > 200 {
+		if pbft.currentHeight > 120 {
 			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=200 {
@@ -553,10 +557,10 @@ func (pbft *PBFT) Run() {
 						pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", curheight, "time costs:", elapsed, "ms")
-						if curheight%LeaderLease==0 && curheight>=LeaderLease {
-							fmt.Println("consensustime =", pbft.consensustimelog)
-							fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
-						}
+						//if curheight%LeaderLease==0 && curheight>=LeaderLease {
+						//	fmt.Println("consensustime =", pbft.consensustimelog)
+						//	fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
+						//}
 					}
 					pbft.mu.Unlock()
 					if pbft.reconfighappen {
@@ -574,6 +578,7 @@ func (pbft *PBFT) Run() {
 						if pbft.curleaderlease==0 {
 							fmt.Println("instance",pbft.Id,"finds the current leader expires, launches a view change at height",pbft.currentHeight)
 							pbft.mu.Lock()
+							pbft.singleviewchangestarttime = time.Now()
 							if pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber, pbft.viewnumber+1}]==false{
 								ckpqc, plock, clock := pbft.GenerateQCandLockForVC()
 								go pbft.broadcastViewChange(pbft.vernumber, pbft.viewnumber+1, pbft.MsgBuff.ReadLeaveTx(), pbft.persis.checkpointheight, ckpqc, plock, clock, pbft.PubKeystr, pbft.PriKey)
@@ -595,7 +600,10 @@ func (pbft *PBFT) Run() {
 			case prog :=<- pbft.vcmsgcollectedCh:
 				if prog.Ver==pbft.vernumber && prog.View==pbft.viewnumber {
 					fmt.Println("instance", pbft.Id, "has collected enough view change msg in ver", prog.Ver,"view", prog.View)
+					elaps := time.Since(pbft.singleviewchangestarttime).Milliseconds()
+					pbft.viewchangetimelog = append(pbft.viewchangetimelog, int(elaps))
 					pbft.status = stat_inaugurate
+					pbft.singleinauguratestarttime = time.Now()
 				}
 			}
 		case stat_inaugurate:
@@ -636,7 +644,6 @@ func (pbft *PBFT) Run() {
 					pbft.mu.Unlock()
 					break inaugurate_loop
 				case theprog:=<- pbft.inauguratedCh:
-
 					if theprog.Ver==pbft.vernumber && theprog.View==pbft.viewnumber {
 						pbft.mu.Lock()
 						pbft.consenstatus = Unstarted
@@ -649,6 +656,9 @@ func (pbft *PBFT) Run() {
 						pbft.currentHeight = theprog.Height
 						pbft.curleaderlease = LeaderLease
 						fmt.Println("instance",pbft.Id, "got new-view signal in ver", theprog.Ver, "view", theprog.View)
+
+						elaps := time.Since(pbft.singleinauguratestarttime).Milliseconds()
+						pbft.inauguratetimelog = append(pbft.inauguratetimelog, int(elaps))
 						pbft.mu.Unlock()
 						break inaugurate_loop
 					}
@@ -1607,5 +1617,8 @@ func (pbft *PBFT) Stop() {
 	pbft.stopCh<-true
 	pbft.stopCh<-true
 	fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends")
+	fmt.Println("consensustime =", pbft.consensustimelog)
+	fmt.Printf("viewchagnetime =", pbft.viewchangetimelog)
+	fmt.Printf("inauguratetime =", pbft.inauguratetimelog)
 	time.Sleep(time.Second * 100)
 }
