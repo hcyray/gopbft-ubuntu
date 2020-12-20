@@ -225,6 +225,7 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Printf("listener.Accept() runs wrongly :%v\n", err)
+			fmt.Println("time: ", time.Since(serv.starttime).Seconds(), "s")
 			return
 		}
 		defer conn.Close()
