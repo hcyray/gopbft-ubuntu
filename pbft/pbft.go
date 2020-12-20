@@ -1606,7 +1606,7 @@ func (pbft *PBFT) computeTps() {
 		pbft.tps = append(pbft.tps, int(tps))
 		le := len(pbft.tps)
 		if le%2==0 {
-			fmt.Println("instance", pbft.Id, "tps at", elapsedtime, "s is", pbft.tps[le-1])
+			fmt.Println("instance", pbft.Id, "tps at", time.Since(pbft.starttime).Seconds(), "s is", pbft.tps[le-1])
 		}
 		pbft.mu.Unlock()
 		time.Sleep(time.Millisecond * 500)
@@ -1616,7 +1616,7 @@ func (pbft *PBFT) computeTps() {
 func (pbft *PBFT) Stop() {
 	pbft.stopCh<-true
 	pbft.stopCh<-true
-	fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends")
+	fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends time", time.Since(pbft.starttime).Seconds(), "s")
 	fmt.Println("tps starttime is", pbft.tpsstarttime.Sub(pbft.starttime).Seconds(), "s")
 	fmt.Println("tps =", pbft.tps)
 	fmt.Println("consensustime =", pbft.consensustimelog)
