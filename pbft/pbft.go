@@ -366,7 +366,8 @@ func (pbft *PBFT) Run() {
 		}
 		switch pbft.status {
 		case stat_consensus:
-			fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber," in height ", pbft.currentHeight, "\n")
+			fmt.Println("instance ", pbft.Id," now enters consensus stage in ver ", pbft.vernumber, " view ",pbft.viewnumber,
+				" in height ", pbft.currentHeight, "at time", time.Since(pbft.starttime).Seconds(), "s")
 			pbft.singleconsensusstarttime =time.Now()
 			if pbft.isleader && pbft.leaderlease>0 {
 				if pbft.remainblocknuminnewview>0 {
