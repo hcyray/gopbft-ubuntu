@@ -226,7 +226,7 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 		if err != nil {
 			fmt.Printf("listener.Accept() runs wrongly :%v\n", err)
 			fmt.Println("time: ", time.Since(serv.starttime).Seconds(), "s")
-			log.Panic("too much connections!")
+			return
 		}
 		defer conn.Close()
 
