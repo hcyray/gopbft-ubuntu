@@ -117,7 +117,7 @@ func (client *Client) Run() {
 	time.Sleep(time.Millisecond*time.Duration(val))
 
 	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))
-	for i:=0; i<400000000; i++ {
+	for i:=0; i<4000; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodeaccountstr, client.nodePrvKey)
 		//fmt.Println("analysing tx:")
@@ -169,7 +169,7 @@ func (client *Client) sendtooneloop(destid int) {
 		if err != nil {
 			fmt.Println("connect failed, will retry later\n", err.Error())
 			if trytime<=3 {
-				fmt.Println("will re connect soon")
+				fmt.Println("will re connect soon, time:", time.Since(client.starttime).Seconds(), "s")
 				t := rand.Intn(1000)
 				time.Sleep(time.Millisecond * time.Duration(t))
 				trytime += 1
@@ -200,7 +200,7 @@ func (client *Client) sendtooneloop(destid int) {
 						fmt.Println("write failed, time:", time.Since(client.starttime).Seconds(), "s")
 						fmt.Printf("err: %v", err)
 						t := rand.Intn(100)
-						fmt.Println("will re connect soon")
+						fmt.Println("will re connect soon, time:", time.Since(client.starttime).Seconds(), "s")
 						time.Sleep(time.Millisecond * time.Duration(t))
 						break innerloop
 					} else {
