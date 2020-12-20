@@ -164,14 +164,15 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 
 	if replytonew {
 		if len(cdedata.validatetxbatachtime)==0 {
-			time.Sleep(time.Duration(200))
+			time.Sleep(time.Duration(200)*time.Millisecond)
 		} else {
 			t := 0
 			for _,v := range cdedata.validatetxbatachtime {
 				t += v
 			}
 			t = t/len(cdedata.validatetxbatachtime)
-			time.Sleep(time.Duration(t))
+			fmt.Println("sleep to replace validation, time:", t, "ms")
+			time.Sleep(time.Duration(t)*time.Millisecond)
 		}
 	} else {
 		start := time.Now()
@@ -339,7 +340,7 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 	// pack a write-test message
 	rann := uint64(time.Now().Unix())
 	wrmsg := NewWriteMsg(cdedata.Id, cdedata.Round, cdedata.IpAddr, rann)
-	starttime1 := time.Now()
+
 
 	var buff1 bytes.Buffer
 	gob.Register(elliptic.P256())
@@ -348,6 +349,7 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 	if err != nil {
 		log.Panic(err)
 	}
+	starttime1 := time.Now()
 	content := buff1.Bytes()
 	datatosend := DatatosendWithIp{dests	, "writetestfromold", content}
 	cdedata.SendCh <- datatosend
