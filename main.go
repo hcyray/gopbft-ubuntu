@@ -5,6 +5,9 @@ import (
 	"./server"
 	"./datastruc"
 	"bufio"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	crand "crypto/rand"
 	"encoding/gob"
 	"fmt"
 	"log"
@@ -75,69 +78,74 @@ func ReadClientKeys(fn string)  client.ClienKeys {
 }
 
 func main() {
-	fmt.Println("add more user accounts, test performance")
-	fmt.Println("Get the cluster IPs from", os.Args[1])
-	fmt.Println("Get client keys from", os.Args[2])
-	localip := GetOutboundIP().String()
-	fmt.Println("local ip: ", localip)
-	allips := ReadAllIps(os.Args[1])
-	fmt.Println("all ips: ")
-	for _, x := range allips {
-		fmt.Println(x)
-	}
-	localid := DetermineId(allips, localip)
-	fmt.Println("local id is", localid, "\n")
 
+	var tmp string
+	tmp = "main"
 
-	// ***************************************generate client keys and save
-	//ck := client.ClienKeys{}
-	//ck.Clienprivks = make(map[int]string)
-	//ck.Clientpubkstrs = make(map[int]string)
-	//for i:=0; i<100000; i++ {
-	//	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), crand.Reader)
-	//	if err != nil {
-	//		log.Fatalln(err)
-	//	}
-	//	ck.Clienprivks[i] = datastruc.EncodePrivate(privateKey)
-	//	pubkey := &privateKey.PublicKey
-	//	ck.Clientpubkstrs[i] = datastruc.EncodePublic(pubkey)
-	//}
-	//RecordClientKeys(&ck)
-	// ***************************************generate client keys and save
-
-
-	clientnumber := 14
-	instanceoneachserver := 1
-	initialserver := 4
-	lateserver := 0 // 机制1测试
-	totalserver := initialserver + lateserver
-	// read client pubkeys
-	ck := ReadClientKeys(os.Args[2])
-	if localid<initialserver {
-		// invoke two server
-		for i:=0; i<instanceoneachserver; i++ {
-			instanceid := i+instanceoneachserver*localid
-			theserver := server.CreateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
-			go theserver.Start()
-			fmt.Println("server", instanceid, "starts")
+	if tmp=="clientkey" {
+		// ***************************************generate client keys and save
+		ck := client.ClienKeys{}
+		ck.Clienprivks = make(map[int]string)
+		ck.Clientpubkstrs = make(map[int]string)
+		for i:=0; i<20000; i++ {
+			privateKey, err := ecdsa.GenerateKey(elliptic.P256(), crand.Reader)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			ck.Clienprivks[i] = datastruc.EncodePrivate(privateKey)
+			pubkey := &privateKey.PublicKey
+			ck.Clientpubkstrs[i] = datastruc.EncodePublic(pubkey)
 		}
-	} else if localid>=initialserver && localid<totalserver {
-		for i:=0; i<=0; i++ {
-			instanceid := i+instanceoneachserver*localid
-			theserver := server.CreateLateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
-			go theserver.LateStart(ck.Clientpubkstrs, 5+10*(i+1)) // new nodes join serially
-			fmt.Println("server", instanceid, "starts, it is a late server")
+		RecordClientKeys(&ck)
+		// ***************************************generate client keys and save
+	} else if tmp=="main" {
+		fmt.Println("add more user accounts, test performance")
+		fmt.Println("Get the cluster IPs from", os.Args[1])
+		fmt.Println("Get client keys from", os.Args[2])
+		localip := GetOutboundIP().String()
+		fmt.Println("local ip: ", localip)
+		allips := ReadAllIps(os.Args[1])
+		fmt.Println("all ips: ")
+		for _, x := range allips {
+			fmt.Println(x)
 		}
+		localid := DetermineId(allips, localip)
+		fmt.Println("local id is", localid, "\n")
+
+		clientnumber := 14
+		instanceoneachserver := 1
+		initialserver := 4
+		lateserver := 0 // 机制1测试
+		totalserver := initialserver + lateserver
+		// read client pubkeys
+		ck := ReadClientKeys(os.Args[2])
+		if localid<initialserver {
+			// invoke two server
+			for i:=0; i<instanceoneachserver; i++ {
+				instanceid := i+instanceoneachserver*localid
+				theserver := server.CreateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
+				go theserver.Start()
+				fmt.Println("server", instanceid, "starts")
+			}
+		} else if localid>=initialserver && localid<totalserver {
+			for i:=0; i<=0; i++ {
+				instanceid := i+instanceoneachserver*localid
+				theserver := server.CreateLateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
+				go theserver.LateStart(ck.Clientpubkstrs, 5+10*(i+1)) // new nodes join serially
+				fmt.Println("server", instanceid, "starts, it is a late server")
+			}
+		} else {
+			//invoke clients
+			for i:=0; i<clientnumber; i++ {
+				privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
+				theclient := client.CreateClient(i, totalserver*instanceoneachserver, privatekey, allips[0:totalserver], instanceoneachserver)
+				go theclient.Run()
+				fmt.Println("the ", i, "client starts")
+			}
+		}
+		time.Sleep(time.Second * 55)
 	} else {
-		//invoke clients
-		for i:=0; i<clientnumber; i++ {
-			privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
-			theclient := client.CreateClient(i, totalserver*instanceoneachserver, privatekey, allips[0:totalserver], instanceoneachserver)
-			go theclient.Run()
-			fmt.Println("the ", i, "client starts")
-		}
+		fmt.Printf("tmp is ", tmp)
 	}
-
-	time.Sleep(time.Second * 55)
 	fmt.Println("main thread completes")
 }
