@@ -108,7 +108,7 @@ func main() {
 
 	clientnumber := 14
 	instanceoneachserver := 1
-	initialserver := 5
+	initialserver := 4
 	lateserver := 0 // 机制1测试
 	totalserver := initialserver + lateserver
 	// read client pubkeys

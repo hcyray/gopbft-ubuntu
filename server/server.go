@@ -226,7 +226,7 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 		if err != nil {
 			fmt.Printf("listener.Accept() runs wrongly :%v\n", err)
 			fmt.Println("time: ", time.Since(serv.starttime).Seconds(), "s")
-			return
+			log.Panic("too much connections!")
 		}
 		defer conn.Close()
 
@@ -301,10 +301,10 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 		case "informtest":
 			go serv.handleInformTest(request[commandLength:])
 		case "readconfig":
-			fmt.Println("server", serv.id, "receives a read config request")
+			//fmt.Println("server", serv.id, "receives a read config request")
 			go serv.handleReadConfigRequest(request[commandLength:])
 		case "readconfigreply":
-			fmt.Println("server", serv.id, "receives a read config reply")
+			//fmt.Println("server", serv.id, "receives a read config reply")
 			go serv.handleReadConfigReply(request[commandLength:])
 		}
 	}
