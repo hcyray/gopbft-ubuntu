@@ -1145,7 +1145,7 @@ func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
 	content := buff.Bytes()
 	datatosend := datastruc.DatatosendWithIp{[]string{"172.31.77.143:4000"}, "readconfig", content}
 	serv.sendCh <- datatosend
-	fmt.Println("server", serv.id, "send read config request to 172.31.77.143:4000, waiting for reply...")
+	fmt.Println("server", serv.id, "send read config request to 172.31.77.143:4000, waiting for reply, time", time.Since(serv.starttime).Seconds(), "s")
 
 
 	// block, until receiving "replyconfigreply"
