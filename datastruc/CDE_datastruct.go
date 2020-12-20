@@ -227,9 +227,9 @@ func NewSingleMeasurement(a, b int, delays []int, pubkey string, prvkey *ecdsa.P
 
 	smmsg.Tester = a
 	smmsg.Testee = b
-	smmsg.Proposedelay = delays[0]
-	smmsg.Validatedelay = delays[1]
-	smmsg.Writedelay = delays[2]
+	smmsg.Proposedelay = delays[1]
+	smmsg.Validatedelay = delays[2]
+	smmsg.Writedelay = delays[0]
 
 	// todo, add signature
 

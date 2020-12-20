@@ -378,7 +378,7 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 	// pack a propose-test message
 	rann = uint64(time.Now().Unix())
 	ppmsg := NewProposeMsg(cdedata.Id, cdedata.Round, cdedata.IpAddr, []Transaction{}, rann)
-	starttime2 := time.Now()
+
 	var buff2 bytes.Buffer
 	gob.Register(elliptic.P256())
 	enc2 := gob.NewEncoder(&buff2)
@@ -393,6 +393,7 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 	// block, wait for response
 	t1 := 0
 	thetimer = time.NewTimer(time.Millisecond * MAXWAITTIME)
+	starttime2 := time.Now()
 
 	theloop2:
 	for {
@@ -403,8 +404,7 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 			var ppr ProposeResponseWoValidateMsg
 			ppr.Deserialize(theresponse.Msg)
 			if ppr.Round==cdedata.Round && ppr.Challange==rann {
-				t1 = int(time.Since(starttime2).Milliseconds())
-				delays[1] = t1 - delays[0]
+				delays[1] = int(time.Since(starttime2).Milliseconds() / 2)
 				//fmt.Println("instance", cdedata.Id, "measure propose-delay to new instance: ", cdedata.Id, "--> ", testee, ":", delays[1])
 			} else {
 				//fmt.Println("isntance", cdedata.Id, "wrong measures propose-delay, ", cdedata.Id, " --> ", testee, ":", delays[1])

@@ -1621,6 +1621,7 @@ func (pbft *PBFT) Stop() {
 	fmt.Println("tps starttime is", pbft.tpsstarttime.Sub(pbft.starttime).Seconds(), "s")
 	fmt.Println("tps =", pbft.tps)
 	fmt.Println("consensustime =", pbft.consensustimelog)
+	fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
 	fmt.Println("viewchagnetime =", pbft.viewchangetimelog)
 	fmt.Println("inauguratetime =", pbft.inauguratetimelog)
 	time.Sleep(time.Second * 100)
