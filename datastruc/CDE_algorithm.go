@@ -428,6 +428,8 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 
 
 	// ------------------------------------------------------- send test res to new
+	fmt.Println("instance", cdedata.Id, "completes test for new node, propose_validate_write delay respectively is",
+		delays[1], delays[2], delays[0])
 	smmsg := NewSingleMeasurement(cdedata.Id, testee, delays, cdedata.Pubkeystr, cdedata.Prvkey)
 	var buff3 bytes.Buffer
 	gob.Register(elliptic.P256())
