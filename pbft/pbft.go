@@ -1045,13 +1045,13 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.updateaccountbalance()
 			pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
 
-			balancehash := pbft.generateaccountbalancehash()
-			confighash := pbft.succLine.GetHash()
 			tmp1 := time.Now()
-			cdedatahash := pbft.cdedata.GenerateStateHash()
-			fmt.Println("instance", pbft.Id, "generates state hash, costs", time.Since(tmp1).Milliseconds(), "ms")
-			thehash := datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
+			balancehash := pbft.generateaccountbalancehash()
+			fmt.Println("instance", pbft.Id, "generates account balance hash, costs", time.Since(tmp1).Milliseconds(), "ms")
 
+			confighash := pbft.succLine.GetHash()
+			cdedatahash := pbft.cdedata.GenerateStateHash()
+			thehash := datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
 			pbft.systemhash[pbft.currentHeight] = thehash
 
 			pbft.MsgBuff.UpdateTxPoolAfterCommitBlock(pbft.curblock)
