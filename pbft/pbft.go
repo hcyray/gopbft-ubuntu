@@ -350,7 +350,7 @@ func (pbft *PBFT) Run() {
 
 
 	for {
-		if pbft.currentHeight > 80 {
+		if pbft.currentHeight > 200 {
 			pbft.stopCh<-true
 			pbft.stopCh<-true
 			fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends")
