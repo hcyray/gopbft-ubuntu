@@ -115,7 +115,6 @@ type PBFT struct {
 	singleinauguratestarttime time.Time
 	inauguratetimelog []int
 	predictedconsensustimelog []int
-	timelog []int
 	tps []int
 	leaverequeststarttime time.Time
 
@@ -1599,6 +1598,7 @@ func EvaluateCapacity(res1 []int, res2 []int, q int) bool {
 }
 
 func (pbft *PBFT) computeTps() {
+
 	for {
 		pbft.mu.Lock()
 		elapsedtime := time.Since(pbft.tpsstarttime).Seconds()
@@ -1617,8 +1617,10 @@ func (pbft *PBFT) Stop() {
 	pbft.stopCh<-true
 	pbft.stopCh<-true
 	fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends")
+	fmt.Println("tps starttime is", pbft.tpsstarttime.Sub(pbft.starttime).Seconds(), "s")
+	fmt.Println("tps =", pbft.tps)
 	fmt.Println("consensustime =", pbft.consensustimelog)
-	fmt.Printf("viewchagnetime =", pbft.viewchangetimelog)
-	fmt.Printf("inauguratetime =", pbft.inauguratetimelog)
+	fmt.Println("viewchagnetime =", pbft.viewchangetimelog)
+	fmt.Println("inauguratetime =", pbft.inauguratetimelog)
 	time.Sleep(time.Second * 100)
 }
