@@ -187,8 +187,8 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	//} // 机制1测试
 
 	if pbft.Id==total-1 {
-		pbft.isleaving = true
-		fmt.Println("instance", pbft.Id, "will leave the system after a while")
+		//pbft.isleaving = true
+		//fmt.Println("instance", pbft.Id, "will leave the system after a while")
 	} // 机制2测试
 
 	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey, clientpubkeystr)
