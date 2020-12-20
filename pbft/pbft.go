@@ -962,13 +962,7 @@ func (pbft *PBFT) generateaccountbalancehash() [32]byte {
 	for _,v:=range value {
 		datastruc.EncodeInt(&content, v)
 	}
-	//var buff bytes.Buffer
-	//enc := gob.NewEncoder(&buff)
-	//err := enc.Encode(value)
-	//if err != nil {
-	//	log.Panic(err)
-	//}
-	//content := buff.Bytes()
+
 	hashv := sha256.Sum256(content)
 	return hashv
 }
