@@ -93,7 +93,7 @@ func main() {
 	//ck := client.ClienKeys{}
 	//ck.Clienprivks = make(map[int]string)
 	//ck.Clientpubkstrs = make(map[int]string)
-	//for i:=0; i<10000; i++ {
+	//for i:=0; i<100000; i++ {
 	//	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), crand.Reader)
 	//	if err != nil {
 	//		log.Fatalln(err)
