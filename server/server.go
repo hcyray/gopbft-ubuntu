@@ -606,7 +606,7 @@ func (serv *Server) handleTransaction(request []byte) {
 	if err != nil {
 		serv.decoderrortx += 1
 		if serv.decoderrortx%1000==0 {
-			fmt.Println("server", serv.id, "tx decoding error time:", serv.decoderrortx)
+			fmt.Println("server", serv.id, "tx decoding error time:", serv.decoderrortx, "at time", time.Since(serv.starttime), "s")
 		}
 		return
 	}
