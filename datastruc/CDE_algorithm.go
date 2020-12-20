@@ -404,7 +404,8 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 			var ppr ProposeResponseWoValidateMsg
 			ppr.Deserialize(theresponse.Msg)
 			if ppr.Round==cdedata.Round && ppr.Challange==rann {
-				delays[1] = int(time.Since(starttime2).Milliseconds() / 2)
+				t1 = int(time.Since(starttime2).Milliseconds())
+				delays[1] = t1 / 2
 				//fmt.Println("instance", cdedata.Id, "measure propose-delay to new instance: ", cdedata.Id, "--> ", testee, ":", delays[1])
 			} else {
 				//fmt.Println("isntance", cdedata.Id, "wrong measures propose-delay, ", cdedata.Id, " --> ", testee, ":", delays[1])
