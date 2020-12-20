@@ -117,7 +117,7 @@ func (client *Client) Run() {
 	time.Sleep(time.Millisecond*time.Duration(val))
 
 	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))
-	for i:=0; i<4000; i++ {
+	for i:=0; i<40000; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodeaccountstr, client.nodePrvKey)
 		//fmt.Println("analysing tx:")
