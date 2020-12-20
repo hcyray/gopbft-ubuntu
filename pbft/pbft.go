@@ -107,6 +107,7 @@ type PBFT struct {
 
 	acctx int
 	starttime time.Time
+	tpsstarttime time.Time
 	singleconsensusstarttime time.Time
 	consensustimelog []int
 	predictedconsensustimelog []int
@@ -342,6 +343,7 @@ func (pbft *PBFT) Run() {
 	tmp1 := time.Since(pbft.starttime).Seconds()
 	fmt.Println("instance", pbft.Id, "starts running at", tmp1, "s")
 
+	pbft.tpsstarttime = time.Now()
 	go pbft.statetransfermonitor()
 	go pbft.censorshipmonitor()
 	go pbft.cdedata.CDEInformTestMonitor()
@@ -351,10 +353,7 @@ func (pbft *PBFT) Run() {
 
 	for {
 		if pbft.currentHeight > 200 {
-			pbft.stopCh<-true
-			pbft.stopCh<-true
-			fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends")
-			time.Sleep(time.Second * 100)
+			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=200 {
 			// trigger this to test mechanism 2
@@ -1093,10 +1092,8 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.censorshipnothappenCh <- true
 				if pbft.Id==theleavingid {
 					requestprocessingtime := time.Since(pbft.leaverequeststarttime).Milliseconds()
-					pbft.stopCh<-true
-					pbft.stopCh<-true
-					fmt.Println("instance", pbft.Id, "blocks here permanentally, the leaving-tx processing time is", requestprocessingtime, "ms")
-					time.Sleep(time.Second * 100)
+					fmt.Println("instance", pbft.Id, " the leaving-tx processing time is", requestprocessingtime, "ms")
+					pbft.Stop()
 				} else {
 
 					// update member and memberexceptme
@@ -1594,7 +1591,7 @@ func EvaluateCapacity(res1 []int, res2 []int, q int) bool {
 func (pbft *PBFT) computeTps() {
 	for {
 		pbft.mu.Lock()
-		elapsedtime := time.Since(pbft.starttime).Seconds()
+		elapsedtime := time.Since(pbft.tpsstarttime).Seconds()
 		tps := float64(pbft.acctx)/elapsedtime
 		pbft.tps = append(pbft.tps, int(tps))
 		le := len(pbft.tps)
@@ -1604,4 +1601,11 @@ func (pbft *PBFT) computeTps() {
 		pbft.mu.Unlock()
 		time.Sleep(time.Millisecond * 500)
 	}
+}
+
+func (pbft *PBFT) Stop() {
+	pbft.stopCh<-true
+	pbft.stopCh<-true
+	fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends")
+	time.Sleep(time.Second * 100)
 }
