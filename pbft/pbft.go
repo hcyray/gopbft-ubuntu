@@ -219,6 +219,7 @@ func (pbft *PBFT) initializeAccountBalance(clientpubkeystr map[int]string) {
 	for _, v := range pbft.clientaccount {
 		pbft.accountbalance[v] = 10
 	}
+	fmt.Println("instnace", pbft.Id, "maintains user account number:", len(pbft.accountbalance))
 }
 
 func (pbft *PBFT) InitialSetup() {
