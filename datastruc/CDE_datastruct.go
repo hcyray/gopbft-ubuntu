@@ -196,8 +196,8 @@ func NewMeasurementResultMsg(id int, round int, peers []int, proposeres map[int]
 	return mrmsg
 }
 
-func NewInverseMeasurementResultMsg(id int, round int, peers []int, proposeres map[int]int, writeres map[int]int,
-	validateres map[int]int, pubkeystr string, privkey *ecdsa.PrivateKey) InverseMeasurementResultMsg {
+func NewInverseMeasurementResultMsg(id int, round int, peers []int, proposeres map[int]int, validateres map[int]int, writeres map[int]int,
+	pubkeystr string, privkey *ecdsa.PrivateKey) InverseMeasurementResultMsg {
 	imrmsg := InverseMeasurementResultMsg{}
 
 	imrmsg.Id = id
@@ -206,8 +206,9 @@ func NewInverseMeasurementResultMsg(id int, round int, peers []int, proposeres m
 		imrmsg.Peers = append(imrmsg.Peers, v)
 	}
 	imrmsg.ProposeDealy = proposeres
-	imrmsg.WriteDelay = writeres
 	imrmsg.ValidateDelay = validateres
+	imrmsg.WriteDelay = writeres
+
 
 	// todo, add signature
 
