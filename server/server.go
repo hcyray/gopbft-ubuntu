@@ -58,6 +58,7 @@ type Server struct {
 	bytesended int
 	byterecvfserver int
 	byterecvfclient int
+	blockvalidatetime []int
 
 }
 
@@ -353,6 +354,7 @@ func (serv *Server) BroadcastLoop() {
 			fmt.Println("server",serv.id, "stops its broadcasting loop, total Bytes send:", serv.bytesended/(1024),
 				"KB, total Bytes received from servers:", serv.byterecvfserver/1024, "KB, total Bytes received from clients:",
 				serv.byterecvfclient/1024, "KB")
+			fmt.Println("block validation time:", serv.blockvalidatetime)
 			break theloop
 		}
 	}
@@ -690,13 +692,11 @@ func (serv *Server) handleBlock(content []byte) {
 	serv.msgbuff.BlockPool = append(serv.msgbuff.BlockPool, bloc)
 	fmt.Println("server", serv.id, "receives a block at height", bloc.Blockhead.Height, " with tx number", len(bloc.TransactionList))
 	//fmt.Println("server", serv.id, "receives a block with", len(bloc.TransactionList), "txs in it")
+	elapsed := time.Since(starttime).Milliseconds()
+	serv.blockvalidatetime = append(serv.blockvalidatetime, int(elapsed))
 	serv.msgbuff.Msgbuffmu.Unlock()
 
-	elapsed := time.Since(starttime).Milliseconds()
 	fmt.Println("server", serv.id, "the block validation costs", elapsed, "ms")
-	//if serv.id==4 {
-	//	fmt.Println("server 4 receives a block")
-	//}
 }
 
 func (serv *Server) handleConfirmedBlock(content []byte) {
