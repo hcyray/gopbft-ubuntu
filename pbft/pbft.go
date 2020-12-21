@@ -1151,10 +1151,12 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			} else if len(pbft.curblock.JoinTxList)>0 {
 				pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 				pbft.MsgBuff.UpdateJoinLeaveTxSetAfterCommitBlock(pbft.curblock)
+				fmt.Println("instance", pbft.Id, "cdedata before adding new node:")
+				pbft.cdedata.PrintResult()
 				pbft.cdedata.AddNewInstanceData(pbft.curblock.JoinTxList[0])
 				fmt.Println("instance", pbft.Id, "cdedata after adding new node:")
 				pbft.cdedata.PrintResult()
-				fmt.Println(pbft.Id, "instance-cdedata.peers:", pbft.cdedata.Peers)
+				//fmt.Println(pbft.Id, "instance-cdedata.peers:", pbft.cdedata.Peers)
 
 				theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 				commqc := datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, pbft.currentHeight, pbft.quorumsize)}
