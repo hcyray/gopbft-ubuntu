@@ -363,7 +363,7 @@ func (serv *Server) BroadcastLoop() {
 					bvt = append(bvt, 0)
 				}
 			}
-			fmt.Println("block validation time:", serv.blockvalidatetime)
+			fmt.Println("block validation time:", bvt)
 			break theloop
 		}
 	}
