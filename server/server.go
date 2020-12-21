@@ -58,7 +58,7 @@ type Server struct {
 	bytesended int
 	byterecvfserver int
 	byterecvfclient int
-	blockvalidatetime []int
+	blockvalidatetime map[int]int
 
 }
 
@@ -354,6 +354,14 @@ func (serv *Server) BroadcastLoop() {
 			fmt.Println("server",serv.id, "stops its broadcasting loop, total Bytes send:", serv.bytesended/(1024),
 				"KB, total Bytes received from servers:", serv.byterecvfserver/1024, "KB, total Bytes received from clients:",
 				serv.byterecvfclient/1024, "KB")
+			bvt := []int{}
+			for i:=0; i<120; i++ {
+				if _, ok := serv.blockvalidatetime[i]; ok {
+					bvt = append(bvt, serv.blockvalidatetime[i])
+				} else {
+					bvt = append(bvt, 0)
+				}
+			}
 			fmt.Println("block validation time:", serv.blockvalidatetime)
 			break theloop
 		}
@@ -693,7 +701,7 @@ func (serv *Server) handleBlock(content []byte) {
 	fmt.Println("server", serv.id, "receives a block at height", bloc.Blockhead.Height, " with tx number", len(bloc.TransactionList))
 	//fmt.Println("server", serv.id, "receives a block with", len(bloc.TransactionList), "txs in it")
 	elapsed := time.Since(starttime).Milliseconds()
-	serv.blockvalidatetime = append(serv.blockvalidatetime, int(elapsed))
+	serv.blockvalidatetime[bloc.Blockhead.Height] = int(elapsed)
 	serv.msgbuff.Msgbuffmu.Unlock()
 
 	fmt.Println("server", serv.id, "the block validation costs", elapsed, "ms")
