@@ -345,6 +345,9 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 func (pbft *PBFT) Run() {
 	tmp1 := time.Since(pbft.starttime).Seconds()
 	fmt.Println("instance", pbft.Id, "starts running at", tmp1, "s")
+	thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+	pbft.cdedata.FetchTxBatch(thetxs)
+	fmt.Println("instance", pbft.Id, "cde data module fetches", len(thetxs), "txs")
 
 	pbft.tpsstarttime = time.Now()
 	go pbft.statetransfermonitor()
@@ -381,7 +384,6 @@ func (pbft *PBFT) Run() {
 						// invoke a CDE dalay data update
 						start:=time.Now()
 						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
-						cdedatap := pbft.cdedata
 						thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
 						delayv := pbft.cdedata.CreateDelayVector(thetxs)
 						var mrmsg datastruc.MeasurementResultMsg
@@ -390,7 +392,9 @@ func (pbft *PBFT) Run() {
 						go pbft.cdedata.CDEResponseMonitor(closech)
 						delayv.UpdateWrite()
 						delayv.UpdatePropose()
-						mrmsg = datastruc.NewMeasurementResultMsg(cdedatap.Id, cdedatap.Round, cdedatap.Peers, delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedatap.Pubkeystr, cdedatap.Prvkey)
+						mrmsg = datastruc.NewMeasurementResultMsg(pbft.cdedata.Id, pbft.cdedata.Round, pbft.cdedata.Peers,
+							delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true,
+							pbft.cdedata.Pubkeystr,	pbft.cdedata.Prvkey)
 						closech<-true
 						pbft.cdedata.Recvmu.Unlock()
 

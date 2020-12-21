@@ -56,6 +56,7 @@ type CDEdata struct {
 	Pubkeystr string
 	Prvkey *ecdsa.PrivateKey
 	Clientacctopuk map[string]string
+	Txbatch []Transaction
 }
 
 type CDEPureDelayData struct {
@@ -178,7 +179,7 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 		start := time.Now()
 		cdedata.TxListValidateMultiThread(proposetestmsg.TxBatch)
 		elapsed := time.Since(start).Milliseconds()
-		fmt.Println("instance", cdedata.Id, "validation_for_test costs", elapsed, "ms")
+		fmt.Println("instance", cdedata.Id, "validation_for_test costs", elapsed, "ms, tx nubmer:", len(proposetestmsg.TxBatch))
 		cdedata.validatetxbatachtime = append(cdedata.validatetxbatachtime, int(elapsed))
 		// todo, only add the value when it is in consensus. If it is a new node, do not add that.
 		// sleep for time t, t equals the time to validate tx batach
@@ -381,7 +382,8 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 	// ------------------------------------------------------- test propose self->new and validate self->new
 	// pack a propose-test message
 	rann = uint64(time.Now().Unix())
-	ppmsg := NewProposeMsg(cdedata.Id, cdedata.Round, cdedata.IpAddr, []Transaction{}, rann)
+	ppmsg := NewProposeMsg(cdedata.Id, cdedata.Round, cdedata.IpAddr, cdedata.Txbatch, rann)
+	//  todo, xxxxxxxxxxxxxx
 
 	var buff2 bytes.Buffer
 	gob.Register(elliptic.P256())
@@ -869,6 +871,13 @@ func (cdedata *CDEdata) UpdateUsingPureDelayData(cdep CDEPureDelayData) {
 		cdedata.sanitizationflag[u] = true
 	}
 
+}
+
+func (cdedata *CDEdata) FetchTxBatch(txs []Transaction) {
+	cdedata.mu.Lock()
+	defer cdedata.mu.Unlock()
+
+	cdedata.Txbatch = txs
 }
 
 func (cdedata *CDEdata) TxListValidateMultiThread(txlist []Transaction) bool {
