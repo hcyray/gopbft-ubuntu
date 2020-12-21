@@ -361,7 +361,7 @@ theloop:
 				// update delay vector
 				t1[ppr.Testee] = int(time.Since(starttime).Milliseconds())
 				// tend to overestimate propose-delay
-				delayv.ProposeDelaydata[ppr.Testee] = int(time.Since(starttime).Milliseconds()) / 2
+				delayv.ProposeDelaydata[ppr.Testee] = t1[ppr.Testee] / 2
 			}
 			flag := true
 			for _,v:= range delayv.ProposeDelaydata {

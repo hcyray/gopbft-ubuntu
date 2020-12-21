@@ -353,7 +353,8 @@ func (pbft *PBFT) Run() {
 	go pbft.statetransfermonitor()
 	go pbft.censorshipmonitor()
 	go pbft.cdedata.CDEInformTestMonitor()
-	go pbft.cdedata.CDETestMonitor()
+	closech := make(chan bool)
+	go pbft.cdedata.CDETestMonitor(closech)
 	go pbft.computeTps()
 
 
@@ -1151,6 +1152,8 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 				pbft.MsgBuff.UpdateJoinLeaveTxSetAfterCommitBlock(pbft.curblock)
 				pbft.cdedata.AddNewInstanceData(pbft.curblock.JoinTxList[0])
+				fmt.Println("instance", pbft.Id, "cdedata after adding new node:")
+				pbft.cdedata.PrintResult()
 				fmt.Println(pbft.Id, "instance-cdedata.peers:", pbft.cdedata.Peers)
 
 				theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}

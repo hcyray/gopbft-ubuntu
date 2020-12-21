@@ -244,7 +244,8 @@ func (cdedata *CDEdata) responseWrite(writetestmsg WriteTestMsg, replytonew bool
 	}
 }
 
-func (cdedata *CDEdata) CDETestMonitor() {
+func (cdedata *CDEdata) CDETestMonitor(closeCh chan bool) {
+	// respond when receiving a test.
 	for {
 		select {
 		case thetest :=<-cdedata.RecvTestCh:
@@ -284,6 +285,7 @@ func (cdedata *CDEdata) CDETestMonitor() {
 }
 
 func (cdedata *CDEdata) CDEResponseMonitor(closeCh chan bool) {
+	// process the response when receiving it
 theloop:
 	for {
 		select {
@@ -591,15 +593,17 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	closech := make(chan bool)
 	go cdedata.CDEResponseMonitor(closech)
 	delayv := cdedata.CreateDelayVector(txbatch)
-
-	//delayv.UpdateAtNew("write")
 	delayv.UpdateWriteAtNew()
-	//delayv.PrintResult()
+
+	// update propose new->sytem
+	delayv.UpdateProposeAtNew()
+	delayv.PrintResult()
 	closech<-true
-	//fmt.Println("new instance updates write-delay completes-----------------------------------------------------------------------------------------------------")
+	mrmsg := NewMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, delayv.ProposeDelaydata,
+		delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedata.Pubkeystr, cdedata.Prvkey)
 
 	// for node in system: update node->new one by one
-	go cdedata.CDETestMonitor()
+	go cdedata.CDETestMonitor(closech)
 	inverseproposedelay := make(map[int]int)
 	inversevalidatedelay := make(map[int]int)
 	inversewritedelay := make(map[int]int)
@@ -615,18 +619,14 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	fmt.Println("inverse propose-delay is", inverseproposedelay)
 	fmt.Println("inverse validate-delay is", inversevalidatedelay)
 	fmt.Println("inverse write-delay is", inversewritedelay)
-
-	// update propose new->sytem
-	go cdedata.CDEResponseMonitor(closech)
-	delayv.UpdateProposeAtNew()
-	delayv.PrintResult()
 	closech<-true
-	mrmsg := NewMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, delayv.ProposeDelaydata,
-		delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedata.Pubkeystr, cdedata.Prvkey)
+
 
 	// create join-tx for new instance
 	fmt.Println("new instance creates join-tx")
 	jtx := NewJoinTx(cdedata.Id, cdedata.IpAddr, mrmsg, imrmsg, cdedata.Pubkeystr, cdedata.Prvkey)
+	fmt.Println("instance", cdedata.Id, "update at round", cdedata.Round, "completes")
+	cdedata.Round += 1
 	return jtx
 }
 
