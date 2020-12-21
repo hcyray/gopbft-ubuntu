@@ -246,6 +246,7 @@ func (cdedata *CDEdata) responseWrite(writetestmsg WriteTestMsg, replytonew bool
 
 func (cdedata *CDEdata) CDETestMonitor(closeCh chan bool) {
 	// respond when receiving a test.
+theloop:
 	for {
 		select {
 		case thetest :=<-cdedata.RecvTestCh:
@@ -280,6 +281,9 @@ func (cdedata *CDEdata) CDETestMonitor(closeCh chan bool) {
 				//fmt.Println("instance", cdedata.Id, "receives a write-test from old instance")
 				go cdedata.responseWrite(writetest, false)
 			}
+		case <-closeCh:
+			//fmt.Println("CDEResponseMonitor function exits")
+			break theloop
 		}
 	}
 }
@@ -589,7 +593,7 @@ func (cdedata *CDEdata) GenerateStateHash() [32]byte {
 func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 
 	//// update write new->system
-	fmt.Println("new instance starts update write-delay new --> system")
+	fmt.Println("new instance starts update delay new --> system")
 	closech := make(chan bool)
 	go cdedata.CDEResponseMonitor(closech)
 	delayv := cdedata.CreateDelayVector(txbatch)
