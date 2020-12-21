@@ -135,6 +135,7 @@ func (serv *Server) InitializeMapandChan() {
 	serv.recvsinglemeasurementCh = make(chan datastruc.SingleMeasurementAToB)
 	serv.recvconfigCh = make(chan datastruc.ReadConfigReply)
 	serv.stopCh = make(chan bool)
+	serv.blockvalidatetime= make(map[int]int)
 }
 
 func (serv *Server) Start() {
