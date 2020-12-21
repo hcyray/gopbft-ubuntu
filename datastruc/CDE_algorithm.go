@@ -631,6 +631,7 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	jtx := NewJoinTx(cdedata.Id, cdedata.IpAddr, mrmsg, imrmsg, cdedata.Pubkeystr, cdedata.Prvkey)
 	fmt.Println("instance", cdedata.Id, "update at round", cdedata.Round, "completes")
 	cdedata.Round += 1
+	fmt.Println("the join-tx:", jtx)
 	return jtx
 }
 
