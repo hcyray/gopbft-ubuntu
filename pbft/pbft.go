@@ -1607,10 +1607,10 @@ func (pbft *PBFT) computeTps() {
 		elapsedtime := time.Since(pbft.tpsstarttime).Seconds()
 		tps := float64(pbft.acctx)/elapsedtime
 		pbft.tps = append(pbft.tps, int(tps))
-		le := len(pbft.tps)
-		if le%2==0 {
-			fmt.Println("instance", pbft.Id, "tps at", time.Since(pbft.starttime).Seconds(), "s is", pbft.tps[le-1])
-		}
+		//le := len(pbft.tps)
+		//if le%2==0 {
+		//	fmt.Println("instance", pbft.Id, "tps at", time.Since(pbft.starttime).Seconds(), "s is", pbft.tps[le-1])
+		//}
 		pbft.mu.Unlock()
 		time.Sleep(time.Millisecond * 500)
 	}
