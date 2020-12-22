@@ -354,7 +354,7 @@ func (serv *Server) BroadcastLoop() {
 		case <-serv.stopCh:
 			fmt.Println("server",serv.id, "stops its broadcasting loop, total Bytes send:", serv.bytesended/(1024),
 				"KB, total Bytes received from servers:", serv.byterecvfserver/1024, "KB, total Bytes received from clients:",
-				serv.byterecvfclient/1024, "KB")
+				serv.byterecvfclient/1024, "KB, total tx with decoding error is", serv.decoderrortx)
 			bvt := []int{}
 			for i:=0; i<120; i++ {
 				if _, ok := serv.blockvalidatetime[i]; ok {
