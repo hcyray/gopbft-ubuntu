@@ -177,7 +177,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.initializeMapChan()
 	pbft.initializeAccountBalance(clientpubkeystr)
 	pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
-	pbft.UpdateByzantineIdentity()
+	//pbft.UpdateByzantineIdentity()
 	if pbft.isbyzantine {
 		fmt.Println("instance", pbft.Id, "is a byzantine guy")
 	}
@@ -186,9 +186,9 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	//	pbft.isjoining = true
 	//} // 机制1测试
 
-	if pbft.Id==total-1 {
-		//pbft.isleaving = true
-		//fmt.Println("instance", pbft.Id, "will leave the system after a while")
+	if pbft.Id==0 {
+		pbft.isleaving = true
+		fmt.Println("instance", pbft.Id, "will leave the system after a while")
 	} // 机制2测试
 
 	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey, clientpubkeystr)
@@ -362,7 +362,7 @@ func (pbft *PBFT) Run() {
 		if pbft.currentHeight > 120 {
 			pbft.Stop()
 		}
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=200 {
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 {
 			// trigger this to test mechanism 2
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
@@ -706,7 +706,7 @@ func (pbft *PBFT) UpdateByzantineIdentity() {
 	//if pbft.Id>=start && pbft.Id<start+pbft.fmax {
 	//	pbft.isbyzantine = true
 	//}
-	if pbft.Id==2 {
+	if pbft.Id==3 || pbft.Id==4 {
 		pbft.isbyzantine = true
 	}
 }
