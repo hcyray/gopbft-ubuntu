@@ -110,9 +110,9 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []
 
 func (client *Client) Run() {
 	fmt.Println("client", client.id, "starts")
-	go client.sendloop()
 
 	time.Sleep(time.Second * 7)
+	go client.sendloop()
 	val := rand.Intn(400)
 	time.Sleep(time.Millisecond*time.Duration(val))
 
