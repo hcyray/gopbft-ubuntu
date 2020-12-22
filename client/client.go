@@ -135,8 +135,8 @@ func (client *Client) Run() {
 				fmt.Println("client", client.id, "sends", i, "txs in", elaps, "s")
 			}
 		}
-		if i%10==0 {
-			time.Sleep(time.Millisecond*100) // 25ms seems good, 30ms also good for test.
+		if i%20==0 {
+			time.Sleep(time.Millisecond*200) // 25ms seems good, 30ms also good for test.
 		}
 		//val := rand.Intn(2) + 1
 		//val := 10000
