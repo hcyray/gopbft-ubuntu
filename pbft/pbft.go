@@ -367,6 +367,8 @@ func (pbft *PBFT) Run() {
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
 			pbft.leaverequeststarttime = time.Now()
+			elaps := time.Since(pbft.starttime).Seconds()
+			fmt.Println("instance", pbft.Id, "request to leave the system at", elaps, "s")
 		}
 		switch pbft.status {
 		case stat_consensus:
