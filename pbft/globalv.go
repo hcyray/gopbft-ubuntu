@@ -6,7 +6,7 @@ const ScanInterval = 2
 const ThreadExit = 5
 const LeaderLease = 10
 
-const BlockVolume = 1028
+const BlockVolume = 512
 
 const (
 	stat_consensus = iota
