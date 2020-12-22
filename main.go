@@ -112,7 +112,7 @@ func main() {
 		localid := DetermineId(allips, localip)
 		fmt.Println("local id is", localid, "\n")
 
-		clientnumber := 32
+		clientnumber := 28
 		instanceoneachserver := 1
 		initialserver := 10
 		lateserver := 0 // 机制1测试
