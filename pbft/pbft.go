@@ -681,7 +681,7 @@ func (pbft *PBFT) censorshipmonitor() {
 		select {
 		case thehash :=<- pbft.censorshipmonitorCh:
 			fmt.Println("instance", pbft.Id, "starts timer to monitor the leave-tx")
-			thetimer := time.NewTimer(time.Millisecond * ConsensusTimer)
+			thetimer := time.NewTimer(time.Millisecond * MonitorTimer)
 			select {
 			case <-thetimer.C:
 				fmt.Println("instance", pbft.Id, "the monitored leave-tx fail to consens, trigger view-change")
