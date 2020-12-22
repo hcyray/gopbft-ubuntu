@@ -1620,7 +1620,9 @@ func (pbft *PBFT) Stop() {
 	pbft.stopCh<-true
 	pbft.stopCh<-true
 	fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends time", time.Since(pbft.starttime).Seconds(), "s")
-	fmt.Println("tps starttime is", pbft.tpsstarttime.Sub(pbft.starttime).Seconds(), "s, total processed tx is", pbft.acctx)
+	fmt.Println("tps starttime is", pbft.tpsstarttime.Sub(pbft.starttime).Seconds(), "s, total processed tx is", pbft.acctx,
+		"total elapsed time is", time.Since(pbft.tpsstarttime).Seconds(), "s, average tps is",
+		float64(pbft.acctx)/float64(time.Since(pbft.tpsstarttime).Seconds()))
 	fmt.Println("tps =", pbft.tps)
 	fmt.Println("consensustime =", pbft.consensustimelog)
 	fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
