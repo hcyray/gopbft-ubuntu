@@ -52,6 +52,14 @@ func (msgbuf *MessageBuffer) Initialize() {
 	msgbuf.MeasurementResPool = make(map[[32]byte]MeasurementResultMsg)
 }
 
+func (msgbuf *MessageBuffer) ClearTXPool() {
+	msgbuf.Msgbuffmu.Lock()
+	defer msgbuf.Msgbuffmu.Unlock()
+
+	fmt.Println("instance clear tx pool, discard", len(msgbuf.TxPool),"txs")
+	msgbuf.TxPool = make(map[[32]byte]Transaction)
+}
+
 func (msgbuf *MessageBuffer) ReadConfirmedBlock() (bool, ConfirmedBlock) {
 	msgbuf.Msgbuffmu.Lock()
 	defer msgbuf.Msgbuffmu.Unlock()

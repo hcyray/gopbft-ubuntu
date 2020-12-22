@@ -357,7 +357,7 @@ func (pbft *PBFT) Run() {
 	go pbft.cdedata.CDETestMonitor(closech)
 	go pbft.computeTps()
 
-
+	pbft.MsgBuff.ClearTXPool()
 	for {
 		if pbft.currentHeight > 120 {
 			pbft.Stop()
