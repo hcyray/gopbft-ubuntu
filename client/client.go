@@ -136,7 +136,7 @@ func (client *Client) Run() {
 			}
 		}
 		if i%10==0 {
-			time.Sleep(time.Millisecond*40) // 25ms seems good, 30ms also good for test.
+			time.Sleep(time.Millisecond*100) // 25ms seems good, 30ms also good for test.
 		}
 		//val := rand.Intn(2) + 1
 		//val := 10000
