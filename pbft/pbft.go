@@ -685,8 +685,10 @@ func (pbft *PBFT) censorshipmonitor() {
 			select {
 			case <-thetimer.C:
 				fmt.Println("instance", pbft.Id, "the monitored leave-tx fail to consens, trigger view-change")
-				pbft.viewchangeduetocensorship = thehash
-				pbft.censorshiphappenCh<-true
+				if !pbft.isbyzantine {
+					pbft.viewchangeduetocensorship = thehash
+					pbft.censorshiphappenCh<-true
+				}
 			case <-pbft.censorshipnothappenCh:
 				fmt.Println("instance", pbft.Id, "finds the monitored leave-tx consensed, timer stops")
 			}
@@ -1425,7 +1427,7 @@ func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string,
 		}
 	}
 
-	if hasltx {
+	if hasltx && !pbft.isbyzantine {
 		thekind = "withblock"
 		maxckpheight := 0
 		for _, vcmsg := range vcset {
