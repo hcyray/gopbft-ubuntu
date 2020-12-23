@@ -177,9 +177,17 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 		}
 	} else {
 		start := time.Now()
+
 		cdedata.TxListValidateMultiThread(proposetestmsg.TxBatch)
+		start1 := time.Now()
+		var content []byte
+		for i:=0; i<20000; i++ {
+			EncodeInt(&content, i)
+		}
+		sha256.Sum256(content)
 		elapsed := time.Since(start).Milliseconds()
 		fmt.Println("instance", cdedata.Id, "validation_for_test costs", elapsed, "ms, tx nubmer:", len(proposetestmsg.TxBatch))
+		fmt.Println("instance", cdedata.Id, "generate account balance hash costs", time.Since(start1).Milliseconds(), "ms")
 		cdedata.validatetxbatachtime = append(cdedata.validatetxbatachtime, int(elapsed))
 		// todo, only add the value when it is in consensus. If it is a new node, do not add that.
 		// sleep for time t, t equals the time to validate tx batach
