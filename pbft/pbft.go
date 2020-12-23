@@ -177,7 +177,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.initializeMapChan()
 	pbft.initializeAccountBalance(clientpubkeystr)
 	pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
-	//pbft.UpdateByzantineIdentity()
+	pbft.UpdateByzantineIdentity()
 	if pbft.isbyzantine {
 		fmt.Println("instance", pbft.Id, "is a byzantine guy")
 	}
