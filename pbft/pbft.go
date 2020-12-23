@@ -684,8 +684,8 @@ func (pbft *PBFT) censorshipmonitor() {
 			thetimer := time.NewTimer(time.Millisecond * MonitorTimer)
 			select {
 			case <-thetimer.C:
-				fmt.Println("instance", pbft.Id, "the monitored leave-tx fail to consens, trigger view-change")
 				if !pbft.isbyzantine {
+					fmt.Println("instance", pbft.Id, "the monitored leave-tx fail to consens, trigger view-change")
 					pbft.viewchangeduetocensorship = thehash
 					pbft.censorshiphappenCh<-true
 				}
