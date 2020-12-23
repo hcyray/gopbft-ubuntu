@@ -552,8 +552,8 @@ func (pbft *PBFT) Run() {
 						//time.Sleep(time.Millisecond * 50)
 						elapsed := time.Since(pbft.singleconsensusstarttime).Milliseconds()
 						pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
-						consensusdelay := 2000
-						//consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
+						//consensusdelay := 2000
+						consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
 						//if pbft.currentHeight%LeaderLease==1 {
 						//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
 						//} else {

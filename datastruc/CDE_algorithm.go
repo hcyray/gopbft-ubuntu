@@ -598,13 +598,14 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	go cdedata.CDEResponseMonitor(closech)
 	delayv := cdedata.CreateDelayVector(txbatch)
 	delayv.UpdateWriteAtNew()
-
+	time.Sleep(time.Millisecond * 20)
 	// update propose new->sytem
 	delayv.UpdateProposeAtNew()
 	delayv.PrintResult()
 	closech<-true
 	mrmsg := NewMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, delayv.ProposeDelaydata,
 		delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedata.Pubkeystr, cdedata.Prvkey)
+	time.Sleep(time.Millisecond * 20)
 
 	// for node in system: update node->new one by one
 	go cdedata.CDETestMonitor(closech)
@@ -617,6 +618,7 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 		inverseproposedelay[i] = singlemmsg.Proposedelay
 		inversevalidatedelay[i] = singlemmsg.Validatedelay
 		inversewritedelay[i] = singlemmsg.Writedelay
+		time.Sleep(time.Millisecond * 20)
 	}
 	imrmsg := NewInverseMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, inverseproposedelay,
 		inversevalidatedelay, inversewritedelay, cdedata.Pubkeystr, cdedata.Prvkey)
