@@ -115,7 +115,7 @@ func main() {
 		clientnumber := 28
 		instanceoneachserver := 1
 		initialserver := 7
-		lateserver := 0 // 机制1测试
+		lateserver := 1 // 机制1测试
 		totalserver := initialserver + lateserver
 		// read client pubkeys
 		ck := ReadClientKeys(os.Args[2])
@@ -131,7 +131,7 @@ func main() {
 			for i:=0; i<=0; i++ {
 				instanceid := i+instanceoneachserver*localid
 				theserver := server.CreateLateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
-				go theserver.LateStart(ck.Clientpubkstrs, 10+10*(i+1)) // new nodes join serially
+				go theserver.LateStart(ck.Clientpubkstrs, 35) // new nodes join serially
 				fmt.Println("server", instanceid, "starts, it is a late server")
 			}
 		} else {
@@ -143,7 +143,7 @@ func main() {
 				fmt.Println("the ", i, "client starts")
 			}
 		}
-		time.Sleep(time.Second * 50)
+		time.Sleep(time.Second * 100)
 	} else {
 		fmt.Printf("tmp is ", tmp)
 	}

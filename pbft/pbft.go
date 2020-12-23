@@ -177,19 +177,16 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.initializeMapChan()
 	pbft.initializeAccountBalance(clientpubkeystr)
 	pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
-	pbft.UpdateByzantineIdentity()
+	//pbft.UpdateByzantineIdentity()
 	if pbft.isbyzantine {
 		fmt.Println("instance", pbft.Id, "is a byzantine guy")
 	}
 
-	//if pbft.Id==total-1 {
-	//	pbft.isjoining = true
-	//} // 机制1测试
 
-	if pbft.Id==0 {
-		pbft.isleaving = true
-		fmt.Println("instance", pbft.Id, "will leave the system after a while")
-	} // 机制2测试
+	//if pbft.Id==0 {
+	//	pbft.isleaving = true
+	//	fmt.Println("instance", pbft.Id, "will leave the system after a while")
+	//} // 机制2测试
 
 	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey, clientpubkeystr)
 
@@ -362,7 +359,7 @@ func (pbft *PBFT) Run() {
 		if pbft.currentHeight > 70 {
 			pbft.Stop()
 		}
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 {
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=302 {
 			// trigger this to test mechanism 2
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
@@ -382,7 +379,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round==10 {
+					if pbft.cdeupdateflag && pbft.cdedata.Round==1 {
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
 						start:=time.Now()
@@ -1071,7 +1068,11 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.MsgBuff.UpdateMeasurementResAfterCommitBlock(pbft.curblock)
 			pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
-			//pbft.cdedata.PrintResult()
+
+			if pbft.currentHeight%10==0 {
+				pbft.cdedata.PrintResult()
+			}
+
 
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
 			commqc := datastruc.CommitQC{pbft.MsgBuff.ReadCommitVoteQuorum(theterm, pbft.currentHeight, pbft.quorumsize)}
