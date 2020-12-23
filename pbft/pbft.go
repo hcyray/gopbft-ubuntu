@@ -1427,7 +1427,8 @@ func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string,
 		}
 	}
 
-	if hasltx && !pbft.isbyzantine {
+	if hasltx {
+		// 机制2 && !pbft.isbyzantine
 		thekind = "withblock"
 		maxckpheight := 0
 		for _, vcmsg := range vcset {
