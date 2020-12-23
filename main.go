@@ -112,7 +112,7 @@ func main() {
 		localid := DetermineId(allips, localip)
 		fmt.Println("local id is", localid, "\n")
 
-		clientnumber := 28
+		clientnumber := 30
 		instanceoneachserver := 1
 		initialserver := 7
 		lateserver := 1 // 机制1测试
@@ -143,7 +143,7 @@ func main() {
 				fmt.Println("the ", i, "client starts")
 			}
 		}
-		time.Sleep(time.Second * 100)
+		time.Sleep(time.Second * 40)
 	} else {
 		fmt.Printf("tmp is ", tmp)
 	}
