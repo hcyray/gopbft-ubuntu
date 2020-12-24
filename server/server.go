@@ -561,7 +561,7 @@ func (serv *Server) handleJoinTx(conten []byte) {
 	}
 	serv.msgbuff.Msgbuffmu.Lock()
 	serv.msgbuff.JoinLeavetxSet.JTxset = append(serv.msgbuff.JoinLeavetxSet.JTxset, jointx)
-	fmt.Println("server", serv.id, "receives a join-tx, the requester is", jointx.Id)
+	fmt.Println("server", serv.id, "receives a join-tx, the requester is", jointx.Id, "at", time.Since(serv.starttime).Seconds(), "s")
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
