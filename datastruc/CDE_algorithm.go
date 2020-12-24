@@ -724,9 +724,10 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 	defer cdedata.mu.Unlock()
 
 	newcdedata := cdedata.CopyData()
-	fmt.Println("instance", cdedata.Id, "invoke calculation for newjointx from ", jtx.Id,", the copied peerlist:", newcdedata.Peers)
+	fmt.Println("invoke consensus delay calculation")
+	//fmt.Println("instance", cdedata.Id, "invoke calculation for newjointx from ", jtx.Id,", the copied peerlist:", newcdedata.Peers)
 	newcdedata.AddNewInstanceData(jtx)
-	fmt.Println("instance", cdedata.Id, "invoke calculation for newjointx from ", jtx.Id,", the copied peerlist after adding the new:", newcdedata.Peers)
+	//fmt.Println("instance", cdedata.Id, "invoke calculation for newjointx from ", jtx.Id,", the copied peerlist after adding the new:", newcdedata.Peers)
 
 	blockdelay := newcdedata.ProposeDelayConvertToMatrix()
 	validatedelay := newcdedata.ValidationDelayConverToMatrix()
@@ -770,7 +771,7 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 		Time_commit[i] = Time_recv_commit[i][Q-1]
 	}
 
-	fmt.Println("instance", cdedata.Id, "completes calculation for newjointx from ", jtx.Id,", the result is:", Time_commit)
+	//fmt.Println("instance", cdedata.Id, "completes calculation for newjointx from ", jtx.Id,", the result is:", Time_commit)
 	return Time_commit
 }
 
