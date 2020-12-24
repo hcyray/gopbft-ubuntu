@@ -1635,6 +1635,7 @@ func (pbft *PBFT) computeTps() {
 func (pbft *PBFT) Stop() {
 	pbft.stopCh<-true
 	pbft.stopCh<-true
+	fmt.Println("end-------------------------------")
 	fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends time", time.Since(pbft.starttime).Seconds(), "s")
 	fmt.Println("tps starttime is", pbft.tpsstarttime.Sub(pbft.starttime).Seconds(), "s, total processed tx is", pbft.acctx,
 		"total elapsed time is", time.Since(pbft.tpsstarttime).Seconds(), "s, average tps is",

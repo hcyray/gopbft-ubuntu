@@ -741,12 +741,12 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 
 	for i:=0; i<N; i++ {
 		Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i]
-		for i:=0; i<N; i++ {
-			Time_recv_prepare[i] = make([]int, N)
-		}
-		for i:=0; i<N; i++ {
-			Time_recv_commit[i] = make([]int, N)
-		}
+	}
+	for i:=0; i<N; i++ {
+		Time_recv_prepare[i] = make([]int, N)
+	}
+	for i:=0; i<N; i++ {
+		Time_recv_commit[i] = make([]int, N)
 	}
 
 	for i:=0; i<N; i++ {
