@@ -6,7 +6,7 @@ const MonitorTimer = 1000
 const ScanInterval = 2
 const ThreadExit = 5
 const LeaderLease = 10
-const JOININGTHRES = 400
+const JOININGTHRES = 500
 
 const BlockVolume = 1028
 
