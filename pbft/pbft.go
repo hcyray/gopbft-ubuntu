@@ -512,7 +512,7 @@ func (pbft *PBFT) Run() {
 							res2 := pbft.cdedata.CalculateConsensusDelayForNewJointx(jtx.Id, pbft.InitialTotalPeer+1, q, jtx)
 							fmt.Println("consensus delay when instance", jtx.Id, "is leader: ", res2)
 							elaps := time.Since(startt).Milliseconds()
-							res := EvaluateCapacity(res1, res2, q)
+							res := EvaluateCapacity(res1, res2, pbft.Id, jtx.Id)
 							if res {
 								fmt.Println("The new instance may have enough capacity calculation costs: ", elaps, "ms")
 							} else {
@@ -1592,20 +1592,24 @@ func (pbft *PBFT) broadcastMeasurementResult(mrmsg datastruc.MeasurementResultMs
 	pbft.broadcdataCh <- datatosend
 }
 
-func EvaluateCapacity(res1 []int, res2 []int, q int) bool {
-	coun1 := 0
-	for _, v := range res1 {
-		if v < ConsensusTimer {
-			coun1 += 1
-		}
-	}
-	coun2 := 0
-	for _, v := range res2 {
-		if v < ConsensusTimer {
-			coun2 += 1
-		}
-	}
-	return (coun1>=q)&&(coun2>=q)
+//func EvaluateCapacity(res1 []int, res2 []int, q int) bool {
+//	coun1 := 0
+//	for _, v := range res1 {
+//		if v < JOININGTHRES {
+//			coun1 += 1
+//		}
+//	}
+//	coun2 := 0
+//	for _, v := range res2 {
+//		if v < JOININGTHRES {
+//			coun2 += 1
+//		}
+//	}
+//	return (coun1>=q)&&(coun2>=q)
+//}
+
+func EvaluateCapacity(resselfasleader []int, resnewasleader []int, selfid int, newid int) bool {
+	return resselfasleader[newid]<JOININGTHRES && resnewasleader[selfid]<JOININGTHRES
 }
 
 func (pbft *PBFT) computeTps() {
