@@ -114,8 +114,8 @@ func main() {
 
 		clientnumber := 32
 		instanceoneachserver := 1
-		initialserver := 6
-		lateserver := 3 // 机制1测试
+		initialserver := 8
+		lateserver := 1 // 机制1测试
 		totalserver := initialserver + lateserver
 		// read client pubkeys
 		ck := ReadClientKeys(os.Args[2])
