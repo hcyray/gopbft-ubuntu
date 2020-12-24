@@ -724,7 +724,9 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 	defer cdedata.mu.Unlock()
 
 	newcdedata := cdedata.CopyData()
+	fmt.Println("instance", cdedata.Id, "invoke calculation for newjointx from ", jtx.Id,", the copied peerlist:", newcdedata.Peers)
 	newcdedata.AddNewInstanceData(jtx)
+	fmt.Println("instance", cdedata.Id, "invoke calculation for newjointx from ", jtx.Id,", the copied peerlist after adding the new:", newcdedata.Peers)
 
 	blockdelay := newcdedata.ProposeDelayConvertToMatrix()
 	validatedelay := newcdedata.ValidationDelayConverToMatrix()
