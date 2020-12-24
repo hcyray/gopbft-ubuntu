@@ -770,6 +770,7 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 		Time_commit[i] = Time_recv_commit[i][Q-1]
 	}
 
+	fmt.Println("instance", cdedata.Id, "completes calculation for newjointx from ", jtx.Id,", the result is:", Time_commit)
 	return Time_commit
 }
 

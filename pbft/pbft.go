@@ -506,10 +506,10 @@ func (pbft *PBFT) Run() {
 						if len(pbft.curblock.JoinTxList) > 0 {
 							jtx := pbft.curblock.JoinTxList[0]
 							startt := time.Now()
-							q := CalculateQuorumSize(pbft.InitialTotalPeer+1)
-							res1 := pbft.cdedata.CalculateConsensusDelayForNewJointx(pbft.Id, pbft.InitialTotalPeer+1, q, jtx)
+							q := CalculateQuorumSize(len(pbft.members))
+							res1 := pbft.cdedata.CalculateConsensusDelayForNewJointx(pbft.Id, len(pbft.members)+1, q, jtx)
 							fmt.Println("consensus delay when instance", pbft.Id, "is leader: ", res1)
-							res2 := pbft.cdedata.CalculateConsensusDelayForNewJointx(jtx.Id, pbft.InitialTotalPeer+1, q, jtx)
+							res2 := pbft.cdedata.CalculateConsensusDelayForNewJointx(jtx.Id, len(pbft.members)+1, q, jtx)
 							fmt.Println("consensus delay when instance", jtx.Id, "is leader: ", res2)
 							elaps := time.Since(startt).Milliseconds()
 							res := EvaluateCapacity(res1, res2, pbft.Id, jtx.Id)
