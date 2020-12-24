@@ -508,9 +508,9 @@ func (pbft *PBFT) Run() {
 							startt := time.Now()
 							q := CalculateQuorumSize(len(pbft.members))
 							res1 := pbft.cdedata.CalculateConsensusDelayForNewJointx(pbft.Id, len(pbft.members)+1, q, jtx)
-							fmt.Println("consensus delay when instance", pbft.Id, "is leader: ", res1)
 							res2 := pbft.cdedata.CalculateConsensusDelayForNewJointx(jtx.Id, len(pbft.members)+1, q, jtx)
-							fmt.Println("consensus delay when instance", jtx.Id, "is leader: ", res2)
+							fmt.Println("consensus delay when instance", pbft.Id, "is leader: ", res1,
+								"consensus delay when instance", jtx.Id, "is leader: ", res2)
 							elaps := time.Since(startt).Milliseconds()
 							res := EvaluateCapacity(res1, res2, pbft.Id, jtx.Id)
 							if res {
