@@ -356,9 +356,13 @@ func (pbft *PBFT) Run() {
 
 	pbft.MsgBuff.ClearTXPool()
 	for {
-		if pbft.currentHeight > 200 {
+		elap := time.Since(pbft.starttime).Seconds()
+		if elap>74 {
 			pbft.Stop()
 		}
+		//if pbft.currentHeight > 200 {
+		//	pbft.Stop()
+		//}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=302 {
 			// trigger this to test mechanism 2
 			go pbft.broadcastLeavingTx()
