@@ -356,7 +356,7 @@ func (pbft *PBFT) Run() {
 
 	pbft.MsgBuff.ClearTXPool()
 	for {
-		if pbft.currentHeight > 120 {
+		if pbft.currentHeight > 240 {
 			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=302 {
