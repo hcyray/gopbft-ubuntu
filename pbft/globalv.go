@@ -8,7 +8,7 @@ const ThreadExit = 5
 const LeaderLease = 5
 const JOININGTHRES = 1000
 
-const BlockVolume = 2048
+const BlockVolume = 1028
 
 
 const (
