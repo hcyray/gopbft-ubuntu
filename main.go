@@ -99,7 +99,7 @@ func main() {
 		RecordClientKeys(&ck)
 		// ***************************************generate client keys and save
 	} else if tmp=="main" {
-		fmt.Println("add more user accounts, test performance")
+		fmt.Println("test CDE module accuracy")
 		fmt.Println("Get the cluster IPs from", os.Args[1])
 		fmt.Println("Get client keys from", os.Args[2])
 		localip := GetOutboundIP().String()
