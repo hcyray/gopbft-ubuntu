@@ -355,13 +355,13 @@ func (pbft *PBFT) Run() {
 
 	pbft.MsgBuff.ClearTXPool()
 	for {
-		elap := time.Since(pbft.starttime).Seconds()
-		if elap>74 {
-			pbft.Stop()
-		}
-		//if pbft.currentHeight > 200 {
+		//elap := time.Since(pbft.starttime).Seconds()
+		//if elap>74 {
 		//	pbft.Stop()
 		//}
+		if pbft.currentHeight > 120 {
+			pbft.Stop()
+		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=302 {
 			// trigger this to test mechanism 2
 			go pbft.broadcastLeavingTx()
@@ -1640,8 +1640,9 @@ func (pbft *PBFT) Stop() {
 		"total elapsed time is", time.Since(pbft.tpsstarttime).Seconds(), "s, average tps is",
 		float64(pbft.acctx)/float64(time.Since(pbft.tpsstarttime).Seconds()))
 	fmt.Println("tps =", pbft.tps)
-	fmt.Println("consensustime =", pbft.consensustimelog)
-	fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
+	l1 := len(pbft.consensustimelog)
+	fmt.Println("consensustime =", pbft.consensustimelog[46:(l1-1)])
+	fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog[46:(l1-1)])
 	fmt.Println("viewchagnetime =", pbft.viewchangetimelog)
 	fmt.Println("inauguratetime =", pbft.inauguratetimelog)
 	time.Sleep(time.Second * 100)
