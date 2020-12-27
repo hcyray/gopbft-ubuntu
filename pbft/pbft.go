@@ -1073,6 +1073,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
 
 			if pbft.currentHeight%10==0 {
+				fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
 				pbft.cdedata.PrintResult()
 			}
 
