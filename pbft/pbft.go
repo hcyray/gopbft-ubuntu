@@ -186,7 +186,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	//if pbft.Id==0 {
 	//	pbft.isleaving = true
 	//	fmt.Println("instance", pbft.Id, "will leave the system after a while")
-	//} // 机制2测试
+	//} // mechanism2测试
 
 	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey, clientpubkeystr)
 
@@ -224,7 +224,6 @@ func (pbft *PBFT) initializeAccountBalance(clientpubkeystr map[int]string) {
 }
 
 func (pbft *PBFT) InitialSetup() {
-	//go pbft.censorshipmonitor() // 机制2测试
 
 	fmt.Println("instance", pbft.Id, "initializes setup, total instance number in the system is", pbft.InitialTotalPeer)
 
@@ -1433,7 +1432,7 @@ func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string,
 	}
 
 	if hasltx {
-		// 机制2 && !pbft.isbyzantine
+		// mechanism2 && !pbft.isbyzantine
 		thekind = "withblock"
 		maxckpheight := 0
 		for _, vcmsg := range vcset {
