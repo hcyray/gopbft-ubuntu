@@ -114,7 +114,7 @@ func main() {
 
 		clientnumber := 32
 		instanceoneachserver := 1
-		initialserver := 9
+		initialserver := 10
 		lateserver := 0 // 机制1测试
 		totalserver := initialserver + lateserver
 		// read client pubkeys
@@ -143,7 +143,7 @@ func main() {
 				fmt.Println("the ", i, "client starts")
 			}
 		}
-		time.Sleep(time.Second * 76)
+		time.Sleep(time.Second * 120)
 	} else {
 		fmt.Printf("tmp is ", tmp)
 	}
