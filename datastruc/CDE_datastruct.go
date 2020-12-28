@@ -58,11 +58,22 @@ type WriteTestMsg struct {
 	Sig PariSign
 }
 
-type WriteResponseMsg struct {
+type WriteResponseWoValidateMsg struct {
 	Challange uint64
 
 	Round int
 	Testee int
+
+	Pubkey string
+	Sig PariSign
+}
+
+type WriteResponseWithValidateMsg struct {
+	Challange uint64
+
+	Round int
+	Testee int
+	Hashvalue [32]byte
 
 	Pubkey string
 	Sig PariSign
@@ -75,8 +86,7 @@ type MeasurementResultMsg struct {
 	ProposeDealy map[int]int
 	ValidateDelay map[int]int
 	WriteDelay map[int]int
-
-	ProposeFlag bool
+	HashDelay map[int]int
 
 	Pubkey string
 	Sig PariSign
@@ -89,6 +99,7 @@ type InverseMeasurementResultMsg struct {
 	ProposeDealy map[int]int
 	WriteDelay map[int]int
 	ValidateDelay map[int]int
+	HashDelay map[int]int
 
 	Pubkey string
 	Sig PariSign
@@ -101,6 +112,7 @@ type SingleMeasurementAToB struct {
 	Proposedelay int
 	Validatedelay int
 	Writedelay int
+	Hashdelay int
 
 	Pubkey string
 	Sig PariSign
@@ -168,8 +180,8 @@ func NewProposeResponseWithValidateMsg(id int, round int, challeng uint64, resli
 	return pprmsg
 }
 
-func NewWriteResponseMsg(id int, round int, challeng uint64) WriteResponseMsg {
-	wrrmsg := WriteResponseMsg{}
+func NewWriteResponseWoValidateMsg(id int, round int, challeng uint64) WriteResponseWoValidateMsg {
+	wrrmsg := WriteResponseWoValidateMsg{}
 
 	wrrmsg.Challange = challeng
 	wrrmsg.Round = round
@@ -177,8 +189,18 @@ func NewWriteResponseMsg(id int, round int, challeng uint64) WriteResponseMsg {
 	return wrrmsg
 }
 
+func NewWriteResponseWithValidateMsg(id int, round int, challeng uint64, hv [32]byte) WriteResponseWithValidateMsg {
+	wrrmsg := WriteResponseWithValidateMsg{}
+
+	wrrmsg.Hashvalue = hv
+	wrrmsg.Challange = challeng
+	wrrmsg.Round = round
+	wrrmsg.Testee = id
+	return wrrmsg
+}
+
 func NewMeasurementResultMsg(id int, round int, peers []int, proposeres map[int]int, writeres map[int]int,
-	validateres map[int]int, proposeflag bool, pubkeystr string, privkey *ecdsa.PrivateKey) MeasurementResultMsg {
+	validateres map[int]int, hashres map[int]int, pubkeystr string, privkey *ecdsa.PrivateKey) MeasurementResultMsg {
 	mrmsg := MeasurementResultMsg{}
 
 	mrmsg.Id = id
@@ -189,7 +211,7 @@ func NewMeasurementResultMsg(id int, round int, peers []int, proposeres map[int]
 	mrmsg.ProposeDealy = proposeres
 	mrmsg.WriteDelay = writeres
 	mrmsg.ValidateDelay = validateres
-	mrmsg.ProposeFlag = proposeflag
+	mrmsg.HashDelay = hashres
 
 	// todo, add signature
 
@@ -197,7 +219,7 @@ func NewMeasurementResultMsg(id int, round int, peers []int, proposeres map[int]
 }
 
 func NewInverseMeasurementResultMsg(id int, round int, peers []int, proposeres map[int]int, validateres map[int]int, writeres map[int]int,
-	pubkeystr string, privkey *ecdsa.PrivateKey) InverseMeasurementResultMsg {
+	hashdelayres map[int]int, pubkeystr string, privkey *ecdsa.PrivateKey) InverseMeasurementResultMsg {
 	imrmsg := InverseMeasurementResultMsg{}
 
 	imrmsg.Id = id
@@ -208,7 +230,7 @@ func NewInverseMeasurementResultMsg(id int, round int, peers []int, proposeres m
 	imrmsg.ProposeDealy = proposeres
 	imrmsg.ValidateDelay = validateres
 	imrmsg.WriteDelay = writeres
-
+	imrmsg.HashDelay = hashdelayres
 
 	// todo, add signature
 
@@ -228,9 +250,11 @@ func NewSingleMeasurement(a, b int, delays []int, pubkey string, prvkey *ecdsa.P
 
 	smmsg.Tester = a
 	smmsg.Testee = b
-	smmsg.Proposedelay = delays[1]
-	smmsg.Validatedelay = delays[2]
 	smmsg.Writedelay = delays[0]
+	smmsg.Hashdelay = delays[1]
+	smmsg.Proposedelay = delays[2]
+	smmsg.Validatedelay = delays[3]
+
 
 	// todo, add signature
 
@@ -277,13 +301,23 @@ func (wr *WriteTestMsg) Deserialize(content []byte) {
 	}
 }
 
-func (wrr *WriteResponseMsg) Deserialize(content []byte) {
+func (wrr *WriteResponseWoValidateMsg) Deserialize(content []byte) {
 	var buff bytes.Buffer
 	buff.Write(content)
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(wrr)
 	if err != nil {
-		fmt.Println("write-response decoding error")
+		fmt.Println("write-response-wo-validate decoding error")
+	}
+}
+
+func (wrr *WriteResponseWithValidateMsg) Deserialize(content []byte) {
+	var buff bytes.Buffer
+	buff.Write(content)
+	dec := gob.NewDecoder(&buff)
+	err := dec.Decode(wrr)
+	if err != nil {
+		fmt.Println("write-response-with-validate decoding error")
 	}
 }
 
@@ -309,7 +343,6 @@ func (mr *MeasurementResultMsg) Serialize() []byte {
 	for _,v := range mr.Peers {
 		EncodeInt(&tmp, mr.WriteDelay[v])
 	}
-	EncodeBool(&tmp, mr.ProposeFlag)
 	return tmp
 }
 

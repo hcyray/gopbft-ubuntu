@@ -99,7 +99,7 @@ func main() {
 		RecordClientKeys(&ck)
 		// ***************************************generate client keys and save
 	} else if tmp=="main" {
-		fmt.Println("debug CDE module accuracy, plan to add account_hash_generation_time, backup")
+		fmt.Println("add account_hash_generation_time, backup")
 		fmt.Println("Get the cluster IPs from", os.Args[1])
 		fmt.Println("Get client keys from", os.Args[2])
 		localip := GetOutboundIP().String()

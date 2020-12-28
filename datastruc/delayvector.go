@@ -26,24 +26,29 @@ func (cdedata *CDEdata) CreateDelayVector(txbatch []Transaction) *DelayVector {
 	dv.ProposeDelaydata = make(map[int]int)
 	dv.WriteDelaydata = make(map[int]int)
 	dv.ValidationDelaydata = make(map[int]int)
+	dv.HashDelaydata = make(map[int]int)
 	for _, v := range dv.Peers {
 		dv.ProposeDelaydata[v] = MAXWAITTIME // initialize to be the maximum value
 		dv.WriteDelaydata[v] = MAXWAITTIME
 		dv.ValidationDelaydata[v] = MAXWAITTIME
+		dv.HashDelaydata[v] = MAXWAITTIME
 	}
 	dv.Txbatch = txbatch
 	dv.SendCh = cdedata.SendCh
 	dv.BroadcastCh = cdedata.BroadcastCh
 	dv.RecvProposeResponWoCh = cdedata.RecvProposeResponWoCh
 	dv.RecvProposeResponWCh = cdedata.RecvProposeResponWCh
-	dv.RecvWriteResponCh = cdedata.RecvWriteResponCh
+	dv.RecvWriteResponWoCh = cdedata.RecvWriteResponWoCh
+	dv.RecvWriteResponWCh = cdedata.RecvWriteResponWCh
 	dv.RecvProposeResponWoFromOldCh = cdedata.RecvProposeResponWoFromOldCh
 	dv.RecvProposeResponWFromOldCh = cdedata.RecvProposeResponWFromOldCh
-	dv.RecvWriteResponFromOldCh = cdedata.RecvWriteResponFromOldCh
+	dv.RecvWriteResponWoFromOldCh = cdedata.RecvWriteResponWoFromOldCh
+	dv.RecvWriteResponWFromOldCh = cdedata.RecvWriteResponWFromOldCh
 
 	dv.RecvProposeResponWoFromNewCh = cdedata.RecvProposeResponWoFromNewCh
 	dv.RecvProposeResponWFromNewCh = cdedata.RecvProposeResponWFromNewCh
-	dv.RecvWriteResponFromNewCh = cdedata.RecvWriteResponFromNewCh
+	dv.RecvWriteResponWoFromNewCh = cdedata.RecvWriteResponWoFromNewCh
+	dv.RecvWriteResponWFromNewCh = cdedata.RecvWriteResponWFromNewCh
 	return dv
 }
 
@@ -56,56 +61,96 @@ type DelayVector struct
 	Peerexceptme []int
 
 	ProposeDelaydata map[int]int
-	WriteDelaydata map[int]int
 	ValidationDelaydata map[int]int
+	WriteDelaydata map[int]int
+	HashDelaydata map[int]int
+
 	Txbatch []Transaction
 	SendCh chan DatatosendWithIp
 	BroadcastCh chan Datatosend
+
 	RecvProposeResponWoCh chan DataReceived
 	RecvProposeResponWCh chan DataReceived
-	RecvWriteResponCh chan DataReceived
+	RecvWriteResponWoCh chan DataReceived
+	RecvWriteResponWCh chan DataReceived
 
 	RecvProposeResponWoFromOldCh chan DataReceived
 	RecvProposeResponWFromOldCh chan DataReceived
-	RecvWriteResponFromOldCh chan DataReceived
+	RecvWriteResponWoFromOldCh chan DataReceived
+	RecvWriteResponWFromOldCh chan DataReceived
 
 	RecvProposeResponWoFromNewCh chan DataReceived
 	RecvProposeResponWFromNewCh chan DataReceived
-	RecvWriteResponFromNewCh chan DataReceived
+	RecvWriteResponWoFromNewCh chan DataReceived
+	RecvWriteResponWFromNewCh chan DataReceived
 }
 
-//func (delayv *DelayVector) Update(testop string) {
-//
-//	fmt.Println("instance", delayv.Tester, "starts updating", testop, "delay vector at round", delayv.Round)
-//	if testop=="both" {
-//		delayv.UpdateWrite()
-//		delayv.UpdatePropose()
-//		//if delayv.Tester==0 {
-//		//	fmt.Println("propose-delay and validate-delay measurement result----------------------------------------")
-//		//	delayv.PrintResult()
-//		//}
-//	} else if testop=="write" {
-//		delayv.UpdateWrite()
-//
-//	} else if testop=="propose" {
-//		delayv.UpdatePropose()
-//	} else {
-//		log.Panic("wrong option")
-//	}
-//}
+func (delayv *DelayVector) UpdateWrite() {
+	// this func blocks when executing
 
-//func (delayv *DelayVector) UpdateAtNew(testop string) {
-//	if testop=="both" {
-//		delayv.UpdateWriteAtNew()
-//		delayv.UpdateProposeAtNew()
-//	} else if testop=="write" {
-//		delayv.UpdateWriteAtNew()
-//	} else if testop=="propose" {
-//		delayv.UpdateProposeAtNew()
-//	} else {
-//		log.Panic("wrong option")
-//	}
-//}
+	// send and write
+	rann := uint64(time.Now().Unix())
+	wrmsg := NewWriteMsg(delayv.Tester, delayv.Round, delayv.IpAddr, rann)
+	var buff bytes.Buffer
+	gob.Register(elliptic.P256())
+	enc := gob.NewEncoder(&buff)
+	err := enc.Encode(wrmsg)
+	if err != nil {
+		log.Panic(err)
+	}
+	content := buff.Bytes()
+	datatosend := Datatosend{delayv.Peerexceptme, "writetest", content}
+	delayv.BroadcastCh <- datatosend
+
+	starttime := time.Now()
+	for _,v:=range delayv.Peers {
+		delayv.WriteDelaydata[v] = MAXWAITTIME
+		delayv.HashDelaydata[v] = MAXWAITTIME
+	}
+	delayv.WriteDelaydata[delayv.Tester] = 0
+	delayv.HashDelaydata[delayv.Tester] = 0
+	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
+	t1 := make(map[int]int)
+	for _, v := range delayv.Peers {
+		t1[v] = 0
+	}
+theloop:
+	for {
+		select {
+		case <-thetimer.C:
+			break theloop
+		case theresponse :=<- delayv.RecvWriteResponWoCh:
+			// decode response
+			var wrr WriteResponseWoValidateMsg
+			wrr.Deserialize(theresponse.Msg)
+			// check correctness
+			if delayv.Round==wrr.Round {
+				t1[wrr.Testee] = int(time.Since(starttime).Milliseconds())
+				delayv.WriteDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()/2)
+				// check if all delay data is updated
+				if AllUpdated(delayv.WriteDelaydata, delayv.HashDelaydata, MAXWAITTIME) {
+					break theloop
+				}
+			} else {
+				fmt.Println("the received write-response round number not matchs, current round:", delayv.Round, "response round:", wrr.Round)
+			}
+		case theresponse :=<- delayv.RecvWriteResponWCh:
+			// decode response
+			var wrr WriteResponseWithValidateMsg
+			wrr.Deserialize(theresponse.Msg)
+			// check correctness
+			if delayv.Round==wrr.Round {
+				delayv.HashDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()) - t1[wrr.Testee]
+				// check if all delay data is updated
+				if AllUpdated(delayv.WriteDelaydata, delayv.HashDelaydata, MAXWAITTIME) {
+					break theloop
+				}
+			} else {
+				fmt.Println("the received write-response round number not matchs, current round:", delayv.Round, "response round:", wrr.Round)
+			}
+		}
+	}
+}
 
 func (delayv *DelayVector) UpdatePropose() {
 	// this func blocks when executing, this func tends to overestimate propose
@@ -161,22 +206,8 @@ theloop:
 				t1[ppr.Testee] = int(time.Since(starttime).Milliseconds())
 				// tend to overestimate propose-delay
 				delayv.ProposeDelaydata[ppr.Testee] = int(time.Since(starttime).Milliseconds()) / 2
-				//fmt.Println("instance", delayv.Tester, "measures a new propose-without-validation delay", delayv.Tester, " --> ", ppr.Testee, ":", delayv.ProposeDelaydata[ppr.Testee])
-				//gotresponse[ppr.Testee] = true
-
 				// check if all items updated, if so, exit
-				flag := true
-				for _,v:= range delayv.ProposeDelaydata {
-					if v==MAXWAITTIME {
-						flag = false
-					}
-				}
-				for _,v:= range delayv.ValidationDelaydata {
-					if v==MAXWAITTIME {
-						flag = false
-					}
-				}
-				if flag{
+				if AllUpdated(delayv.ProposeDelaydata, delayv.ValidationDelaydata, MAXWAITTIME) {
 					break theloop
 				}
 			} else {
@@ -188,22 +219,8 @@ theloop:
 			if ppr.Round==delayv.Round {
 				// update delay vector
 				delayv.ValidationDelaydata[ppr.Testee] = int(time.Since(starttime).Milliseconds()) - t1[ppr.Testee]
-				//fmt.Println("instance", delayv.Tester, "measures a new propose-response-with-validation delay", delayv.Tester, " --> ", ppr.Testee, ":", delayv.ValidationDelaydata[ppr.Testee])
-				//gotresponse[ppr.Testee] = true
-
 				// check if all items updated, if so, exit
-				flag := true
-				for _,v:= range delayv.ProposeDelaydata {
-					if v==MAXWAITTIME {
-						flag = false
-					}
-				}
-				for _,v:= range delayv.ValidationDelaydata {
-					if v==MAXWAITTIME {
-						flag = false
-					}
-				}
-				if flag{
+				if AllUpdated(delayv.ProposeDelaydata, delayv.ValidationDelaydata, MAXWAITTIME) {
 					break theloop
 				}
 			}
@@ -211,67 +228,11 @@ theloop:
 	}
 }
 
-func (delayv *DelayVector) UpdateWrite() {
-	// this func blocks when executing
 
-	// send propose and write
-	rann := uint64(time.Now().Unix())
-	wrmsg := NewWriteMsg(delayv.Tester, delayv.Round, delayv.IpAddr, rann)
-	starttime := time.Now()
-
-	var buff bytes.Buffer
-	gob.Register(elliptic.P256())
-	enc := gob.NewEncoder(&buff)
-	err := enc.Encode(wrmsg)
-	if err != nil {
-		log.Panic(err)
-	}
-	content := buff.Bytes()
-
-	datatosend := Datatosend{delayv.Peerexceptme, "writetest", content}
-	delayv.BroadcastCh <- datatosend // question, hope this won't block or take too much time
-
-	for _,v:=range delayv.Peers {
-		delayv.WriteDelaydata[v] = MAXWAITTIME
-	}
-	delayv.WriteDelaydata[delayv.Tester] = 0
-	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
-theloop:
-	for {
-		select {
-		case <-thetimer.C:
-			//fmt.Println("update write timer expires, breaks")
-			break theloop
-		case theresponse :=<- delayv.RecvWriteResponCh:
-			// decode response
-			var wrr WriteResponseMsg
-			wrr.Deserialize(theresponse.Msg)
-			// check correctness
-			if delayv.Round==wrr.Round {
-				// update delay vector
-				delayv.WriteDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()/2)
-
-				// check if all delay data is updated
-				flag := true
-				for _,v:= range delayv.WriteDelaydata {
-					if v==MAXWAITTIME {
-						flag = false
-					}
-				}
-				if flag{
-					break theloop
-				}
-			} else {
-				fmt.Println("the received write-response round number not matchs, current round:", delayv.Round, "response round:", wrr.Round)
-			}
-		}
-	}
-}
 
 func (delayv *DelayVector) UpdateWriteAtNew() {
 	rann := uint64(time.Now().Unix())
 	wrmsg := NewWriteMsg(delayv.Tester, delayv.Round, delayv.IpAddr, rann)
-	starttime := time.Now()
 	var buff bytes.Buffer
 	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&buff)
@@ -283,31 +244,50 @@ func (delayv *DelayVector) UpdateWriteAtNew() {
 	fmt.Println("new instance invoke update-write-at-new, peers:", delayv.Peers, "its own id:", delayv.Tester, "write-msg:", wrmsg)
 	datatosend := Datatosend{delayv.Peers, "writetestfromnew", content}
 	delayv.BroadcastCh <- datatosend
+
+	starttime := time.Now()
 	for _,v:=range delayv.Peers {
 		delayv.WriteDelaydata[v] = MAXWAITTIME
+		delayv.HashDelaydata[v] = MAXWAITTIME
 	} // note do not need to set delayv.WriteDelaydata[v] = 0, because delayv.peers doesn't contain tester.
 
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
+	t1 := make(map[int]int)
+	for _, v := range delayv.Peers {
+		t1[v] = 0
+	}
 theloop:
 	for {
 		select {
 		case <-thetimer.C:
 			break theloop
-		case theresponse :=<- delayv.RecvWriteResponFromOldCh:
+		case theresponse :=<- delayv.RecvWriteResponWoFromOldCh:
 			// decode response
-			var wrr WriteResponseMsg
+			var wrr WriteResponseWoValidateMsg
 			wrr.Deserialize(theresponse.Msg)
 			// check correctness
 			// update delay vector
-			delayv.WriteDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()/2)
-			flag := true
-			for _,v:= range delayv.WriteDelaydata {
-				if v==MAXWAITTIME {
-					flag = false
+			if delayv.Round==wrr.Round {
+				t1[wrr.Testee] = int(time.Since(starttime).Milliseconds())
+				delayv.WriteDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()/2)
+				if AllUpdated(delayv.WriteDelaydata, delayv.HashDelaydata, MAXWAITTIME) {
+					break theloop
 				}
+			} else {
+				fmt.Println("the received write-response round number not matchs, current round:", delayv.Round, "response round:", wrr.Round)
 			}
-			if flag{
-				break theloop
+		case theresponse :=<- delayv.RecvWriteResponWCh:
+			// decode response
+			var wrr WriteResponseWithValidateMsg
+			wrr.Deserialize(theresponse.Msg)
+			// check correctness
+			if delayv.Round==wrr.Round {
+				delayv.HashDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()) - t1[wrr.Testee]
+				if AllUpdated(delayv.WriteDelaydata, delayv.HashDelaydata, MAXWAITTIME) {
+					break theloop
+				}
+			} else {
+				fmt.Println("the received write-response round number not matchs, current round:", delayv.Round, "response round:", wrr.Round)
 			}
 		}
 	}
@@ -363,18 +343,7 @@ theloop:
 				// tend to overestimate propose-delay
 				delayv.ProposeDelaydata[ppr.Testee] = t1[ppr.Testee] / 2
 			}
-			flag := true
-			for _,v:= range delayv.ProposeDelaydata {
-				if v==MAXWAITTIME {
-					flag = false
-				}
-			}
-			for _,v:= range delayv.ValidationDelaydata {
-				if v==MAXWAITTIME {
-					flag = false
-				}
-			}
-			if flag{
+			if AllUpdated(delayv.ProposeDelaydata, delayv.ValidationDelaydata, MAXWAITTIME) {
 				break theloop
 			}
 		case theresponse :=<- delayv.RecvProposeResponWFromOldCh:
@@ -385,18 +354,7 @@ theloop:
 				//fmt.Println("delay vector instance receives propose-response-with-validation, updating validaton delay data")
 				delayv.ValidationDelaydata[ppr.Testee] = int(time.Since(starttime).Milliseconds()) - t1[ppr.Testee]
 			}
-			flag := true
-			for _,v:= range delayv.ProposeDelaydata {
-				if v==MAXWAITTIME {
-					flag = false
-				}
-			}
-			for _,v:= range delayv.ValidationDelaydata {
-				if v==MAXWAITTIME {
-					flag = false
-				}
-			}
-			if flag{
+			if AllUpdated(delayv.ProposeDelaydata, delayv.ValidationDelaydata, MAXWAITTIME) {
 				break theloop
 			}
 		}
@@ -414,5 +372,22 @@ func (delayv *DelayVector) PrintResult() {
 	for _, v:= range delayv.Peers {
 		fmt.Println("write-delay", delayv.Tester, "-->", v, "is", delayv.WriteDelaydata[v])
 	}
+	for _, v:= range delayv.Peers {
+		fmt.Println("hash-delay", delayv.Tester, "-->", v, "is", delayv.HashDelaydata[v])
+	}
 	fmt.Println("----------")
+}
+
+func AllUpdated(m1 map[int]int, m2 map[int]int, maximum int) bool {
+	for _,v := range m1 {
+		if v==maximum {
+			return false
+		}
+	}
+	for _,v := range m2 {
+		if v==maximum {
+			return false
+		}
+	}
+	return true
 }

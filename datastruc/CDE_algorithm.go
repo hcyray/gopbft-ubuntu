@@ -25,11 +25,14 @@ type CDEdata struct {
 
 	Round int // the test time
 	ProposeDelayMatrix map[int]map[int]int
-	WriteDelayMatrix map[int]map[int]int
 	ValidationDelayMatrix map[int]map[int]int
+	WriteDelayMatrix map[int]map[int]int
+	HashDelayMatrix map[int]map[int]int
+
 
 	sanitizationflag map[int]bool
 	validatetxbatachtime []int
+	hashgeneratetime []int
 
 	SendCh chan DatatosendWithIp
 	BroadcastCh chan Datatosend
@@ -38,15 +41,18 @@ type CDEdata struct {
 
 	RecvProposeResponWoCh chan DataReceived
 	RecvProposeResponWCh chan DataReceived
-	RecvWriteResponCh chan DataReceived
+	RecvWriteResponWoCh chan DataReceived
+	RecvWriteResponWCh chan DataReceived
 
 	RecvProposeResponWoFromOldCh chan DataReceived
 	RecvProposeResponWFromOldCh chan DataReceived
-	RecvWriteResponFromOldCh chan DataReceived
+	RecvWriteResponWoFromOldCh chan DataReceived
+	RecvWriteResponWFromOldCh chan DataReceived
 
 	RecvProposeResponWoFromNewCh chan DataReceived
 	RecvProposeResponWFromNewCh chan DataReceived
-	RecvWriteResponFromNewCh chan DataReceived
+	RecvWriteResponWoFromNewCh chan DataReceived
+	RecvWriteResponWFromNewCh chan DataReceived
 
 	RecvInformTestCh chan RequestTestMsg
 	RecvSingleMeasurement chan SingleMeasurementAToB
@@ -64,6 +70,7 @@ type CDEPureDelayData struct {
 	ProposeDelayMatrix map[int]map[int]int
 	WriteDelayMatrix map[int]map[int]int
 	ValidationDelayMatrix map[int]map[int]int
+	HashDelayMatrix map[int]map[int]int
 }
 
 func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp, broadCh chan Datatosend, recvtestch chan DataReceived,
@@ -77,6 +84,7 @@ func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp,
 	cde.ProposeDelayMatrix = make(map[int]map[int]int)
 	cde.WriteDelayMatrix = make(map[int]map[int]int)
 	cde.ValidationDelayMatrix = make(map[int]map[int]int)
+	cde.HashDelayMatrix = make(map[int]map[int]int)
 	cde.sanitizationflag = make(map[int]bool)
 	le := len(peers)
 	for _,v := range peers {
@@ -98,15 +106,18 @@ func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp,
 	cde.RecvResponseCh = recvresponsech
 	cde.RecvProposeResponWoCh = make(chan DataReceived)
 	cde.RecvProposeResponWCh = make(chan DataReceived)
-	cde.RecvWriteResponCh = make(chan DataReceived)
+	cde.RecvWriteResponWoCh = make(chan DataReceived)
+	cde.RecvWriteResponWCh = make(chan DataReceived)
 
 	cde.RecvProposeResponWoFromOldCh = make(chan DataReceived)
 	cde.RecvProposeResponWFromOldCh = make(chan DataReceived)
-	cde.RecvWriteResponFromOldCh = make(chan DataReceived)
+	cde.RecvWriteResponWoFromOldCh = make(chan DataReceived)
+	cde.RecvWriteResponWFromOldCh = make(chan DataReceived)
 
 	cde.RecvProposeResponWoFromNewCh = make(chan DataReceived)
 	cde.RecvProposeResponWFromNewCh = make(chan DataReceived)
-	cde.RecvWriteResponFromNewCh = make(chan DataReceived)
+	cde.RecvWriteResponWoFromNewCh = make(chan DataReceived)
+	cde.RecvWriteResponWFromNewCh = make(chan DataReceived)
 
 	cde.RecvSingleMeasurement = recvsinglemeasurementCh
 	cde.RecvInformTestCh = RecvInformTestCh
@@ -157,7 +168,7 @@ func (cdedata *CDEdata) responseProposeWoValidate(proposetestmsg ProposeTestMsg,
 }
 
 func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMsg, replytonew bool) {
-	// validate txlist, it may took some time
+	// validate txlist, it will took some time
 	reslist := make([]bool, 0)
 	//for _, tx := range proposetestmsg.TxBatch {
 	//	reslist = append(reslist, tx.Verify(cdedata.Clientacctopuk[tx.Source]))
@@ -177,17 +188,9 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 		}
 	} else {
 		start := time.Now()
-
 		cdedata.TxListValidateMultiThread(proposetestmsg.TxBatch)
-		start1 := time.Now()
-		var content []byte
-		for i:=0; i<20000; i++ {
-			EncodeInt(&content, i)
-		}
-		sha256.Sum256(content)
 		elapsed := time.Since(start).Milliseconds()
 		fmt.Println("instance", cdedata.Id, "validation_for_test costs", elapsed, "ms, tx nubmer:", len(proposetestmsg.TxBatch))
-		fmt.Println("instance", cdedata.Id, "generate_account_balance_hash_costs", time.Since(start1).Milliseconds(), "ms")
 		cdedata.validatetxbatachtime = append(cdedata.validatetxbatachtime, int(elapsed))
 		// todo, only add the value when it is in consensus. If it is a new node, do not add that.
 		// sleep for time t, t equals the time to validate tx batach
@@ -221,8 +224,8 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 	}
 }
 
-func (cdedata *CDEdata) responseWrite(writetestmsg WriteTestMsg, replytonew bool) {
-	wrrmsg := NewWriteResponseMsg(cdedata.Id, writetestmsg.Round, writetestmsg.Challange)
+func (cdedata *CDEdata) responseWriteWoValidate(writetestmsg WriteTestMsg, replytonew bool) {
+	wrrmsg := NewWriteResponseWoValidateMsg(cdedata.Id, writetestmsg.Round, writetestmsg.Challange)
 	var buff bytes.Buffer
 	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&buff)
@@ -233,21 +236,64 @@ func (cdedata *CDEdata) responseWrite(writetestmsg WriteTestMsg, replytonew bool
 	content := buff.Bytes()
 
 	if replytonew {
-		// calculate the port number of itself
 		destip := make([]string, 0)
 		tmp := writetestmsg.IpAddr
-		//le := len(tmp)
-		//theipprefix := tmp[0:(le-1)]
-		//theremoteip := theipprefix + strconv.Itoa(cdedata.Id)
-		//destip = append(destip, theremoteip)
 		destip = append(destip, tmp)
-		datatosend := DatatosendWithIp{destip, "writeresponfromold", content}
+		datatosend := DatatosendWithIp{destip, "writeresponwofromold", content}
 		cdedata.SendCh <- datatosend
-		//fmt.Println("instance", cdedata.Id, "respond to write-test from new node ip", theremoteip)
 	} else {
 		dest := make([]int, 0)
 		dest = append(dest, writetestmsg.Tester)
-		datatosend := Datatosend{dest, "writerespon", content}
+		datatosend := Datatosend{dest, "writeresponwo", content}
+		cdedata.BroadcastCh <- datatosend
+	}
+}
+
+func (cdedata *CDEdata) responseWriteWithValidate(writetestmsg WriteTestMsg, replytonew bool) {
+	var hv [32]byte
+
+	if replytonew {
+		if len(cdedata.hashgeneratetime)==0 {
+			time.Sleep(time.Duration(50)*time.Millisecond)
+		} else {
+			t := 0
+			for _,v := range cdedata.validatetxbatachtime {
+				t += v
+			}
+			t = t/len(cdedata.hashgeneratetime)
+			fmt.Println("sleep to replace system_hash_generation, time:", t, "ms")
+			time.Sleep(time.Duration(t)*time.Millisecond)
+		}
+	} else {
+		start := time.Now()
+		var content []byte
+		for i:=0; i<20000; i++ {
+			EncodeInt(&content, i)
+		}
+		hv = sha256.Sum256(content)
+		fmt.Println("instance", cdedata.Id, "generate_account_balance_hash_costs", time.Since(start).Milliseconds(), "ms")
+	}
+
+	wrrmsg := NewWriteResponseWithValidateMsg(cdedata.Id, writetestmsg.Round, writetestmsg.Challange, hv)
+	var buff bytes.Buffer
+	gob.Register(elliptic.P256())
+	enc := gob.NewEncoder(&buff)
+	err := enc.Encode(wrrmsg)
+	if err != nil {
+		log.Panic(err)
+	}
+	content := buff.Bytes()
+
+	if replytonew {
+		destip := make([]string, 0)
+		tmp := writetestmsg.IpAddr
+		destip = append(destip, tmp)
+		datatosend := DatatosendWithIp{destip, "writeresponwfromold", content}
+		cdedata.SendCh <- datatosend
+	} else {
+		dest := make([]int, 0)
+		dest = append(dest, writetestmsg.Tester)
+		datatosend := Datatosend{dest, "writeresponw", content}
 		cdedata.BroadcastCh <- datatosend
 	}
 }
@@ -267,7 +313,8 @@ theloop:
 			case "writetest":
 				var writetest WriteTestMsg
 				writetest.Deserialize(thetest.Msg)
-				go cdedata.responseWrite(writetest, false)
+				go cdedata.responseWriteWoValidate(writetest, false)
+				go cdedata.responseWriteWithValidate(writetest, false)
 			case "proposetestfromnew":
 				var proposetest ProposeTestMsg
 				proposetest.Deserialize(thetest.Msg)
@@ -277,7 +324,8 @@ theloop:
 				var writetest WriteTestMsg
 				writetest.Deserialize(thetest.Msg)
 				fmt.Println("instance", cdedata.Id, "receives a write-test from new")
-				go cdedata.responseWrite(writetest, true)
+				go cdedata.responseWriteWoValidate(writetest, true)
+				go cdedata.responseWriteWithValidate(writetest, true)
 			case "proposetestfromold":
 				var proposetest ProposeTestMsg
 				proposetest.Deserialize(thetest.Msg)
@@ -287,7 +335,8 @@ theloop:
 				var writetest WriteTestMsg
 				writetest.Deserialize(thetest.Msg)
 				//fmt.Println("instance", cdedata.Id, "receives a write-test from old instance")
-				go cdedata.responseWrite(writetest, false)
+				go cdedata.responseWriteWoValidate(writetest, false)
+				go cdedata.responseWriteWithValidate(writetest, false)
 			}
 		case <-closeCh:
 			//fmt.Println("CDEResponseMonitor function exits")
@@ -304,27 +353,25 @@ theloop:
 		case theresponse :=<- cdedata.RecvResponseCh:
 			switch theresponse.MsgType {
 			case "proporesponwo":
-				//fmt.Println("instance", cdedata.Id, "receives a propose-response-wo instance")
 				cdedata.RecvProposeResponWoCh <- theresponse
-				//fmt.Println("instance", cdedata.Id, "receives a propose-response-wo and sends it to channel")
 			case "proporesponw":
 				cdedata.RecvProposeResponWCh <- theresponse
-			case "writerespon":
-				//fmt.Println("instance", cdedata.Id, "receives a write-response, instance")
-				cdedata.RecvWriteResponCh <- theresponse
-				//fmt.Println("instance", cdedata.Id, "receives a write-response and sended it to channel")
+			case "writeresponwo":
+				cdedata.RecvWriteResponWoCh <- theresponse
+			case "writeresponw":
+				cdedata.RecvWriteResponWCh <- theresponse
 			case "proporesponwofromnew":
 				cdedata.RecvProposeResponWoFromNewCh <- theresponse
 			case "proporesponwfromnew":
 				cdedata.RecvProposeResponWFromNewCh <- theresponse
 			case "writeresponfromnew":
-				cdedata.RecvWriteResponFromNewCh <- theresponse
+				cdedata.RecvWriteResponWoFromNewCh <- theresponse
 			case "proporesponwofromold":
 				cdedata.RecvProposeResponWoFromOldCh <- theresponse
 			case "proporesponwfromold":
 				cdedata.RecvProposeResponWFromOldCh <- theresponse
-			case "writeresponfromold":
-				cdedata.RecvWriteResponFromOldCh <- theresponse
+			case "writeresponwofromold":
+				cdedata.RecvWriteResponWoFromOldCh <- theresponse
 			}
 		case <-closeCh:
 			//fmt.Println("CDEResponseMonitor function exits")
@@ -347,11 +394,15 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 	testee := reqtest.Testee
 	testeeip := reqtest.IpAddr
 	delays := make([]int, 0)
-	for i:=0; i<3; i++ {
+	for i:=0; i<4; i++ {
 		delays = append(delays, MAXWAITTIME)
 	}
 	dests := make([]string, 0)
 	dests = append(dests, testeeip)
+	closed := make(chan bool)
+	cdedata.Recvmu.Lock()
+	go cdedata.CDEResponseMonitor(closed)
+
 
 	// ------------------------------------------------------- test write self->new
 	// pack a write-test message
@@ -366,29 +417,33 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 	if err != nil {
 		log.Panic(err)
 	}
-	starttime1 := time.Now()
 	content := buff1.Bytes()
 	datatosend := DatatosendWithIp{dests	, "writetestfromold", content}
 	cdedata.SendCh <- datatosend
 
-	closed := make(chan bool)
-	cdedata.Recvmu.Lock()
-	go cdedata.CDEResponseMonitor(closed)
-
 	// block, wait for response
+	starttime1 := time.Now()
+	t1 := 0
 	thetimer := time.NewTimer(time.Millisecond * MAXWAITTIME)
 	theloop1:
 	for {
 		select {
 		case <-thetimer.C:
 			break theloop1
-		case theresponse := <- cdedata.RecvWriteResponCh:
-			var wrr WriteResponseMsg
+		case theresponse := <- cdedata.RecvWriteResponWoCh:
+			var wrr WriteResponseWoValidateMsg
 			wrr.Deserialize(theresponse.Msg)
 			if wrr.Testee==testee && wrr.Challange==rann {
-				delays[0] = int(time.Since(starttime1).Milliseconds()/2)
+				t1 = int(time.Since(starttime1).Milliseconds())
+				delays[0] = t1/2
 				//fmt.Println("instance", cdedata.Id, "measure write-delay to new instance: ", cdedata.Id, " --> ", testee, ":", delays[0])
 				break theloop1
+			}
+		case theresponse := <- cdedata.RecvWriteResponWCh:
+			var wrr WriteResponseWithValidateMsg
+			wrr.Deserialize(theresponse.Msg)
+			if wrr.Testee==testee && wrr.Challange==rann {
+				delays[1] = int(time.Since(starttime1).Milliseconds()) - t1
 			}
 		}
 	}
@@ -411,7 +466,7 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 	cdedata.SendCh <- datatosend
 
 	// block, wait for response
-	t1 := 0
+	t2 := 0
 	thetimer = time.NewTimer(time.Millisecond * MAXWAITTIME)
 	starttime2 := time.Now()
 
@@ -424,9 +479,8 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 			var ppr ProposeResponseWoValidateMsg
 			ppr.Deserialize(theresponse.Msg)
 			if ppr.Round==cdedata.Round && ppr.Challange==rann {
-				t1 = int(time.Since(starttime2).Milliseconds())
-				delays[1] = t1 / 2
-				//fmt.Println("instance", cdedata.Id, "measure propose-delay to new instance: ", cdedata.Id, "--> ", testee, ":", delays[1])
+				t2 = int(time.Since(starttime2).Milliseconds())
+				delays[2] = t2 / 2
 			} else {
 				//fmt.Println("isntance", cdedata.Id, "wrong measures propose-delay, ", cdedata.Id, " --> ", testee, ":", delays[1])
 			}
@@ -434,7 +488,7 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 			var ppr ProposeResponseWithValidateMsg
 			ppr.Deserialize(theresponse.Msg)
 			if ppr.Round==cdedata.Round && ppr.Challange==rann {
-				delays[2] = int(time.Since(starttime2).Milliseconds()) - t1
+				delays[3] = int(time.Since(starttime2).Milliseconds()) - t2
 				//fmt.Println("instance", cdedata.Id, "measure validate-delay to new instance: ", cdedata.Id, "--> ", testee, ":", delays[2])
 			}
 		}
@@ -446,8 +500,8 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 
 
 	// ------------------------------------------------------- send test res to new
-	fmt.Println("instance", cdedata.Id, "completes test for new node, propose_validate_write delay respectively is",
-		delays[1], delays[2], delays[0])
+	fmt.Println("instance", cdedata.Id, "completes test for new node, propose_validate_write_hashgenerate delay respectively is",
+		delays[2], delays[3], delays[0], delays[1])
 	smmsg := NewSingleMeasurement(cdedata.Id, testee, delays, cdedata.Pubkeystr, cdedata.Prvkey)
 	var buff3 bytes.Buffer
 	gob.Register(elliptic.P256())
@@ -471,11 +525,10 @@ func (cdedata *CDEdata) UpdateUsingNewMeasurementRes(mrrlist []MeasurementResult
 			log.Panic("the current config does not match measurement result's config")
 		}
 		tester := mrr.Id
-		if mrr.ProposeFlag {
-			cdedata.ProposeDelayMatrix[tester] = mrr.ProposeDealy
-			cdedata.ValidationDelayMatrix[tester] = mrr.ValidateDelay
-		}
+		cdedata.ProposeDelayMatrix[tester] = mrr.ProposeDealy
+		cdedata.ValidationDelayMatrix[tester] = mrr.ValidateDelay
 		cdedata.WriteDelayMatrix[tester] = mrr.WriteDelay
+		cdedata.HashDelayMatrix[tester] = mrr.HashDelay
 		cdedata.sanitizationflag[tester] = true
 	}
 
@@ -538,6 +591,22 @@ func (cdedata *CDEdata) WriteDelayConvertToMatrix() [][]int {
 	return res
 }
 
+func (cdedata *CDEdata) HashDelayConvertToMatrix() [][]int {
+	cdedata.mu.Lock()
+
+	res := make([][]int, 0)
+	for _, v := range cdedata.Peers {
+		tmp := make([]int, 0)
+		for _, u := range cdedata.Peers {
+			tmp = append(tmp, cdedata.HashDelayMatrix[v][u])
+		}
+		res = append(res, tmp)
+	}
+
+	cdedata.mu.Unlock()
+	return res
+}
+
 func (cdedata *CDEdata) PrintResult() {
 	cdedata.mu.Lock()
 	defer cdedata.mu.Unlock()
@@ -560,6 +629,13 @@ func (cdedata *CDEdata) PrintResult() {
 	for _, i := range cdedata.Peers {
 		for _, j := range cdedata.Peers {
 			fmt.Printf("%d --> %d: %d     ", i, j, cdedata.WriteDelayMatrix[i][j])
+		}
+		fmt.Printf("\n")
+	}
+	fmt.Println("----------instance", cdedata.Id ,"hash-delay round", cdedata.Round)
+	for _, i := range cdedata.Peers {
+		for _, j := range cdedata.Peers {
+			fmt.Printf("%d --> %d: %d     ", i, j, cdedata.HashDelayMatrix[i][j])
 		}
 		fmt.Printf("\n")
 	}
@@ -586,9 +662,16 @@ func (cdedata *CDEdata) GenerateStateHash() [32]byte {
 			writetwodlistrepresent = append(writetwodlistrepresent, cdedata.WriteDelayMatrix[v][u])
 		}
 	}
+	hashtwodlistrepresent := make([]int, 0)
+	for _,v := range cdedata.Peers {
+		for _,u := range cdedata.Peers {
+			writetwodlistrepresent = append(hashtwodlistrepresent, cdedata.HashDelayMatrix[v][u])
+		}
+	}
 	tmp1 := append(cdedata.Peers, proposetwodlistrepresent...)
 	tmp2 := append(tmp1, validatetwodlistrepresent...)
-	thefinallist := append(tmp2, writetwodlistrepresent...)
+	tmp3 := append(tmp2, writetwodlistrepresent...)
+	thefinallist := append(tmp3, hashtwodlistrepresent...)
 
 	var content []byte
 	for _,v := range thefinallist {
@@ -612,7 +695,7 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	delayv.PrintResult()
 	closech<-true
 	mrmsg := NewMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, delayv.ProposeDelaydata,
-		delayv.WriteDelaydata, delayv.ValidationDelaydata, true, cdedata.Pubkeystr, cdedata.Prvkey)
+		delayv.WriteDelaydata, delayv.ValidationDelaydata, delayv.HashDelaydata, cdedata.Pubkeystr, cdedata.Prvkey)
 	time.Sleep(time.Millisecond * 20)
 
 	// for node in system: update node->new one by one
@@ -620,19 +703,23 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	inverseproposedelay := make(map[int]int)
 	inversevalidatedelay := make(map[int]int)
 	inversewritedelay := make(map[int]int)
+	inversehashdelay := make(map[int]int)
 	for _, i := range cdedata.Peers {
 		// inform instance i to test itself
-		singlemmsg := cdedata.InformTestInstance(cdedata.Id, i) // block, until receives the test result with signature
+		singlemmsg := cdedata.InformTestInstance(i) // block, until receives the test result with signature
 		inverseproposedelay[i] = singlemmsg.Proposedelay
 		inversevalidatedelay[i] = singlemmsg.Validatedelay
 		inversewritedelay[i] = singlemmsg.Writedelay
+		inversehashdelay[i] = singlemmsg.Hashdelay
 		time.Sleep(time.Millisecond * 20)
 	}
 	imrmsg := NewInverseMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, inverseproposedelay,
-		inversevalidatedelay, inversewritedelay, cdedata.Pubkeystr, cdedata.Prvkey)
+		inversevalidatedelay, inversewritedelay, inversehashdelay, cdedata.Pubkeystr, cdedata.Prvkey)
 	fmt.Println("inverse propose-delay is", inverseproposedelay)
 	fmt.Println("inverse validate-delay is", inversevalidatedelay)
 	fmt.Println("inverse write-delay is", inversewritedelay)
+	fmt.Println("inverse hash-delay is", inversehashdelay)
+
 	closech<-true
 
 
@@ -642,12 +729,12 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	fmt.Println("instance", cdedata.Id, "update at round", cdedata.Round, "completes")
 	//cdedata.Round += 1
 	fmt.Println("the join-tx:", jtx)
-	fmt.Println("measurement msg, propose_validate_write delay:", mrmsg.ProposeDealy, mrmsg.ValidateDelay, mrmsg.WriteDelay)
-	fmt.Println("inv measurement msg, propose_validate_write delay:", imrmsg.ProposeDealy, imrmsg.ValidateDelay, imrmsg.WriteDelay)
+	fmt.Println("measurement msg, propose_validate_write_hash delay:", mrmsg.ProposeDealy, mrmsg.ValidateDelay, mrmsg.WriteDelay, mrmsg.HashDelay)
+	fmt.Println("inv measurement msg, propose_validate_write_hash delay:", imrmsg.ProposeDealy, imrmsg.ValidateDelay, imrmsg.WriteDelay, imrmsg.HashDelay)
 	return jtx
 }
 
-func (cdedata *CDEdata) InformTestInstance(id int, dest int) SingleMeasurementAToB {
+func (cdedata *CDEdata) InformTestInstance(dest int) SingleMeasurementAToB {
 	reqtestmsg := NewRequestTestMsg(cdedata.Id, cdedata.IpAddr)
 	var buff bytes.Buffer
 	gob.Register(elliptic.P256())
@@ -677,12 +764,14 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 	blockdelay := cdedata.ProposeDelayConvertToMatrix()
 	validatedelay := cdedata.ValidationDelayConverToMatrix()
 	votedelay := cdedata.WriteDelayConvertToMatrix()
+	hashdelay := cdedata.HashDelayConvertToMatrix()
 
 	Time_recv_pre_prepare := make([]int, N)
 	Time_recv_prepare := make([][]int, N)
 	Time_recv_commit := make([][]int, N)
 	Time_prepare := make([]int, N)
 	Time_commit := make([]int, N)
+	Time_complete := make([]int, N)
 
 	for i:=0; i<N; i++ {
 		Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i]
@@ -716,7 +805,11 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 		Time_commit[i] = Time_recv_commit[i][Q-1]
 	}
 
-	return Time_commit
+	for i:=0; i<N; i++ {
+		Time_complete[i] = Time_commit[i] + hashdelay[l][i]
+	}
+
+	return Time_complete
 }
 
 func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx JoinTx) []int {
@@ -725,19 +818,19 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 
 	newcdedata := cdedata.CopyData()
 	fmt.Println("invoke consensus delay calculation")
-	//fmt.Println("instance", cdedata.Id, "invoke calculation for newjointx from ", jtx.Id,", the copied peerlist:", newcdedata.Peers)
 	newcdedata.AddNewInstanceData(jtx)
-	//fmt.Println("instance", cdedata.Id, "invoke calculation for newjointx from ", jtx.Id,", the copied peerlist after adding the new:", newcdedata.Peers)
 
 	blockdelay := newcdedata.ProposeDelayConvertToMatrix()
 	validatedelay := newcdedata.ValidationDelayConverToMatrix()
 	votedelay := newcdedata.WriteDelayConvertToMatrix()
+	hashdelay := cdedata.HashDelayConvertToMatrix()
 
 	Time_recv_pre_prepare := make([]int, N)
 	Time_recv_prepare := make([][]int, N)
 	Time_recv_commit := make([][]int, N)
 	Time_prepare := make([]int, N)
 	Time_commit := make([]int, N)
+	Time_complete := make([]int, N)
 
 	for i:=0; i<N; i++ {
 		Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i]
@@ -771,8 +864,11 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 		Time_commit[i] = Time_recv_commit[i][Q-1]
 	}
 
-	//fmt.Println("instance", cdedata.Id, "completes calculation for newjointx from ", jtx.Id,", the result is:", Time_commit)
-	return Time_commit
+	for i:=0; i<N; i++ {
+		Time_complete[i] = Time_commit[i] + hashdelay[l][i]
+	}
+
+	return Time_complete
 }
 
 func (cdedata *CDEdata) CopyData() CDEdata {
@@ -784,15 +880,18 @@ func (cdedata *CDEdata) CopyData() CDEdata {
 	newcdedata.ProposeDelayMatrix = make(map[int]map[int]int)
 	newcdedata.ValidationDelayMatrix = make(map[int]map[int]int)
 	newcdedata.WriteDelayMatrix = make(map[int]map[int]int)
+	newcdedata.HashDelayMatrix = make(map[int]map[int]int)
 
 	for _,v := range newcdedata.Peers {
 		newcdedata.ProposeDelayMatrix[v] = make(map[int]int)
 		newcdedata.WriteDelayMatrix[v] = make(map[int]int)
 		newcdedata.ValidationDelayMatrix[v] = make(map[int]int)
+		newcdedata.HashDelayMatrix[v] = make(map[int]int)
 
 		newcdedata.ProposeDelayMatrix[v] = cdedata.ProposeDelayMatrix[v]
 		newcdedata.ValidationDelayMatrix[v] = cdedata.ValidationDelayMatrix[v]
 		newcdedata.WriteDelayMatrix[v] = cdedata.WriteDelayMatrix[v]
+		newcdedata.HashDelayMatrix[v] = cdedata.HashDelayMatrix[v]
 	}
 	newcdedata.sanitizationflag = make(map[int]bool)
 	for k,v:=range cdedata.sanitizationflag {
@@ -816,6 +915,10 @@ func (cdedata *CDEdata) Sanitization() {
 			t3 := Takemax(cdedata.WriteDelayMatrix[i][j], cdedata.WriteDelayMatrix[j][i])
 			cdedata.WriteDelayMatrix[i][j] = t3
 			cdedata.WriteDelayMatrix[j][i] = t3
+
+			t4 := Takemax(cdedata.HashDelayMatrix[i][j], cdedata.HashDelayMatrix[j][i])
+			cdedata.HashDelayMatrix[i][j] = t4
+			cdedata.HashDelayMatrix[j][i] = t4
 		}
 	}
 }
@@ -827,6 +930,7 @@ func (cdedata *CDEdata) AddNewInstanceData(jtx JoinTx) {
 	cdedata.ProposeDelayMatrix[newid] = make(map[int]int)
 	cdedata.ValidationDelayMatrix[newid] = make(map[int]int)
 	cdedata.WriteDelayMatrix[newid] = make(map[int]int)
+	cdedata.HashDelayMatrix[newid] = make(map[int]int)
 	for k,v := range jtx.Measureres.ProposeDealy {
 		cdedata.ProposeDelayMatrix[newid][k] = v
 	}
@@ -835,6 +939,9 @@ func (cdedata *CDEdata) AddNewInstanceData(jtx JoinTx) {
 	}
 	for k,v := range jtx.Measureres.WriteDelay {
 		cdedata.WriteDelayMatrix[newid][k] = v
+	}
+	for k,v := range jtx.Measureres.HashDelay {
+		cdedata.HashDelayMatrix[newid][k] = v
 	}
 	for k,v := range jtx.InvMeasureres.ProposeDealy {
 		cdedata.ProposeDelayMatrix[k][newid] = v
@@ -845,9 +952,13 @@ func (cdedata *CDEdata) AddNewInstanceData(jtx JoinTx) {
 	for k,v := range jtx.InvMeasureres.WriteDelay {
 		cdedata.WriteDelayMatrix[k][newid] = v
 	}
+	for k,v := range jtx.Measureres.HashDelay {
+		cdedata.HashDelayMatrix[k][newid] = v
+	}
 	cdedata.ProposeDelayMatrix[newid][newid] = 0
 	cdedata.ValidationDelayMatrix[newid][newid] = 0
 	cdedata.WriteDelayMatrix[newid][newid] = 0
+	cdedata.HashDelayMatrix[newid][newid] = 0
 
 	sanitize := true
 	for _, id := range cdedata.Peers {
@@ -866,15 +977,18 @@ func (cdedata *CDEdata) GeneratePureDelayData() CDEPureDelayData {
 	cdep.ProposeDelayMatrix = make(map[int]map[int]int)
 	cdep.ValidationDelayMatrix = make(map[int]map[int]int)
 	cdep.WriteDelayMatrix = make(map[int]map[int]int)
+	cdep.HashDelayMatrix = make(map[int]map[int]int)
 
 	for _,v := range cdedata.Peers {
 		cdep.ProposeDelayMatrix[v] = make(map[int]int)
 		cdep.ValidationDelayMatrix[v] = make(map[int]int)
 		cdep.WriteDelayMatrix[v] = make(map[int]int)
+		cdep.HashDelayMatrix[v] = make(map[int]int)
 
 		cdep.ProposeDelayMatrix[v] = cdedata.ProposeDelayMatrix[v]
 		cdep.ValidationDelayMatrix[v] = cdedata.ValidationDelayMatrix[v]
 		cdep.WriteDelayMatrix[v] = cdedata.WriteDelayMatrix[v]
+		cdep.HashDelayMatrix[v] = cdedata.HashDelayMatrix[v]
 	}
 	return cdep
 }
@@ -888,6 +1002,7 @@ func (cdedata *CDEdata) UpdateUsingPureDelayData(cdep CDEPureDelayData) {
 			cdedata.ProposeDelayMatrix[u][v] = cdep.ProposeDelayMatrix[u][v]
 			cdedata.ValidationDelayMatrix[u][v] = cdep.ValidationDelayMatrix[u][v]
 			cdedata.WriteDelayMatrix[u][v] = cdep.WriteDelayMatrix[u][v]
+			cdedata.HashDelayMatrix[u][v] = cdep.HashDelayMatrix[u][v]
 		}
 		cdedata.sanitizationflag[u] = true
 	}
@@ -902,7 +1017,7 @@ func (cdedata *CDEdata) FetchTxBatch(txs []Transaction) {
 }
 
 func (cdedata *CDEdata) TxListValidateMultiThread(txlist []Transaction) bool {
-	ThreadNum := 4 // Thread number for tx validation
+	ThreadNum := 2 // Thread number for tx validation
 	results := make([]*bool, 0)
 	for i:=0; i<ThreadNum; i++ {
 		res := new(bool)

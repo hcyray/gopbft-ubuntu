@@ -274,10 +274,8 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 
 	//build current leader succession line and config
 	pbft.curConfigure = peerlist
-
 	pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curConfigure)
 
-	//pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
 
 	// test delay to existing node, the result is packed in join-tx
 	le := len(pbft.cdedata.Peers)
@@ -388,7 +386,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round==1 {
+					if pbft.cdeupdateflag && pbft.cdedata.Round==10 && pbft.currentHeight>=20 {
 						// mechanism1
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
@@ -403,7 +401,7 @@ func (pbft *PBFT) Run() {
 						delayv.UpdateWrite()
 						delayv.UpdatePropose()
 						mrmsg = datastruc.NewMeasurementResultMsg(pbft.cdedata.Id, pbft.cdedata.Round, pbft.cdedata.Peers,
-							delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, true,
+							delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, delayv.HashDelaydata,
 							pbft.cdedata.Pubkeystr,	pbft.cdedata.Prvkey)
 						closech<-true
 						pbft.cdedata.Recvmu.Unlock()
@@ -559,24 +557,13 @@ func (pbft *PBFT) Run() {
 						pbft.persis.commitlock.LockedHeight = pbft.currentHeight
 						curheight := pbft.currentHeight
 						pbft.CommitCurConsensOb()
-						//time.Sleep(time.Millisecond * 50)
 						elapsed := time.Since(pbft.singleconsensusstarttime).Milliseconds()
 						pbft.consensustimelog[curheight] = int(elapsed)
 						pbft.leaderlog[curheight] = pbft.succLine.CurLeader.Member.Id
-						//consensusdelay := 2000
 						pconsensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
-						//if pbft.currentHeight%LeaderLease==1 {
-						//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
-						//} else {
-						//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
-						//}
 						pbft.predictedconsensustimelog[curheight] = pconsensusdelay
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", curheight, "time costs:", elapsed, "ms")
-						//if curheight%LeaderLease==0 && curheight>=LeaderLease {
-						//	fmt.Println("consensustime =", pbft.consensustimelog)
-						//	fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
-						//}
 					}
 					pbft.mu.Unlock()
 					if pbft.reconfighappen {
@@ -1182,10 +1169,6 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.members = append(pbft.members, thejoinid)
 				pbft.membersexceptme = append(pbft.membersexceptme, thejoinid)
 
-				//if pbft.Id==0 {
-				//	fmt.Println("the config in config-block:", pbft.curblock.Configure)
-				//}
-
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
 				pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
@@ -1198,14 +1181,14 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				//}
 
 				balancehash := pbft.generateaccountbalancehash()
-				fmt.Println("INSTANCE", pbft.Id, "balance hash:", balancehash)
-				fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
+				//fmt.Println("INSTANCE", pbft.Id, "balance hash:", balancehash)
+				//fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
 				//pbft.succLine.SucclinePrint()
 				confighash := pbft.succLine.GetHash()
-				fmt.Println("INSTANCE", pbft.Id, "confighash:", confighash)
+				//fmt.Println("INSTANCE", pbft.Id, "confighash:", confighash)
 				cdedatahash := pbft.cdedata.GenerateStateHash()
-				fmt.Println("INSTANCE", pbft.Id, "cdedatahash:", cdedatahash)
-				fmt.Println("INSTANCE", pbft.Id, "ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
+				//fmt.Println("INSTANCE", pbft.Id, "cdedatahash:", cdedatahash)
+				//fmt.Println("INSTANCE", pbft.Id, "ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
 				pbft.systemhash[pbft.currentHeight] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
 				pbft.persis.blockhashlist[pbft.currentHeight] = pbft.curblockhash
 				pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
