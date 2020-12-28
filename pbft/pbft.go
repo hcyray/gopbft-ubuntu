@@ -1643,8 +1643,14 @@ func (pbft *PBFT) Stop() {
 		float64(pbft.acctx)/float64(time.Since(pbft.tpsstarttime).Seconds()))
 	fmt.Println("tps =", pbft.tps)
 	l1 := len(pbft.consensustimelog)
-	fmt.Println("consensustime =", pbft.consensustimelog[51:(l1-1)])
-	fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog[51:(l1-1)])
+	if l1>50 {
+		fmt.Println("consensustime =", pbft.consensustimelog[51:(l1-1)])
+		fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog[51:(l1-1)])
+	} else {
+		fmt.Println("consensustime =", pbft.consensustimelog)
+		fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
+	}
+
 	fmt.Println("viewchagnetime =", pbft.viewchangetimelog)
 	fmt.Println("inauguratetime =", pbft.inauguratetimelog)
 	time.Sleep(time.Second * 100)
