@@ -109,12 +109,14 @@ type PBFT struct {
 	starttime time.Time
 	tpsstarttime time.Time
 	singleconsensusstarttime time.Time
-	consensustimelog []int
+	consensustimelog map[int]int
+	predictedconsensustimelog map[int]int
+	leaderlog map[int]int
 	singleviewchangestarttime time.Time
 	viewchangetimelog []int
 	singleinauguratestarttime time.Time
 	inauguratetimelog []int
-	predictedconsensustimelog []int
+
 	tps []int
 	leaverequeststarttime time.Time
 
@@ -209,6 +211,10 @@ func (pbft *PBFT) initializeMapChan() {
 	pbft.sentnewviewmsg = make(map[datastruc.Term]bool)
 	pbft.clientaccount = make(map[int]string)
 	pbft.accountbalance = make(map[string]int)
+
+	pbft.consensustimelog = make(map[int]int)
+	pbft.predictedconsensustimelog = make(map[int]int)
+	pbft.leaderlog = make(map[int]int)
 }
 
 func (pbft *PBFT) initializeAccountBalance(clientpubkeystr map[int]string) {
@@ -359,7 +365,7 @@ func (pbft *PBFT) Run() {
 		//if elap>74 {
 		//	pbft.Stop()
 		//}
-		if pbft.currentHeight > 120 {
+		if pbft.currentHeight > 150 {
 			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=302 {
@@ -555,15 +561,16 @@ func (pbft *PBFT) Run() {
 						pbft.CommitCurConsensOb()
 						//time.Sleep(time.Millisecond * 50)
 						elapsed := time.Since(pbft.singleconsensusstarttime).Milliseconds()
-						pbft.consensustimelog = append(pbft.consensustimelog, int(elapsed))
+						pbft.consensustimelog[curheight] = int(elapsed)
+						pbft.leaderlog[curheight] = pbft.succLine.CurLeader.Member.Id
 						//consensusdelay := 2000
-						consensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
+						pconsensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
 						//if pbft.currentHeight%LeaderLease==1 {
 						//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay*2)
 						//} else {
 						//	pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
 						//}
-						pbft.predictedconsensustimelog = append(pbft.predictedconsensustimelog, consensusdelay)
+						pbft.predictedconsensustimelog[curheight] = pconsensusdelay
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", curheight, "time costs:", elapsed, "ms")
 						//if curheight%LeaderLease==0 && curheight>=LeaderLease {
@@ -1642,14 +1649,9 @@ func (pbft *PBFT) Stop() {
 		"total elapsed time is", time.Since(pbft.tpsstarttime).Seconds(), "s, average tps is",
 		float64(pbft.acctx)/float64(time.Since(pbft.tpsstarttime).Seconds()))
 	fmt.Println("tps =", pbft.tps)
-	l1 := len(pbft.consensustimelog)
-	if l1>50 {
-		fmt.Println("consensustime =", pbft.consensustimelog[51:(l1-1)])
-		fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog[51:(l1-1)])
-	} else {
-		fmt.Println("consensustime =", pbft.consensustimelog)
-		fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
-	}
+	fmt.Println("leader =", pbft.leaderlog)
+	fmt.Println("consensustime =", pbft.consensustimelog)
+	fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
 
 	fmt.Println("viewchagnetime =", pbft.viewchangetimelog)
 	fmt.Println("inauguratetime =", pbft.inauguratetimelog)
