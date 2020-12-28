@@ -363,7 +363,7 @@ func (pbft *PBFT) Run() {
 			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=302 {
-			// trigger this to test mechanism 2
+			// trigger this to test mechanism2
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
 			pbft.leaverequeststarttime = time.Now()
@@ -383,6 +383,7 @@ func (pbft *PBFT) Run() {
 				} else {
 					// update delay data before sending the first block
 					if pbft.cdeupdateflag && pbft.cdedata.Round==1 {
+						// mechanism1
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
 						start:=time.Now()
