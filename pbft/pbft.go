@@ -382,7 +382,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round==1 {
+					if pbft.cdeupdateflag && pbft.cdedata.Round==10 {
 						// mechanism1
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
