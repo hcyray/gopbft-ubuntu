@@ -355,15 +355,7 @@ func (serv *Server) BroadcastLoop() {
 			fmt.Println("server",serv.id, "stops its broadcasting loop, total Bytes send:", serv.bytesended/(1024),
 				"KB, total Bytes received from servers:", serv.byterecvfserver/1024, "KB, total Bytes received from clients:",
 				serv.byterecvfclient/1024, "KB, total tx with decoding error is", serv.decoderrortx)
-			bvt := []int{}
-			for i:=0; i<120; i++ {
-				if _, ok := serv.blockvalidatetime[i]; ok {
-					bvt = append(bvt, serv.blockvalidatetime[i])
-				} else {
-					bvt = append(bvt, 0)
-				}
-			}
-			fmt.Println("block validation time:", bvt)
+			fmt.Println("block validation time:", serv.blockvalidatetime)
 			break theloop
 		}
 	}
