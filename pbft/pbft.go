@@ -179,16 +179,16 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.initializeMapChan()
 	pbft.initializeAccountBalance(clientpubkeystr)
 	pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
-	//pbft.UpdateByzantineIdentity()
+	pbft.UpdateByzantineIdentity() //mechanism2 ,set byzantine leader
 	if pbft.isbyzantine {
 		fmt.Println("instance", pbft.Id, "is a byzantine guy")
 	}
 
 
-	//if pbft.Id==0 {
-	//	pbft.isleaving = true
-	//	fmt.Println("instance", pbft.Id, "will leave the system after a while")
-	//} // mechanism2测试
+	if pbft.Id==0 {
+		pbft.isleaving = true
+		fmt.Println("instance", pbft.Id, "will leave the system after a while")
+	} // mechanism2 set leaving node
 
 	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey, clientpubkeystr)
 
@@ -363,11 +363,11 @@ func (pbft *PBFT) Run() {
 		//if elap>74 {
 		//	pbft.Stop()
 		//}
-		if pbft.currentHeight > 180 {
+		if pbft.currentHeight > 80 {
 			pbft.Stop()
 		}
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 && false {
-			// trigger this to test mechanism2
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 {
+			// mechanism2, broadcast leaving request
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
 			pbft.leaverequeststarttime = time.Now()
@@ -386,7 +386,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round==1 && pbft.currentHeight>=20 {
+					if pbft.cdeupdateflag && pbft.cdedata.Round==1 && pbft.currentHeight>=20 && false {
 						// mechanism1
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
@@ -704,10 +704,6 @@ func (pbft *PBFT) statetransfermonitor() {
 }
 
 func (pbft *PBFT) UpdateByzantineIdentity() {
-	//start := 2
-	//if pbft.Id>=start && pbft.Id<start+pbft.fmax {
-	//	pbft.isbyzantine = true
-	//}
 	if pbft.Id==3 || pbft.Id==4 {
 		pbft.isbyzantine = true
 	}
@@ -1069,10 +1065,10 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
 
-			if pbft.currentHeight%15==0 {
-				fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
-				pbft.cdedata.PrintResult()
-			}
+			//if pbft.currentHeight%15==0 {
+			//	fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
+			//	pbft.cdedata.PrintResult()
+			//} // mechanism1
 
 
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
@@ -1426,7 +1422,7 @@ func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string,
 	}
 
 	if hasltx {
-		// mechanism2 && !pbft.isbyzantine
+		//mechanism2, decide to send new-viwe message or not, the condition:&& !pbft.isbyzantine
 		thekind = "withblock"
 		maxckpheight := 0
 		for _, vcmsg := range vcset {
