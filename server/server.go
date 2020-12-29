@@ -282,20 +282,26 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 			go serv.handleProposeResponseWoValidate(request[commandLength:])
 		case "proporesponw":
 			go serv.handleProposeResponseWithValidate(request[commandLength:])
-		case "writerespon":
-			go serv.handleWriteResponse(request[commandLength:])
+		case "writeresponwo":
+			go serv.handleWriteResponseWoHash(request[commandLength:])
+		case "writeresponw":
+			go serv.handleWriteResponseWithHash(request[commandLength:])
 		case "proporesponwofromold":
 			go serv.handleProposeResponseWoValidateFromOld(request[commandLength:])
 		case "proporesponwfromold":
 			go serv.handleProposeResponseWithValidateFromOld(request[commandLength:])
-		case "writeresponfromold":
-			go serv.handleWriteResponseFromOld(request[commandLength:])
+		case "writeresponwofromold":
+			go serv.handleWriteResponseWoHashFromOld(request[commandLength:])
+		case "writeresponwfromold":
+			go serv.handleWriteResponseWithHashFromOld(request[commandLength:])
 		case "proporesponwofromnew":
 			go serv.handleProposeResponseWoValidateFromNew(request[commandLength:])
 		case "proporesponwfromnew":
 			go serv.handleProposeResponseWithValidateFromNew(request[commandLength:])
-		case "writeresponfromnew":
-			go serv.handleWriteResponseFromNew(request[commandLength:])
+		case "writeresponwofromnew":
+			go serv.handleWriteResponseWoHashFromNew(request[commandLength:])
+		case "writeresponwfromnew":
+			go serv.handleWriteResponseWithHashFromNew(request[commandLength:])
 		case "measurement":
 			go serv.handleMeasurementRes(request[commandLength:])
 		case "singlemeasurement":
@@ -990,14 +996,39 @@ func (serv *Server) handleProposeResponseWithValidate(conten []byte) {
 	serv.cderesponserecvCh <- datarecv
 }
 
-func (serv *Server) handleWriteResponse(conten []byte) {
-	datarecv := datastruc.DataReceived{"writerespon", conten}
+func (serv *Server) handleWriteResponseWoHash(conten []byte) {
+	datarecv := datastruc.DataReceived{"writeresponwo", conten}
+	serv.cderesponserecvCh <- datarecv
+}
+
+func (serv *Server) handleWriteResponseWithHash(conten []byte) {
+	datarecv := datastruc.DataReceived{"writeresponw", conten}
+	serv.cderesponserecvCh <- datarecv
+}
+
+func (serv *Server) handleWriteResponseWoHashFromOld(conten []byte) {
+	datarecv := datastruc.DataReceived{"writeresponwofromold", conten}
+	serv.cderesponserecvCh <- datarecv
+}
+
+func (serv *Server) handleWriteResponseWithHashFromOld(conten []byte) {
+	datarecv := datastruc.DataReceived{"writeresponwfromold", conten}
 	serv.cderesponserecvCh <- datarecv
 }
 
 func (serv *Server) handleProposeTestFromNew(conten []byte) {
 	datarecv := datastruc.DataReceived{"proposetestfromnew", conten}
 	serv.cdetestrecvCh <- datarecv
+}
+
+func (serv *Server) handleWriteResponseWoHashFromNew(conten []byte) {
+	datarecv := datastruc.DataReceived{"writeresponwofromnew", conten}
+	serv.cderesponserecvCh <- datarecv
+}
+
+func (serv *Server) handleWriteResponseWithHashFromNew(conten []byte) {
+	datarecv := datastruc.DataReceived{"writeresponwfromnew", conten}
+	serv.cderesponserecvCh <- datarecv
 }
 
 func (serv *Server) handleWriteTestFromNew(conten []byte) {

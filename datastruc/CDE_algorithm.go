@@ -106,6 +106,7 @@ func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp,
 	cde.BroadcastCh = broadCh
 	cde.RecvTestCh = recvtestch
 	cde.RecvResponseCh = recvresponsech
+
 	cde.RecvProposeResponWoCh = make(chan DataReceived)
 	cde.RecvProposeResponWCh = make(chan DataReceived)
 	cde.RecvWriteResponWoCh = make(chan DataReceived)
@@ -355,7 +356,6 @@ theloop:
 			case "proporesponw":
 				cdedata.RecvProposeResponWCh <- theresponse
 			case "writeresponwo":
-				fmt.Println("RECEIVE A writeresponwo")
 				cdedata.RecvWriteResponWoCh <- theresponse
 			case "writeresponw":
 				cdedata.RecvWriteResponWCh <- theresponse
@@ -363,14 +363,18 @@ theloop:
 				cdedata.RecvProposeResponWoFromNewCh <- theresponse
 			case "proporesponwfromnew":
 				cdedata.RecvProposeResponWFromNewCh <- theresponse
-			case "writeresponwofromold":
-				cdedata.RecvWriteResponWoFromOldCh <- theresponse
-			case "writeresponwfromnew":
-				cdedata.RecvWriteResponWoFromNewCh <- theresponse
 			case "proporesponwofromold":
 				cdedata.RecvProposeResponWoFromOldCh <- theresponse
 			case "proporesponwfromold":
 				cdedata.RecvProposeResponWFromOldCh <- theresponse
+			case "writeresponwofromold":
+				cdedata.RecvWriteResponWoFromOldCh <- theresponse
+			case "writeresponwfromold":
+				cdedata.RecvWriteResponWFromOldCh <- theresponse
+			case "writeresponwofromnew":
+				cdedata.RecvWriteResponWoFromNewCh <- theresponse
+			case "writeresponwfromnew":
+				cdedata.RecvWriteResponWoFromNewCh <- theresponse
 			}
 		case <-closeCh:
 			//fmt.Println("CDEResponseMonitor function exits")
