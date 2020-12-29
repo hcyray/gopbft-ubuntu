@@ -274,7 +274,7 @@ theloop:
 			} else {
 				fmt.Println("the received write-response round number not matchs, current round:", delayv.Round, "response round:", wrr.Round)
 			}
-		case theresponse :=<- delayv.RecvWriteResponWCh:
+		case theresponse :=<- delayv.RecvWriteResponWFromOldCh:
 			// decode response
 			var wrr WriteResponseWithValidateMsg
 			wrr.Deserialize(theresponse.Msg)
