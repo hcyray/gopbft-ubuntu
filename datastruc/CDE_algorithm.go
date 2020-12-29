@@ -751,7 +751,7 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	fmt.Println("new instance creates join-tx")
 	jtx := NewJoinTx(cdedata.Id, cdedata.IpAddr, mrmsg, imrmsg, cdedata.Pubkeystr, cdedata.Prvkey)
 	fmt.Println("instance", cdedata.Id, "update at round", cdedata.Round, "completes")
-	//cdedata.Round += 1
+	cdedata.Round += 1
 	fmt.Println("the join-tx:", jtx)
 	fmt.Println("measurement msg, propose_validate_write_hash delay:", mrmsg.ProposeDealy, mrmsg.ValidateDelay, mrmsg.WriteDelay, mrmsg.HashDelay)
 	fmt.Println("inv measurement msg, propose_validate_write_hash delay:", imrmsg.ProposeDealy, imrmsg.ValidateDelay, imrmsg.WriteDelay, imrmsg.HashDelay)
