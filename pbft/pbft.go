@@ -277,7 +277,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curConfigure)
 
 
-	// test delay to existing node, the result is packed in join-tx
+	// test delay between itself and existing nodes the result is packed in join-tx
 	le := len(pbft.cdedata.Peers)
 	tmp := make([]int, le)
 	copy(tmp, pbft.cdedata.Peers)
@@ -366,7 +366,7 @@ func (pbft *PBFT) Run() {
 		if pbft.currentHeight > 150 {
 			pbft.Stop()
 		}
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=302 {
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 && false {
 			// trigger this to test mechanism2
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
@@ -1067,7 +1067,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
 
-			if pbft.currentHeight%10==0 {
+			if pbft.currentHeight%15==0 {
 				fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
 				pbft.cdedata.PrintResult()
 			}

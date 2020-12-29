@@ -150,10 +150,6 @@ func (cdedata *CDEdata) responseProposeWoValidate(proposetestmsg ProposeTestMsg,
 	if replytonew {
 		destip := make([]string, 0)
 		tmp := proposetestmsg.IpAddr
-		//le := len(tmp)
-		//theipprefix := tmp[0:(le-1)]
-		//theremoteip := theipprefix + strconv.Itoa(cdedata.Id)
-		//destip = append(destip, theremoteip)
 		destip = append(destip, tmp)
 		datatosend := DatatosendWithIp{destip, "proporesponwofromold", content}
 		cdedata.SendCh <- datatosend
@@ -364,14 +360,14 @@ theloop:
 				cdedata.RecvProposeResponWoFromNewCh <- theresponse
 			case "proporesponwfromnew":
 				cdedata.RecvProposeResponWFromNewCh <- theresponse
-			case "writeresponfromnew":
+			case "writeresponwofromold":
+				cdedata.RecvWriteResponWoFromOldCh <- theresponse
+			case "writeresponwfromnew":
 				cdedata.RecvWriteResponWoFromNewCh <- theresponse
 			case "proporesponwofromold":
 				cdedata.RecvProposeResponWoFromOldCh <- theresponse
 			case "proporesponwfromold":
 				cdedata.RecvProposeResponWFromOldCh <- theresponse
-			case "writeresponwofromold":
-				cdedata.RecvWriteResponWoFromOldCh <- theresponse
 			}
 		case <-closeCh:
 			//fmt.Println("CDEResponseMonitor function exits")
@@ -683,17 +679,21 @@ func (cdedata *CDEdata) GenerateStateHash() [32]byte {
 
 func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 
-	//// update write new->system
-	fmt.Println("new instance starts update delay new --> system")
+
 	closech := make(chan bool)
+	cdedata.Recvmu.Lock()
 	go cdedata.CDEResponseMonitor(closech)
+
+
+	// update write new->system, then update propose new->system
+	fmt.Println("new instance starts update delay new --> system")
 	delayv := cdedata.CreateDelayVector(txbatch)
 	delayv.UpdateWriteAtNew()
 	time.Sleep(time.Millisecond * 20)
 	// update propose new->sytem
 	delayv.UpdateProposeAtNew()
-	delayv.PrintResult()
-	closech<-true
+	delayv.PrintResult() // print delay it->system
+	//closech<-true
 	mrmsg := NewMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, delayv.ProposeDelaydata,
 		delayv.WriteDelaydata, delayv.ValidationDelaydata, delayv.HashDelaydata, cdedata.Pubkeystr, cdedata.Prvkey)
 	time.Sleep(time.Millisecond * 20)
@@ -715,12 +715,14 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	}
 	imrmsg := NewInverseMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, inverseproposedelay,
 		inversevalidatedelay, inversewritedelay, inversehashdelay, cdedata.Pubkeystr, cdedata.Prvkey)
+	// print delay system->it
 	fmt.Println("inverse propose-delay is", inverseproposedelay)
 	fmt.Println("inverse validate-delay is", inversevalidatedelay)
 	fmt.Println("inverse write-delay is", inversewritedelay)
 	fmt.Println("inverse hash-delay is", inversehashdelay)
 
 	closech<-true
+	cdedata.Recvmu.Unlock()
 
 
 	// create join-tx for new instance
@@ -816,9 +818,9 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 	cdedata.mu.Lock()
 	defer cdedata.mu.Unlock()
 
-	newcdedata := cdedata.CopyData()
+	newcdedata := cdedata.CopyData() // current cdedata dimension is N-1
 	fmt.Println("invoke consensus delay calculation")
-	newcdedata.AddNewInstanceData(jtx)
+	newcdedata.AddNewInstanceData(jtx) // cdedata dimension becomes N after adding the  new node
 
 	blockdelay := newcdedata.ProposeDelayConvertToMatrix()
 	validatedelay := newcdedata.ValidationDelayConverToMatrix()

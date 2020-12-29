@@ -120,13 +120,12 @@ theloop:
 		case <-thetimer.C:
 			break theloop
 		case theresponse :=<- delayv.RecvWriteResponWoCh:
-			// decode response
-			var wrr WriteResponseWoValidateMsg
+			var wrr WriteResponseWoValidateMsg // decode response
 			wrr.Deserialize(theresponse.Msg)
 			// check correctness
 			if delayv.Round==wrr.Round {
 				t1[wrr.Testee] = int(time.Since(starttime).Milliseconds())
-				delayv.WriteDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()/2)
+				delayv.WriteDelaydata[wrr.Testee] = t1[wrr.Testee]/2
 				// check if all delay data is updated
 				if AllUpdated(delayv.WriteDelaydata, delayv.HashDelaydata, MAXWAITTIME) {
 					break theloop
@@ -135,8 +134,7 @@ theloop:
 				fmt.Println("the received write-response round number not matchs, current round:", delayv.Round, "response round:", wrr.Round)
 			}
 		case theresponse :=<- delayv.RecvWriteResponWCh:
-			// decode response
-			var wrr WriteResponseWithValidateMsg
+			var wrr WriteResponseWithValidateMsg // decode response
 			wrr.Deserialize(theresponse.Msg)
 			// check correctness
 			if delayv.Round==wrr.Round {
@@ -205,7 +203,7 @@ theloop:
 				// update delay vector
 				t1[ppr.Testee] = int(time.Since(starttime).Milliseconds())
 				// tend to overestimate propose-delay
-				delayv.ProposeDelaydata[ppr.Testee] = int(time.Since(starttime).Milliseconds()) / 2
+				delayv.ProposeDelaydata[ppr.Testee] = t1[ppr.Testee] / 2
 				// check if all items updated, if so, exit
 				if AllUpdated(delayv.ProposeDelaydata, delayv.ValidationDelaydata, MAXWAITTIME) {
 					break theloop
@@ -269,7 +267,7 @@ theloop:
 			// update delay vector
 			if delayv.Round==wrr.Round {
 				t1[wrr.Testee] = int(time.Since(starttime).Milliseconds())
-				delayv.WriteDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()/2)
+				delayv.WriteDelaydata[wrr.Testee] = t1[wrr.Testee]/2
 				if AllUpdated(delayv.WriteDelaydata, delayv.HashDelaydata, MAXWAITTIME) {
 					break theloop
 				}
@@ -319,8 +317,6 @@ func (delayv *DelayVector) UpdateProposeAtNew() {
 		delayv.ProposeDelaydata[v] = MAXWAITTIME
 		delayv.ValidationDelaydata[v] = MAXWAITTIME
 	}
-	delayv.ProposeDelaydata[delayv.Tester] = 0
-	delayv.ValidationDelaydata[delayv.Tester] = 0
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)
 	t1 := make(map[int]int)
 	for _, v := range delayv.Peers {
