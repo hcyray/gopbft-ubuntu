@@ -298,8 +298,6 @@ func (delayv *DelayVector) UpdateProposeAtNew() {
 	// send propose
 	rann := uint64(time.Now().Unix())
 	ppmsg := NewProposeMsg(delayv.Tester, delayv.Round, delayv.IpAddr, delayv.Txbatch, rann)
-	starttime := time.Now()
-
 	var buff bytes.Buffer
 	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&buff)
@@ -309,9 +307,9 @@ func (delayv *DelayVector) UpdateProposeAtNew() {
 	}
 	content := buff.Bytes()
 	datatosend := Datatosend{delayv.Peers, "proposetestfromnew", content}
-
 	delayv.BroadcastCh <- datatosend // question, hope this won't block or take too much time
 
+	starttime := time.Now()
 	// wait for reponse
 	for _,v:=range delayv.Peers {
 		delayv.ProposeDelaydata[v] = MAXWAITTIME
@@ -322,7 +320,6 @@ func (delayv *DelayVector) UpdateProposeAtNew() {
 	for _, v := range delayv.Peers {
 		t1[v] = 0
 	}
-
 theloop:
 	for {
 		select {
