@@ -179,7 +179,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.initializeMapChan()
 	pbft.initializeAccountBalance(clientpubkeystr)
 	pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
-	pbft.UpdateByzantineIdentity() //mechanism2 ,set byzantine leader
+	//pbft.UpdateByzantineIdentity() //mechanism2 ,set byzantine leader
 	if pbft.isbyzantine {
 		fmt.Println("instance", pbft.Id, "is a byzantine guy")
 	}
@@ -562,8 +562,9 @@ func (pbft *PBFT) Run() {
 						elapsed := time.Since(pbft.singleconsensusstarttime).Milliseconds()
 						pbft.consensustimelog[curheight] = int(elapsed)
 						pbft.leaderlog[curheight] = pbft.succLine.CurLeader.Member.Id
-						pconsensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
-						pbft.predictedconsensustimelog[curheight] = pconsensusdelay
+						//pconsensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
+						//pbft.predictedconsensustimelog[curheight] = pconsensusdelay // turnoff this when testing mechanism2
+
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", curheight, "time costs:", elapsed, "ms")
 					}
