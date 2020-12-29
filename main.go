@@ -114,8 +114,8 @@ func main() {
 
 		clientnumber := 32
 		instanceoneachserver := 1
-		initialserver := 4
-		lateserver := 1 // mechanism1测试
+		initialserver := 9
+		lateserver := 0 // mechanism1测试
 		totalserver := initialserver + lateserver
 		// read client pubkeys
 		ck := ReadClientKeys(os.Args[2])
@@ -143,7 +143,7 @@ func main() {
 				fmt.Println("the ", i, "client starts")
 			}
 		}
-		time.Sleep(time.Second * 60)
+		time.Sleep(time.Second * 120)
 	} else {
 		fmt.Printf("tmp is ", tmp)
 	}
