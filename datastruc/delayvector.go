@@ -122,7 +122,6 @@ theloop:
 		case theresponse :=<- delayv.RecvWriteResponWoCh:
 			var wrr WriteResponseWoValidateMsg // decode response
 			wrr.Deserialize(theresponse.Msg)
-			fmt.Println("receive a write response without hash from", wrr.Testee)
 			// check correctness
 			if delayv.Round==wrr.Round {
 				t1[wrr.Testee] = int(time.Since(starttime).Milliseconds())
@@ -137,7 +136,6 @@ theloop:
 		case theresponse :=<- delayv.RecvWriteResponWCh:
 			var wrr WriteResponseWithValidateMsg // decode response
 			wrr.Deserialize(theresponse.Msg)
-			fmt.Println("receive a write response with hash from", wrr.Testee)
 			// check correctness
 			if delayv.Round==wrr.Round {
 				delayv.HashDelaydata[wrr.Testee] = int(time.Since(starttime).Milliseconds()) - t1[wrr.Testee]

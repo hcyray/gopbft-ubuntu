@@ -769,7 +769,7 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 	//cdedata.mu.Lock()
 	//defer cdedata.mu.Unlock()
 
-
+	fmt.Println("calculate consensus delay,     Leader:", l, "Total:", N, "Quorumsize:", Q)
 	blockdelay := cdedata.ProposeDelayConvertToMatrix()
 	validatedelay := cdedata.ValidationDelayConverToMatrix()
 	votedelay := cdedata.WriteDelayConvertToMatrix()
