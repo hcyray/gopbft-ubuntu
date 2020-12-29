@@ -92,10 +92,12 @@ func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp,
 		cde.ProposeDelayMatrix[v] = make(map[int]int)
 		cde.WriteDelayMatrix[v] = make(map[int]int)
 		cde.ValidationDelayMatrix[v] = make(map[int]int)
+		cde.HashDelayMatrix[v] = make(map[int]int)
 		for i:=0; i<le; i++ {
 			cde.ProposeDelayMatrix[v][i] = MAXWAITTIME
 			cde.WriteDelayMatrix[v][i] = MAXWAITTIME
 			cde.ValidationDelayMatrix[v][i] = MAXWAITTIME
+			cde.HashDelayMatrix[v][i] = MAXWAITTIME
 		}
 	}
 
