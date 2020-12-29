@@ -363,7 +363,7 @@ func (pbft *PBFT) Run() {
 		//if elap>74 {
 		//	pbft.Stop()
 		//}
-		if pbft.currentHeight > 150 {
+		if pbft.currentHeight > 80 {
 			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 && false {
@@ -399,7 +399,9 @@ func (pbft *PBFT) Run() {
 						pbft.cdedata.Recvmu.Lock()
 						go pbft.cdedata.CDEResponseMonitor(closech)
 						delayv.UpdateWrite()
+						fmt.Println("update write and hash complete")
 						delayv.UpdatePropose()
+						fmt.Println("update propose and validate complete")
 						mrmsg = datastruc.NewMeasurementResultMsg(pbft.cdedata.Id, pbft.cdedata.Round, pbft.cdedata.Peers,
 							delayv.ProposeDelaydata, delayv.WriteDelaydata, delayv.ValidationDelaydata, delayv.HashDelaydata,
 							pbft.cdedata.Pubkeystr,	pbft.cdedata.Prvkey)

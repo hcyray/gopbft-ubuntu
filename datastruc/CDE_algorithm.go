@@ -355,6 +355,7 @@ theloop:
 			case "proporesponw":
 				cdedata.RecvProposeResponWCh <- theresponse
 			case "writeresponwo":
+				fmt.Println("RECEIVE A writeresponwo")
 				cdedata.RecvWriteResponWoCh <- theresponse
 			case "writeresponw":
 				cdedata.RecvWriteResponWCh <- theresponse
