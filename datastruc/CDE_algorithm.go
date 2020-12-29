@@ -223,8 +223,8 @@ func (cdedata *CDEdata) responseProposeWithValidate(proposetestmsg ProposeTestMs
 	}
 }
 
-func (cdedata *CDEdata) responseWriteWoValidate(writetestmsg WriteTestMsg, replytonew bool) {
-	wrrmsg := NewWriteResponseWoValidateMsg(cdedata.Id, writetestmsg.Round, writetestmsg.Challange)
+func (cdedata *CDEdata) responseWriteWoHash(writetestmsg WriteTestMsg, replytonew bool) {
+	wrrmsg := NewWriteResponseWoHashMsg(cdedata.Id, writetestmsg.Round, writetestmsg.Challange)
 	var buff bytes.Buffer
 	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&buff)
@@ -248,7 +248,7 @@ func (cdedata *CDEdata) responseWriteWoValidate(writetestmsg WriteTestMsg, reply
 	}
 }
 
-func (cdedata *CDEdata) responseWriteWithValidate(writetestmsg WriteTestMsg, replytonew bool) {
+func (cdedata *CDEdata) responseWriteWithHash(writetestmsg WriteTestMsg, replytonew bool) {
 	var hv [32]byte
 
 	if replytonew {
@@ -256,7 +256,7 @@ func (cdedata *CDEdata) responseWriteWithValidate(writetestmsg WriteTestMsg, rep
 			time.Sleep(time.Duration(50)*time.Millisecond)
 		} else {
 			t := 0
-			for _,v := range cdedata.validatetxbatachtime {
+			for _,v := range cdedata.hashgeneratetime {
 				t += v
 			}
 			t = t/len(cdedata.hashgeneratetime)
@@ -270,10 +270,12 @@ func (cdedata *CDEdata) responseWriteWithValidate(writetestmsg WriteTestMsg, rep
 			EncodeInt(&content, i)
 		}
 		hv = sha256.Sum256(content)
-		fmt.Println("instance", cdedata.Id, "generate_account_balance_hash_costs", time.Since(start).Milliseconds(), "ms")
+		elaps := int(time.Since(start).Milliseconds())
+		cdedata.hashgeneratetime = append(cdedata.hashgeneratetime, elaps)
+		fmt.Println("instance", cdedata.Id, "generate_account_balance_hash_costs", elaps, "ms")
 	}
 
-	wrrmsg := NewWriteResponseWithValidateMsg(cdedata.Id, writetestmsg.Round, writetestmsg.Challange, hv)
+	wrrmsg := NewWriteResponseWithHashMsg(cdedata.Id, writetestmsg.Round, writetestmsg.Challange, hv)
 	var buff bytes.Buffer
 	gob.Register(elliptic.P256())
 	enc := gob.NewEncoder(&buff)
@@ -312,8 +314,8 @@ theloop:
 			case "writetest":
 				var writetest WriteTestMsg
 				writetest.Deserialize(thetest.Msg)
-				go cdedata.responseWriteWoValidate(writetest, false)
-				go cdedata.responseWriteWithValidate(writetest, false)
+				go cdedata.responseWriteWoHash(writetest, false)
+				go cdedata.responseWriteWithHash(writetest, false)
 			case "proposetestfromnew":
 				var proposetest ProposeTestMsg
 				proposetest.Deserialize(thetest.Msg)
@@ -323,8 +325,8 @@ theloop:
 				var writetest WriteTestMsg
 				writetest.Deserialize(thetest.Msg)
 				fmt.Println("instance", cdedata.Id, "receives a write-test from new")
-				go cdedata.responseWriteWoValidate(writetest, true)
-				go cdedata.responseWriteWithValidate(writetest, true)
+				go cdedata.responseWriteWoHash(writetest, true)
+				go cdedata.responseWriteWithHash(writetest, true)
 			case "proposetestfromold":
 				var proposetest ProposeTestMsg
 				proposetest.Deserialize(thetest.Msg)
@@ -334,8 +336,8 @@ theloop:
 				var writetest WriteTestMsg
 				writetest.Deserialize(thetest.Msg)
 				//fmt.Println("instance", cdedata.Id, "receives a write-test from old instance")
-				go cdedata.responseWriteWoValidate(writetest, false)
-				go cdedata.responseWriteWithValidate(writetest, false)
+				go cdedata.responseWriteWoHash(writetest, false)
+				go cdedata.responseWriteWithHash(writetest, false)
 			}
 		case <-closeCh:
 			//fmt.Println("CDEResponseMonitor function exits")

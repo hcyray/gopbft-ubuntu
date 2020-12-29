@@ -180,7 +180,7 @@ func NewProposeResponseWithValidateMsg(id int, round int, challeng uint64, resli
 	return pprmsg
 }
 
-func NewWriteResponseWoValidateMsg(id int, round int, challeng uint64) WriteResponseWoValidateMsg {
+func NewWriteResponseWoHashMsg(id int, round int, challeng uint64) WriteResponseWoValidateMsg {
 	wrrmsg := WriteResponseWoValidateMsg{}
 
 	wrrmsg.Challange = challeng
@@ -189,7 +189,7 @@ func NewWriteResponseWoValidateMsg(id int, round int, challeng uint64) WriteResp
 	return wrrmsg
 }
 
-func NewWriteResponseWithValidateMsg(id int, round int, challeng uint64, hv [32]byte) WriteResponseWithValidateMsg {
+func NewWriteResponseWithHashMsg(id int, round int, challeng uint64, hv [32]byte) WriteResponseWithValidateMsg {
 	wrrmsg := WriteResponseWithValidateMsg{}
 
 	wrrmsg.Hashvalue = hv
