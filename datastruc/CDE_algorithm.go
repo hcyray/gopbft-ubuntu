@@ -395,7 +395,7 @@ func (cdedata *CDEdata) CDEInformTestMonitor() {
 }
 
 func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
-	//fmt.Println("instance ", cdedata.Id, " starts full testing for new instance", reqtest.Testee)
+	fmt.Println("instance ", cdedata.Id, " starts full testing new instance", reqtest.Testee)
 	testee := reqtest.Testee
 	testeeip := reqtest.IpAddr
 	delays := make([]int, 0)
@@ -442,13 +442,18 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 				t1 = int(time.Since(starttime1).Milliseconds())
 				delays[0] = t1/2
 				//fmt.Println("instance", cdedata.Id, "measure write-delay to new instance: ", cdedata.Id, " --> ", testee, ":", delays[0])
-				break theloop1
+				if delays[0]<MAXWAITTIME && delays[1]<MAXWAITTIME {
+					break theloop1
+				}
 			}
 		case theresponse := <- cdedata.RecvWriteResponWCh:
 			var wrr WriteResponseWithValidateMsg
 			wrr.Deserialize(theresponse.Msg)
 			if wrr.Testee==testee && wrr.Challange==rann {
 				delays[1] = int(time.Since(starttime1).Milliseconds()) - t1
+				if delays[0]<MAXWAITTIME && delays[1]<MAXWAITTIME {
+					break theloop1
+				}
 			}
 		}
 	}
@@ -486,6 +491,9 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 			if ppr.Round==cdedata.Round && ppr.Challange==rann {
 				t2 = int(time.Since(starttime2).Milliseconds())
 				delays[2] = t2 / 2
+				if delays[2]<MAXWAITTIME && delays[3]<MAXWAITTIME {
+					break theloop2
+				}
 			} else {
 				//fmt.Println("isntance", cdedata.Id, "wrong measures propose-delay, ", cdedata.Id, " --> ", testee, ":", delays[1])
 			}
@@ -495,6 +503,9 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 			if ppr.Round==cdedata.Round && ppr.Challange==rann {
 				delays[3] = int(time.Since(starttime2).Milliseconds()) - t2
 				//fmt.Println("instance", cdedata.Id, "measure validate-delay to new instance: ", cdedata.Id, "--> ", testee, ":", delays[2])
+				if delays[2]<MAXWAITTIME && delays[3]<MAXWAITTIME {
+					break theloop2
+				}
 			}
 		}
 	}
@@ -508,6 +519,7 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 	fmt.Println("instance", cdedata.Id, "completes test for new node, propose_validate_write_hashgenerate delay respectively is",
 		delays[2], delays[3], delays[0], delays[1])
 	smmsg := NewSingleMeasurement(cdedata.Id, testee, delays, cdedata.Pubkeystr, cdedata.Prvkey)
+	fmt.Println("single measurement result:", smmsg)
 	var buff3 bytes.Buffer
 	gob.Register(elliptic.P256())
 	enc3 := gob.NewEncoder(&buff3)
@@ -707,6 +719,9 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 		delayv.WriteDelaydata, delayv.ValidationDelaydata, delayv.HashDelaydata, cdedata.Pubkeystr, cdedata.Prvkey)
 	time.Sleep(time.Millisecond * 20)
 
+	closech<-true
+	cdedata.Recvmu.Unlock() // cdedata.CDEResponseMonitor
+
 	// for node in system: update node->new one by one
 	go cdedata.CDETestMonitor(closech)
 	inverseproposedelay := make(map[int]int)
@@ -730,9 +745,7 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	fmt.Println("inverse write-delay is", inversewritedelay)
 	fmt.Println("inverse hash-delay is", inversehashdelay)
 
-	closech<-true
-	cdedata.Recvmu.Unlock()
-
+	closech<-true // stop cdedata.CDETestMonitor(closech)
 
 	// create join-tx for new instance
 	fmt.Println("new instance creates join-tx")
