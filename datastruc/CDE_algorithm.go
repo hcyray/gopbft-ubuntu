@@ -847,7 +847,7 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 	blockdelay := newcdedata.ProposeDelayConvertToMatrix()
 	validatedelay := newcdedata.ValidationDelayConverToMatrix()
 	votedelay := newcdedata.WriteDelayConvertToMatrix()
-	hashdelay := cdedata.HashDelayConvertToMatrix()
+	hashdelay := newcdedata.HashDelayConvertToMatrix()
 
 	Time_recv_pre_prepare := make([]int, N)
 	Time_recv_prepare := make([][]int, N)
