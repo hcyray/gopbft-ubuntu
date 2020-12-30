@@ -61,6 +61,7 @@ type PBFT struct {
 	senddatabyIpCh chan datastruc.DatatosendWithIp
 	broadcdataCh chan datastruc.Datatosend
 	memberidchangeCh chan datastruc.DataMemberChange
+	leaderpkchangeCh chan datastruc.DataLeaderPKChange
 	prepreparedCh chan datastruc.Progres
 	preparedCh chan datastruc.Progres
 	committedCh chan datastruc.Progres
@@ -126,7 +127,8 @@ type PBFT struct {
 
 func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[int]string, msgbuf *datastruc.MessageBuffer,
 	starttime time.Time, sendCh chan datastruc.DatatosendWithIp,
-	broadCh chan datastruc.Datatosend, memberidchangeCh chan datastruc.DataMemberChange, censorshipmonitorCh chan [32]byte,
+	broadCh chan datastruc.Datatosend, memberidchangeCh chan datastruc.DataMemberChange, leaderpkchangeCh chan datastruc.DataLeaderPKChange,
+	censorshipmonitorCh chan [32]byte,
 	statetransferqueryCh chan datastruc.QueryStateTransMsg, statetransferreplyCh chan datastruc.ReplyStateTransMsg,
 	cdetestrecvch chan datastruc.DataReceived, cderesponserecvch chan datastruc.DataReceived,
 	RecvInformTestCh chan datastruc.RequestTestMsg, recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB,
@@ -166,6 +168,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.senddatabyIpCh = sendCh
 	pbft.broadcdataCh = broadCh
 	pbft.memberidchangeCh = memberidchangeCh
+	pbft.leaderpkchangeCh = leaderpkchangeCh
 	pbft.censorshipmonitorCh = censorshipmonitorCh
 	pbft.statetransferquerymonitorCh = statetransferqueryCh
 	pbft.statetransferreplyCh = statetransferreplyCh
@@ -1011,6 +1014,7 @@ func (pbft *PBFT) resetVariForViewChange() {
 	// consensus status change?
 	pbft.succLine.RotateLeader()
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
+	pbft.leaderpkchangeCh<-datastruc.DataLeaderPKChange{pbft.curleaderPubKeystr}
 	if pbft.PubKeystr == pbft.curleaderPubKeystr {
 		pbft.isleader = true
 	} else {

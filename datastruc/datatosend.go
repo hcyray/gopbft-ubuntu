@@ -17,6 +17,10 @@ type DataMemberChange struct {
 	IpPortAddr string
 }
 
+type DataLeaderPKChange struct {
+	LeaderPK string
+}
+
 type DatatosendWithIp struct {
 	DestIp []string
 	MsgType string
