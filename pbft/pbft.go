@@ -901,7 +901,7 @@ func (pbft *PBFT) scanNewView(ver, view int, leaderpubkey string) {
 						log.Panic("instance ", pbft.Id," realizes it's lost when analysing new-view msg")
 					} else if pbft.persis.commitlock.LockedHeight==nvmsg.CKpoint {
 						if nvmsg.Clock.LockedHeight==0 {
-							log.Panic("instance", pbft.Id, "finds a reproposed pre-prepare msg in the new-view msg, stop executing")
+							log.Panic("instance ", pbft.Id, " finds a reproposed pre-prepare msg in the new-view msg, stop executing")
 							// case1 the nvmsg has only reproposed pre-prepare
 							//pbft.remainblocknuminnewview = len(nvmsg.PPMsgSet)
 							//for _, pppmsg := range nvmsg.PPMsgSet {
@@ -915,13 +915,13 @@ func (pbft *PBFT) scanNewView(ver, view int, leaderpubkey string) {
 						} else {
 							// case2 the nvmsg has only commit-lock, which is higher than local commit height
 							pbft.succLine.SucclinePrint()
-							log.Panic("instance", pbft.Id, "finds a commit-lock in the new-view msg from", nvmsg.Pubkey, "while it only prepares it, stop executing")
+							log.Panic("instance ", pbft.Id, " finds a commit-lock in the new-view msg from", nvmsg.Pubkey, "while it only prepares it, stop executing")
 							// TODO, query and commit that block
 							//fmt.Println("I'm instance", pbft.Id, "and I'm lost!")
 						}
 					} else if pbft.persis.commitlock.LockedHeight==nvmsg.CKpoint+1 {
 						if nvmsg.Clock.LockedHeight==0 {
-							log.Panic("instance", pbft.Id, "finds a prepare-lock in the new-view msg but it has commit-lock at that height, stop executing")
+							log.Panic("instance ", pbft.Id, " finds a prepare-lock in the new-view msg but it has commit-lock at that height, stop executing")
 							// case1 the nvmsg has only reproposed pre-prepare, but this pre-prepare is exexuted locally, avoid re-excution
 							//pbft.remainblocknuminnewview = len(nvmsg.PPMsgSet)
 							//for _, pppmsg := range nvmsg.PPMsgSet {
@@ -937,7 +937,7 @@ func (pbft *PBFT) scanNewView(ver, view int, leaderpubkey string) {
 							// query lost blocks, hoping this condition will never trigger after state recovery
 							if nvmsg.Bloc.Blockhead.Height==0 {
 								// means there is no config-block in new-view msg
-								fmt.Println("instance",pbft.Id,"local committed height equals the new-view msg commit-locked height, enters the next height, the leade will freely propose")
+								fmt.Println("instance ",pbft.Id," local committed height equals the new-view msg commit-locked height, enters the next height, the leade will freely propose")
 								pbft.remainblocknuminnewview = 0
 								pbft.mu.Unlock()
 								pbft.inauguratedCh <- datastruc.Progres{ver, view, pbft.persis.commitlock.LockedHeight + 1}
@@ -947,7 +947,7 @@ func (pbft *PBFT) scanNewView(ver, view int, leaderpubkey string) {
 								pppmsg := nvmsg.PPMsgSet[0]
 								theprog := datastruc.Progres{pppmsg.Ver, pppmsg.View, pppmsg.Order}
 								pbft.mu.Unlock()
-								fmt.Println("instance",pbft.Id,"finds a config-block in new-view msg, enters the next height", pppmsg.Order, "to deal with it")
+								fmt.Println("instance ",pbft.Id," finds a config-block in new-view msg, enters the next height", pppmsg.Order, "to deal with it")
 								pbft.inauguratedCh <- theprog
 								return
 							}
