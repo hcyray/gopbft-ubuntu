@@ -1420,7 +1420,7 @@ func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string,
 		}
 	}
 
-	if hasltx {
+	if hasltx && !pbft.isbyzantine {
 		//mechanism2, decide to send new-viwe message or not, the condition:&& !pbft.isbyzantine
 		thekind = "withblock"
 		maxckpheight := 0

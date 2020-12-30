@@ -73,7 +73,7 @@ func CreateServer(id int, localip string, clientpukstr map[int]string, serverips
 		serv.memberIds = append(serv.memberIds, i)
 	}
 	serv.InitializeMapandChan()
-	serv.remoteallips = generateremoteallips(serv.memberIds, serverips, inseach)
+	serv.remoteallips = generateremoteallips(serv.memberIds, serverips, inseach) // including the ip of itself
 	fmt.Println("server", serv.id, "will send consensus messages to", serv.remoteallips)
 	serv.localallipsforserver = generatelistenserverips(id, localip)
 	serv.localallipsforclient = generatelistenclientips(id, localip)
