@@ -245,6 +245,7 @@ func (pbft *PBFT) InitialSetup() {
 	}
 	pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curConfigure)
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
+	pbft.leaderpkchangeCh<-datastruc.DataLeaderPKChange{pbft.curleaderPubKeystr}
 	if pbft.curleaderPubKeystr==pbft.PubKeystr {
 		pbft.isleader = true
 		pbft.cdeupdateflag = true
@@ -1031,6 +1032,7 @@ func (pbft *PBFT) resetVariForViewChangeAfterReconfig() {
 	pbft.viewnumber = 0
 	pbft.currentHeight += 1
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
+	pbft.leaderpkchangeCh<-datastruc.DataLeaderPKChange{pbft.curleaderPubKeystr}
 	if pbft.PubKeystr == pbft.curleaderPubKeystr {
 		pbft.isleader = true
 	} else {
