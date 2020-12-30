@@ -30,7 +30,7 @@ type CDEdata struct {
 	HashDelayMatrix map[int]map[int]int
 
 
-	sanitizationflag map[int]bool
+	sanitizationflag map[int]int
 	validatetxbatachtime []int
 	hashgeneratetime []int
 
@@ -71,6 +71,8 @@ type CDEPureDelayData struct {
 	WriteDelayMatrix map[int]map[int]int
 	ValidationDelayMatrix map[int]map[int]int
 	HashDelayMatrix map[int]map[int]int
+
+	Sanitizationflag map[int]int
 }
 
 func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp, broadCh chan Datatosend, recvtestch chan DataReceived,
@@ -85,7 +87,7 @@ func CreateCDEdata(id int, ip string, peers []int, sendch chan DatatosendWithIp,
 	cde.WriteDelayMatrix = make(map[int]map[int]int)
 	cde.ValidationDelayMatrix = make(map[int]map[int]int)
 	cde.HashDelayMatrix = make(map[int]map[int]int)
-	cde.sanitizationflag = make(map[int]bool)
+	cde.sanitizationflag = make(map[int]int)
 	le := len(peers)
 	for _,v := range peers {
 		cde.Peers = append(cde.Peers, v)
@@ -542,23 +544,29 @@ func (cdedata *CDEdata) UpdateUsingNewMeasurementRes(mrrlist []MeasurementResult
 			log.Panic("the current config does not match measurement result's config")
 		}
 		tester := mrr.Id
-		cdedata.ProposeDelayMatrix[tester] = mrr.ProposeDealy
-		cdedata.ValidationDelayMatrix[tester] = mrr.ValidateDelay
-		cdedata.WriteDelayMatrix[tester] = mrr.WriteDelay
-		cdedata.HashDelayMatrix[tester] = mrr.HashDelay
-		cdedata.sanitizationflag[tester] = true
-	}
-
-	sanitize := true
-	for _, id := range cdedata.Peers {
-		if cdedata.sanitizationflag[id] == false {
-			sanitize =false
+		if cdedata.sanitizationflag[tester]==0 {
+			cdedata.ProposeDelayMatrix[tester] = mrr.ProposeDealy
+			cdedata.ValidationDelayMatrix[tester] = mrr.ValidateDelay
+			cdedata.WriteDelayMatrix[tester] = mrr.WriteDelay
+			cdedata.HashDelayMatrix[tester] = mrr.HashDelay
+		} else {
+		 	k:= cdedata.sanitizationflag[tester]
+			cdedata.ProposeDelayMatrix[tester] = AvgDelayMatrix(cdedata.ProposeDelayMatrix[tester], mrr.ProposeDealy, k)
+			cdedata.ValidationDelayMatrix[tester] = AvgDelayMatrix(cdedata.ValidationDelayMatrix[tester], mrr.ValidateDelay, k)
+			cdedata.WriteDelayMatrix[tester] = AvgDelayMatrix(cdedata.WriteDelayMatrix[tester], mrr.WriteDelay, k)
+			cdedata.HashDelayMatrix[tester] = AvgDelayMatrix(cdedata.HashDelayMatrix[tester], mrr.HashDelay, k)
 		}
+		cdedata.sanitizationflag[tester] += 1
 	}
-	if sanitize {
-		cdedata.Sanitization()
-		fmt.Println("sanitization happens")
+}
+
+func AvgDelayMatrix(dm map[int]int, data map[int]int, t int) map[int]int {
+	res := make(map[int]int)
+
+	for k,v := range dm {
+		dm[k] = int((v*t + data[k])/(t+1))
 	}
+	return res
 }
 
 func (cdedata *CDEdata) ProposeDelayConvertToMatrix() [][]int {
@@ -784,11 +792,25 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 	//cdedata.mu.Lock()
 	//defer cdedata.mu.Unlock()
 
-	fmt.Println("calculate consensus delay,     Leader:", l, "Total:", N, "Quorumsize:", Q)
-	blockdelay := cdedata.ProposeDelayConvertToMatrix()
-	validatedelay := cdedata.ValidationDelayConverToMatrix()
-	votedelay := cdedata.WriteDelayConvertToMatrix()
-	hashdelay := cdedata.HashDelayConvertToMatrix()
+	cdeda := cdedata.CopyData()
+	sanitize := true
+	for _, id := range cdeda.Peers {
+		if cdeda.sanitizationflag[id] == 0 {
+			sanitize =false
+		}
+	}
+	if sanitize {
+		cdeda.Sanitization()
+		fmt.Println("sanitization happens")
+	}
+
+
+
+	fmt.Println("calculate consensus delay, Leader:", l, "Total:", N, "Quorumsize:", Q)
+	blockdelay := cdeda.ProposeDelayConvertToMatrix()
+	validatedelay := cdeda.ValidationDelayConverToMatrix()
+	votedelay := cdeda.WriteDelayConvertToMatrix()
+	hashdelay := cdeda.HashDelayConvertToMatrix()
 
 	Time_recv_pre_prepare := make([]int, N)
 	Time_recv_prepare := make([][]int, N)
@@ -848,6 +870,17 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 	fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 	newcdedata.PrintResult()
 	fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	sanitize := true
+	for _, id := range newcdedata.Peers {
+		if newcdedata.sanitizationflag[id] == 0 {
+			sanitize =false
+		}
+	}
+	if sanitize {
+		newcdedata.Sanitization()
+		fmt.Println("sanitization happens when adding new instance")
+	}
+
 
 	blockdelay := newcdedata.ProposeDelayConvertToMatrix()
 	validatedelay := newcdedata.ValidationDelayConverToMatrix()
@@ -922,7 +955,7 @@ func (cdedata *CDEdata) CopyData() CDEdata {
 		newcdedata.WriteDelayMatrix[v] = cdedata.WriteDelayMatrix[v]
 		newcdedata.HashDelayMatrix[v] = cdedata.HashDelayMatrix[v]
 	}
-	newcdedata.sanitizationflag = make(map[int]bool)
+	newcdedata.sanitizationflag = make(map[int]int)
 	for k,v:=range cdedata.sanitizationflag {
 		newcdedata.sanitizationflag[k] = v
 	}
@@ -955,7 +988,9 @@ func (cdedata *CDEdata) Sanitization() {
 func (cdedata *CDEdata) AddNewInstanceData(jtx JoinTx) {
 	newid := jtx.Id
 	cdedata.Peers = append(cdedata.Peers, newid)
-	cdedata.sanitizationflag[newid] = true
+	for i := range cdedata.Peers {
+		cdedata.sanitizationflag[i] = 1
+	}
 	cdedata.ProposeDelayMatrix[newid] = make(map[int]int)
 	cdedata.ValidationDelayMatrix[newid] = make(map[int]int)
 	cdedata.WriteDelayMatrix[newid] = make(map[int]int)
@@ -989,16 +1024,6 @@ func (cdedata *CDEdata) AddNewInstanceData(jtx JoinTx) {
 	cdedata.WriteDelayMatrix[newid][newid] = 0
 	cdedata.HashDelayMatrix[newid][newid] = 0
 
-	sanitize := true
-	for _, id := range cdedata.Peers {
-		if cdedata.sanitizationflag[id] == false {
-			sanitize = false
-		}
-	}
-	if sanitize {
-		cdedata.Sanitization()
-		fmt.Println("sanitization happens when adding new instance")
-	}
 }
 
 func (cdedata *CDEdata) GeneratePureDelayData() CDEPureDelayData {
@@ -1019,6 +1044,8 @@ func (cdedata *CDEdata) GeneratePureDelayData() CDEPureDelayData {
 		cdep.WriteDelayMatrix[v] = cdedata.WriteDelayMatrix[v]
 		cdep.HashDelayMatrix[v] = cdedata.HashDelayMatrix[v]
 	}
+
+	cdep.Sanitizationflag = cdedata.sanitizationflag
 	return cdep
 }
 
@@ -1033,9 +1060,8 @@ func (cdedata *CDEdata) UpdateUsingPureDelayData(cdep CDEPureDelayData) {
 			cdedata.WriteDelayMatrix[u][v] = cdep.WriteDelayMatrix[u][v]
 			cdedata.HashDelayMatrix[u][v] = cdep.HashDelayMatrix[u][v]
 		}
-		cdedata.sanitizationflag[u] = true
 	}
-
+	cdedata.sanitizationflag = cdep.Sanitizationflag
 }
 
 func (cdedata *CDEdata) FetchTxBatch(txs []Transaction) {

@@ -386,7 +386,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round==1 && pbft.currentHeight>=20 {
+					if pbft.cdeupdateflag && pbft.cdedata.Round<=2 && pbft.currentHeight>=10 {
 						// mechanism1
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
@@ -1646,5 +1646,7 @@ func (pbft *PBFT) Stop() {
 
 	fmt.Println("viewchagnetime =", pbft.viewchangetimelog)
 	fmt.Println("inauguratetime =", pbft.inauguratetimelog)
+	pbft.cdedata.Sanitization()
+	pbft.cdedata.PrintResult()
 	time.Sleep(time.Second * 100)
 }
