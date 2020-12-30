@@ -564,7 +564,7 @@ func AvgDelayMatrix(dm map[int]int, data map[int]int, t int) map[int]int {
 	res := make(map[int]int)
 
 	for k,v := range dm {
-		dm[k] = int((v*t + data[k])/(t+1))
+		res[k] = int((v*t + data[k])/(t+1))
 	}
 	return res
 }
