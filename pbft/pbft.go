@@ -250,6 +250,7 @@ func (pbft *PBFT) InitialSetup() {
 		pbft.isleader = true
 		pbft.cdeupdateflag = true
 	}
+	fmt.Println("told server the current leaer's pubkey")
 
 	// print leader succession line
 	//fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
