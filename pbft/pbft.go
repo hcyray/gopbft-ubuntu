@@ -1383,7 +1383,7 @@ func (pbft *PBFT) broadcastCommit(ver, view, n int, digest [32]byte) {
 
 func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.LeaveTx, ckpheigh int, ckpqc datastruc.CheckPointQC,
 	plock datastruc.PreparedLock, clock datastruc.CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) {
-	ltxset = []datastruc.LeaveTx{} // mechanism2
+	//ltxset = []datastruc.LeaveTx{} // mechanism2
 	vcmsg := datastruc.NewViewChangeMsg(ver, view, pbft.Id, ltxset, ckpheigh, ckpqc, plock, clock, pubkey, prvkey)
 	if clock.LockedHeight >0 {
 		fmt.Println("instance",pbft.Id, "creates a view-change msg at ver", ver, "view", view, "with commit-lock at height", vcmsg.Clock.LockedHeight, "with digest", vcmsg.Clock.LockedHash[0:6])
@@ -1443,7 +1443,7 @@ func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string,
 			log.Panic("leader ", pbft.Id, " can't pack config-block for the leave-tx because it's left behind")
 		}
 		if pbft.isbyzantine {
-			fmt.Println("byzantine leader", pbft.Id, "behaves when packing new-view message")
+			fmt.Println("byzantine leader", pbft.Id, "honestly adds leave-tx when packing new-view message")
 		}
 	} else {
 		thekind = "withoutblock"
