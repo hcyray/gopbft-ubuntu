@@ -624,8 +624,8 @@ func (pbft *PBFT) Run() {
 				// decide the new-view msg type
 				newviewkind, bloc := pbft.decideNewViewMsgKind(vcset)
 				if pbft.isbyzantine {
-					fmt.Println("byzantine leader delays new-view message!")
-					time.Sleep(time.Millisecond * 800)
+					fmt.Println("byzantine leader deny sending new-view message!")
+					time.Sleep(time.Millisecond * 1000)
 				} // mechanism2
 				if newviewkind=="withoutblock" {
 					go pbft.broadcastNewViewWithoutBlock(pbft.vernumber, pbft.viewnumber, vcset)
