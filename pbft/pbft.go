@@ -623,6 +623,10 @@ func (pbft *PBFT) Run() {
 
 				// decide the new-view msg type
 				newviewkind, bloc := pbft.decideNewViewMsgKind(vcset)
+				if pbft.isbyzantine {
+					fmt.Println("byzantine leader delays new-view message!")
+					time.Sleep(time.Millisecond * 800)
+				} // mechanism2
 				if newviewkind=="withoutblock" {
 					go pbft.broadcastNewViewWithoutBlock(pbft.vernumber, pbft.viewnumber, vcset)
 				} else if newviewkind=="withblock" {
@@ -1383,7 +1387,7 @@ func (pbft *PBFT) broadcastCommit(ver, view, n int, digest [32]byte) {
 
 func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.LeaveTx, ckpheigh int, ckpqc datastruc.CheckPointQC,
 	plock datastruc.PreparedLock, clock datastruc.CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) {
-	//ltxset = []datastruc.LeaveTx{} // mechanism2
+	ltxset = []datastruc.LeaveTx{} // mechanism2
 	vcmsg := datastruc.NewViewChangeMsg(ver, view, pbft.Id, ltxset, ckpheigh, ckpqc, plock, clock, pubkey, prvkey)
 	if clock.LockedHeight >0 {
 		fmt.Println("instance",pbft.Id, "creates a view-change msg at ver", ver, "view", view, "with commit-lock at height", vcmsg.Clock.LockedHeight, "with digest", vcmsg.Clock.LockedHash[0:6])
@@ -1424,7 +1428,6 @@ func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string,
 	}
 
 	if hasltx {
-		//mechanism2, decide to include the leave-tx in the new-viwe message or not, the condition:&& !pbft.isbyzantine
 		thekind = "withblock"
 		maxckpheight := 0
 		for _, vcmsg := range vcset {
