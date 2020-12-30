@@ -799,17 +799,18 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 
 	for i:=0; i<N; i++ {
 		Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i]
-		for i:=0; i<N; i++ {
-			Time_recv_prepare[i] = make([]int, N)
-		}
-		for i:=0; i<N; i++ {
-			Time_recv_commit[i] = make([]int, N)
-		}
+	}
+
+	for i:=0; i<N; i++ {
+		Time_recv_prepare[i] = make([]int, N)
+	}
+	for i:=0; i<N; i++ {
+		Time_recv_commit[i] = make([]int, N)
 	}
 
 	for i:=0; i<N; i++ {
 		for j:=0; j<N; j++ {
-			Time_recv_prepare[i][j] = Time_recv_pre_prepare[j]+blockdelay[j][i]
+			Time_recv_prepare[i][j] = Time_recv_pre_prepare[j]+votedelay[j][i]
 		}
 		sort.Ints(Time_recv_prepare[i])
 	}
@@ -841,8 +842,12 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 	defer cdedata.mu.Unlock()
 
 	newcdedata := cdedata.CopyData() // current cdedata dimension is N-1
-	fmt.Println("invoke consensus delay calculation")
+	fmt.Println("invoke consensus delay calculation for new join, leader is", l, "total number is", N, "qurorum size is", Q)
 	newcdedata.AddNewInstanceData(jtx) // cdedata dimension becomes N after adding the  new node
+
+	fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	newcdedata.PrintResult()
+	fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 	blockdelay := newcdedata.ProposeDelayConvertToMatrix()
 	validatedelay := newcdedata.ValidationDelayConverToMatrix()

@@ -185,10 +185,10 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	}
 
 
-	if pbft.Id==0 {
-		pbft.isleaving = true
-		fmt.Println("instance", pbft.Id, "will leave the system after a while")
-	} // mechanism2 set leaving node
+	//if pbft.Id==0 {
+	//	pbft.isleaving = true
+	//	fmt.Println("instance", pbft.Id, "will leave the system after a while")
+	//} // mechanism2 set leaving node
 
 	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey, clientpubkeystr)
 
@@ -363,10 +363,10 @@ func (pbft *PBFT) Run() {
 		//if elap>74 {
 		//	pbft.Stop()
 		//}
-		if pbft.currentHeight > 80 {
+		if pbft.currentHeight > 180 {
 			pbft.Stop()
 		}
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 {
+		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 && false {
 			// mechanism2, broadcast leaving request
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
@@ -386,7 +386,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round==1 && pbft.currentHeight>=20 && false {
+					if pbft.cdeupdateflag && pbft.cdedata.Round==1 && pbft.currentHeight>=20 {
 						// mechanism1
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
@@ -563,8 +563,8 @@ func (pbft *PBFT) Run() {
 						elapsed := time.Since(pbft.singleconsensusstarttime).Milliseconds()
 						pbft.consensustimelog[curheight] = int(elapsed)
 						pbft.leaderlog[curheight] = pbft.succLine.CurLeader.Member.Id
-						//pconsensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
-						//pbft.predictedconsensustimelog[curheight] = pconsensusdelay // turnoff this when testing mechanism2
+						pconsensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
+						pbft.predictedconsensustimelog[curheight] = pconsensusdelay // turnoff this when testing mechanism2
 
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", curheight, "time costs:", elapsed, "ms")
@@ -1072,10 +1072,10 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
 
-			//if pbft.currentHeight%15==0 {
-			//	fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
-			//	pbft.cdedata.PrintResult()
-			//} // mechanism1
+			if pbft.currentHeight%15==0 {
+				fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
+				pbft.cdedata.PrintResult()
+			} // mechanism1
 
 
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
