@@ -447,13 +447,13 @@ func (pbft *PBFT) Run() {
 							go pbft.broadcastConfigBlock(&bloc)
 						} else {
 							fmt.Println("byzantine leader", pbft.Id, "censors the leave-tx at height", pbft.currentHeight)
-							//thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
-							//themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
-							//bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
-							//	pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
-							//blockhash = bloc.GetHash()
-							//go pbft.broadcastTxBlock(&bloc)
-							time.Sleep(time.Millisecond * MonitorTimer)
+							thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+							themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
+							bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
+								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+							blockhash = bloc.GetHash()
+							go pbft.broadcastTxBlock(&bloc)
+							//time.Sleep(time.Millisecond * MonitorTimer)
 						}
 					} else if tmpres=="jointxexists" {
 						thejointx := pbft.MsgBuff.ReadJoinTx()[0]
