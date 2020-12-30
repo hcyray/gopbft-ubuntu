@@ -1421,8 +1421,8 @@ func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string,
 		}
 	}
 
-	if hasltx && !pbft.isbyzantine {
-		//mechanism2, decide to send new-viwe message or not, the condition:&& !pbft.isbyzantine
+	if hasltx {
+		//mechanism2, decide to include the leave-tx in the new-viwe message or not, the condition:&& !pbft.isbyzantine
 		thekind = "withblock"
 		maxckpheight := 0
 		for _, vcmsg := range vcset {
@@ -1439,6 +1439,9 @@ func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string,
 		} else {
 			//fmt.Println("leader can't pack config-block for the leave-tx because it's left behind")
 			log.Panic("leader ", pbft.Id, " can't pack config-block for the leave-tx because it's left behind")
+		}
+		if pbft.isbyzantine {
+			fmt.Println("byzantine leader", pbft.Id, "behaves when packing new-view message")
 		}
 	} else {
 		thekind = "withoutblock"
