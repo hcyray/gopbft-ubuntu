@@ -21,7 +21,9 @@
   <component name="ChangeListManager">
     <list default="true" id="6ce3e2ac-ea02-49b9-b204-019ec57babb8" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/datastruc/blokc.go" beforeDir="false" afterPath="$PROJECT_DIR$/datastruc/blokc.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pbft/pbft.go" beforeDir="false" afterPath="$PROJECT_DIR$/pbft/pbft.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/server/server.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -189,14 +191,14 @@
       <screen x="-1920" y="0" width="1920" height="1050" />
     </state>
     <state x="-1467" y="0" width="1198" height="858" key="dock-window-2/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1603025674116" />
-    <state x="880" y="64" width="725" height="1016" key="find.popup" timestamp="1609298719237">
+    <state x="880" y="64" width="725" height="1016" key="find.popup" timestamp="1609311400688">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="-1336" y="19" width="753" height="1013" key="find.popup/0.0.1440.870/-1920.0.1920.1050@-1920.0.1920.1050" timestamp="1604646429011" />
     <state x="438" y="16" width="566" height="840" key="find.popup/0.0.1440.870/-1920.0.1920.1050@0.0.1440.870" timestamp="1604566281735" />
     <state x="467" y="15" width="602" height="804" key="find.popup/0.0.1536.834@0.0.1536.834" timestamp="1602920337723" />
     <state x="584" y="19" width="753" height="1013" key="find.popup/0.0.1920.1050/-1920.0.1920.1050@0.0.1920.1050" timestamp="1605094490201" />
-    <state x="880" y="64" width="725" height="1016" key="find.popup/72.27.1848.1053@72.27.1848.1053" timestamp="1609298719237" />
+    <state x="880" y="64" width="725" height="1016" key="find.popup/72.27.1848.1053@72.27.1848.1053" timestamp="1609311400688" />
     <state x="672" y="255" width="647" height="680" key="search.everywhere.popup" timestamp="1609144613261">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>

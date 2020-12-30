@@ -25,6 +25,7 @@ type Block struct {
 }
 
 type BlockHead struct {
+	CreatorId int
 	Kind string
 	Ver int
 	Height int
@@ -35,9 +36,10 @@ type BlockHead struct {
 	TXMerkleTreeHash [32]byte
 }
 
-func NewTxBlock(pubkeystr string, prvkey *ecdsa.PrivateKey, txpool *[]Transaction, measureinfolist []MeasurementResultMsg,
+func NewTxBlock(id int, pubkeystr string, prvkey *ecdsa.PrivateKey, txpool *[]Transaction, measureinfolist []MeasurementResultMsg,
 	height int, ver int, prevhash [32]byte, syshash [32]byte) Block {
 	bloc := Block{}
+	bloc.Blockhead.CreatorId = id
 	bloc.Blockhead.Kind = "txblock"
 	bloc.Blockhead.Ver = ver
 	bloc.Blockhead.Height = height

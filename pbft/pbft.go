@@ -431,7 +431,7 @@ func (pbft *PBFT) Run() {
 						thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
 						fmt.Println("leader", pbft.Id, "has", len(pbft.MsgBuff.TxPool), "txs in its buffer, packing tx-block, reading tx number:", len(thetxpool))
 						themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
-						bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
+						bloc = datastruc.NewTxBlock(pbft.Id, pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
 							pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
 						blockhash = bloc.GetHash()
 						go pbft.broadcastTxBlock(&bloc)
@@ -449,7 +449,7 @@ func (pbft *PBFT) Run() {
 							fmt.Println("byzantine leader", pbft.Id, "censors the leave-tx at height", pbft.currentHeight)
 							thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
 							themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
-							bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
+							bloc = datastruc.NewTxBlock(pbft.Id, pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
 								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
 							blockhash = bloc.GetHash()
 							go pbft.broadcastTxBlock(&bloc)

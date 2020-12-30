@@ -697,7 +697,7 @@ func (serv *Server) handleBlock(content []byte) {
 
 	serv.msgbuff.Msgbuffmu.Lock()
 	serv.msgbuff.BlockPool = append(serv.msgbuff.BlockPool, bloc)
-	fmt.Println("server", serv.id, "receives a block at height", bloc.Blockhead.Height, " with tx number", len(bloc.TransactionList))
+	fmt.Println("server", serv.id, "receives a block at height", bloc.Blockhead.Height, "from instance", bloc.Blockhead.CreatorId ," with tx number", len(bloc.TransactionList))
 	//fmt.Println("server", serv.id, "receives a block with", len(bloc.TransactionList), "txs in it")
 	elapsed := time.Since(starttime).Milliseconds()
 	serv.blockvalidatetime[bloc.Blockhead.Height] = int(elapsed)
