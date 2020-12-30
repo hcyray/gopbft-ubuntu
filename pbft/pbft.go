@@ -624,14 +624,16 @@ func (pbft *PBFT) Run() {
 				// decide the new-view msg type
 				newviewkind, bloc := pbft.decideNewViewMsgKind(vcset)
 				if pbft.isbyzantine && newviewkind=="withblock"{
+					// mechanism2
 					fmt.Println("byzantine leader deny sending new-view message!")
-					time.Sleep(time.Millisecond * 1000)
-				} // mechanism2
-				if newviewkind=="withoutblock" {
-					go pbft.broadcastNewViewWithoutBlock(pbft.vernumber, pbft.viewnumber, vcset)
-				} else if newviewkind=="withblock" {
-					go pbft.broadcastNewViewWithBlock(pbft.vernumber, pbft.viewnumber, vcset, bloc)
+				} else {
+					if newviewkind=="withoutblock" {
+						go pbft.broadcastNewViewWithoutBlock(pbft.vernumber, pbft.viewnumber, vcset)
+					} else if newviewkind=="withblock" {
+						go pbft.broadcastNewViewWithBlock(pbft.vernumber, pbft.viewnumber, vcset, bloc)
+					}
 				}
+
 			}
 			thever := pbft.vernumber
 			theview := pbft.viewnumber
