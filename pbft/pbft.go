@@ -446,7 +446,7 @@ func (pbft *PBFT) Run() {
 							blockhash = bloc.GetHash()
 							go pbft.broadcastConfigBlock(&bloc)
 						} else {
-							fmt.Println("byzantine leader", pbft.Id, "censors the leave-tx")
+							fmt.Println("byzantine leader", pbft.Id, "censors the leave-tx at height", pbft.currentHeight)
 							//thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
 							//themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
 							//bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
