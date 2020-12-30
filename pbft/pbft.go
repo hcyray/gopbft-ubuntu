@@ -914,7 +914,8 @@ func (pbft *PBFT) scanNewView(ver, view int, leaderpubkey string) {
 							return
 						} else {
 							// case2 the nvmsg has only commit-lock, which is higher than local commit height
-							log.Panic("instance", pbft.Id, "finds a commit-lock in the new-view msg, while it only prepares it, stop executing")
+							pbft.succLine.SucclinePrint()
+							log.Panic("instance", pbft.Id, "finds a commit-lock in the new-view msg from", nvmsg.Pubkey, "while it only prepares it, stop executing")
 							// TODO, query and commit that block
 							//fmt.Println("I'm instance", pbft.Id, "and I'm lost!")
 						}
