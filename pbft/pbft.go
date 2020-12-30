@@ -934,7 +934,7 @@ func (pbft *PBFT) scanNewView(ver, view int, leaderpubkey string) {
 							return
 						} else {
 							// case2 the nvmsg has only commit-lock, new leader will freely propose
-							// the main intersted case in this experiment
+							// the main interested case in this experiment
 							// query lost blocks, hoping this condition will never trigger after state recovery
 							if nvmsg.Bloc.Blockhead.Height==0 {
 								// means there is no config-block in new-view msg
