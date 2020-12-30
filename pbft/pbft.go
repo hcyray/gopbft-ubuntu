@@ -179,7 +179,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.initializeMapChan()
 	pbft.initializeAccountBalance(clientpubkeystr)
 	pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
-	//pbft.UpdateByzantineIdentity() //mechanism2 ,set byzantine leader
+	pbft.UpdateByzantineIdentity() //mechanism2 ,set byzantine leader
 	if pbft.isbyzantine {
 		fmt.Println("instance", pbft.Id, "is a byzantine guy")
 	}
@@ -682,11 +682,9 @@ func (pbft *PBFT) censorshipmonitor() {
 			thetimer := time.NewTimer(time.Millisecond * MonitorTimer)
 			select {
 			case <-thetimer.C:
-				if !pbft.isbyzantine {
-					fmt.Println("instance", pbft.Id, "the monitored leave-tx fail to consens, trigger view-change")
-					pbft.viewchangeduetocensorship = thehash
-					pbft.censorshiphappenCh<-true
-				}
+				fmt.Println("instance", pbft.Id, "the monitored leave-tx fail to consens, trigger view-change")
+				pbft.viewchangeduetocensorship = thehash
+				pbft.censorshiphappenCh<-true
 			case <-pbft.censorshipnothappenCh:
 				fmt.Println("instance", pbft.Id, "finds the monitored leave-tx consensed, timer stops")
 			}
