@@ -61,7 +61,6 @@ type PBFT struct {
 	senddatabyIpCh chan datastruc.DatatosendWithIp
 	broadcdataCh chan datastruc.Datatosend
 	memberidchangeCh chan datastruc.DataMemberChange
-	leaderpkchangeCh chan datastruc.DataLeaderPKChange
 	prepreparedCh chan datastruc.Progres
 	preparedCh chan datastruc.Progres
 	committedCh chan datastruc.Progres
@@ -127,8 +126,7 @@ type PBFT struct {
 
 func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[int]string, msgbuf *datastruc.MessageBuffer,
 	starttime time.Time, sendCh chan datastruc.DatatosendWithIp,
-	broadCh chan datastruc.Datatosend, memberidchangeCh chan datastruc.DataMemberChange, leaderpkchangeCh chan datastruc.DataLeaderPKChange,
-	censorshipmonitorCh chan [32]byte,
+	broadCh chan datastruc.Datatosend, memberidchangeCh chan datastruc.DataMemberChange, censorshipmonitorCh chan [32]byte,
 	statetransferqueryCh chan datastruc.QueryStateTransMsg, statetransferreplyCh chan datastruc.ReplyStateTransMsg,
 	cdetestrecvch chan datastruc.DataReceived, cderesponserecvch chan datastruc.DataReceived,
 	RecvInformTestCh chan datastruc.RequestTestMsg, recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB,
@@ -168,7 +166,6 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	pbft.senddatabyIpCh = sendCh
 	pbft.broadcdataCh = broadCh
 	pbft.memberidchangeCh = memberidchangeCh
-	pbft.leaderpkchangeCh = leaderpkchangeCh
 	pbft.censorshipmonitorCh = censorshipmonitorCh
 	pbft.statetransferquerymonitorCh = statetransferqueryCh
 	pbft.statetransferreplyCh = statetransferreplyCh
@@ -245,13 +242,10 @@ func (pbft *PBFT) InitialSetup() {
 	}
 	pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curConfigure)
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
-	fmt.Println("will tell server the current leaer's pubkey")
-	pbft.leaderpkchangeCh<-datastruc.DataLeaderPKChange{pbft.curleaderPubKeystr}
 	if pbft.curleaderPubKeystr==pbft.PubKeystr {
 		pbft.isleader = true
 		pbft.cdeupdateflag = true
 	}
-	fmt.Println("told server the current leaer's pubkey")
 
 	// print leader succession line
 	//fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
@@ -453,12 +447,13 @@ func (pbft *PBFT) Run() {
 							go pbft.broadcastConfigBlock(&bloc)
 						} else {
 							fmt.Println("byzantine leader", pbft.Id, "censors the leave-tx")
-							thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
-							themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
-							bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
-								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
-							blockhash = bloc.GetHash()
-							go pbft.broadcastTxBlock(&bloc)
+							//thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
+							//themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
+							//bloc = datastruc.NewTxBlock(pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
+							//	pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+							//blockhash = bloc.GetHash()
+							//go pbft.broadcastTxBlock(&bloc)
+							time.Sleep(time.Millisecond * MonitorTimer)
 						}
 					} else if tmpres=="jointxexists" {
 						thejointx := pbft.MsgBuff.ReadJoinTx()[0]
@@ -1017,7 +1012,6 @@ func (pbft *PBFT) resetVariForViewChange() {
 	// consensus status change?
 	pbft.succLine.RotateLeader()
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
-	pbft.leaderpkchangeCh<-datastruc.DataLeaderPKChange{pbft.curleaderPubKeystr}
 	if pbft.PubKeystr == pbft.curleaderPubKeystr {
 		pbft.isleader = true
 	} else {
@@ -1034,7 +1028,6 @@ func (pbft *PBFT) resetVariForViewChangeAfterReconfig() {
 	pbft.viewnumber = 0
 	pbft.currentHeight += 1
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
-	pbft.leaderpkchangeCh<-datastruc.DataLeaderPKChange{pbft.curleaderPubKeystr}
 	if pbft.PubKeystr == pbft.curleaderPubKeystr {
 		pbft.isleader = true
 	} else {
@@ -1390,6 +1383,7 @@ func (pbft *PBFT) broadcastCommit(ver, view, n int, digest [32]byte) {
 
 func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.LeaveTx, ckpheigh int, ckpqc datastruc.CheckPointQC,
 	plock datastruc.PreparedLock, clock datastruc.CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) {
+	ltxset = []datastruc.LeaveTx{} // mechanism2
 	vcmsg := datastruc.NewViewChangeMsg(ver, view, pbft.Id, ltxset, ckpheigh, ckpqc, plock, clock, pubkey, prvkey)
 	if clock.LockedHeight >0 {
 		fmt.Println("instance",pbft.Id, "creates a view-change msg at ver", ver, "view", view, "with commit-lock at height", vcmsg.Clock.LockedHeight, "with digest", vcmsg.Clock.LockedHash[0:6])

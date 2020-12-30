@@ -40,12 +40,9 @@ type Server struct {
 	pbft *pbft.PBFT
 	clientacctopukstr map[string]string
 
-	curleaderpkstr string
-
 	sendCh chan datastruc.DatatosendWithIp
 	broadcastCh chan datastruc.Datatosend
 	memberidchangeCh chan datastruc.DataMemberChange
-	leaderpkchangeCh chan datastruc.DataLeaderPKChange
 	censorshipmonitorCh chan [32]byte
 	statetransferqueryCh chan datastruc.QueryStateTransMsg
 	statetransferreplyCh chan datastruc.ReplyStateTransMsg
@@ -91,9 +88,9 @@ func CreateServer(id int, localip string, clientpukstr map[int]string, serverips
 	}
 
 	serv.pbft = pbft.CreatePBFTInstance(id, serv.ipportaddr, serv.totalserver, clientpukstr, &serv.msgbuff, serv.starttime,
-		serv.sendCh, serv.broadcastCh, serv.memberidchangeCh, serv.leaderpkchangeCh, serv.censorshipmonitorCh,
-		serv.statetransferqueryCh, serv.statetransferreplyCh, serv.cdetestrecvCh, serv.cderesponserecvCh,
-		serv.RecvInformTestCh, serv.recvsinglemeasurementCh, serv.stopCh)
+		serv.sendCh, serv.broadcastCh, serv.memberidchangeCh,
+		serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh, serv.cdetestrecvCh,
+		serv.cderesponserecvCh,	serv.RecvInformTestCh, serv.recvsinglemeasurementCh, serv.stopCh)
 	return serv
 }
 
@@ -166,9 +163,9 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 	serv.remoteallips[serv.id] = serv.ipportaddr // add itself to members
 	fmt.Println("server", serv.id, "remote all ips:", serv.remoteallips)
 	serv.pbft = pbft.CreatePBFTInstance(serv.id, serv.ipportaddr, serv.totalserver, clientkeys, &serv.msgbuff, serv.starttime,
-		serv.sendCh, serv.broadcastCh, serv.memberidchangeCh, serv.leaderpkchangeCh, serv.censorshipmonitorCh,
-		serv.statetransferqueryCh, serv.statetransferreplyCh, serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh,
-		serv.recvsinglemeasurementCh, serv.stopCh)
+		serv.sendCh, serv.broadcastCh, serv.memberidchangeCh, serv.censorshipmonitorCh, serv.statetransferqueryCh,
+		serv.statetransferreplyCh, serv.cdetestrecvCh, serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh,
+		serv.stopCh)
 
 	start := time.Now()
 	serv.pbft.LateSetup(peerlist)
@@ -190,7 +187,6 @@ func (serv *Server) Run() {
 	go serv.BroadcastLoop()
 	go serv.SendLoop()
 	go serv.ModefyVariByPBFT()
-	go serv.ModefyLeaderPKbyPBFT()
 }
 
 func (serv *Server) ModefyVariByPBFT() {
@@ -214,18 +210,6 @@ func (serv *Server) ModefyVariByPBFT() {
 			} else {
 				fmt.Println("server", serv.id, "got wrong type when changing state!")
 			}
-			serv.mu.Unlock()
-		}
-	}
-}
-
-func (serv *Server) ModefyLeaderPKbyPBFT() {
-	for {
-		select {
-		case data :=<- serv.leaderpkchangeCh:
-			serv.mu.Lock()
-			serv.curleaderpkstr = data.LeaderPK
-			fmt.Println("server", serv.id, "updates leader key to", serv.curleaderpkstr)
 			serv.mu.Unlock()
 		}
 	}
@@ -672,18 +656,6 @@ func (serv *Server) handleBlock(content []byte) {
 	err := dec.Decode(&bloc)
 	if err != nil {
 		fmt.Println("block decoding error")
-	}
-
-	// decide if the block is from leader
-	var consistent bool
-	serv.mu.Lock()
-	if bloc.PubKey==serv.curleaderpkstr {
-		consistent = true
-	}
-	serv.mu.Unlock()
-	if !consistent {
-		fmt.Println("server", serv.id, "verifies a block, but it's not from valid leader!")
-		return
 	}
 
 	// verify block
