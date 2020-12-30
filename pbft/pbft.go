@@ -245,6 +245,7 @@ func (pbft *PBFT) InitialSetup() {
 	}
 	pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curConfigure)
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
+	fmt.Println("will tell server the current leaer's pubkey")
 	pbft.leaderpkchangeCh<-datastruc.DataLeaderPKChange{pbft.curleaderPubKeystr}
 	if pbft.curleaderPubKeystr==pbft.PubKeystr {
 		pbft.isleader = true
