@@ -369,7 +369,7 @@ func (pbft *PBFT) Run() {
 		//if elap>74 {
 		//	pbft.Stop()
 		//}
-		if pbft.currentHeight > 180 {
+		if pbft.currentHeight > 60 {
 			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 && false {
@@ -742,6 +742,7 @@ func (pbft *PBFT) snapshot() {
 			// wait for Q vote
 			res := pbft.scanCheckPoint(ckph, thehash,quorumsize) //block here
 			if res {
+				fmt.Println("stable checkpoint generated at height", ckph)
 				pbft.persis.checkpointheight = ckph
 				pbft.persis.accountbalance = pbft.accountbalance
 				// todo checkpoint qc
