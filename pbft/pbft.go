@@ -392,7 +392,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round<=2 && pbft.currentHeight>=10 {
+					if pbft.cdeupdateflag && pbft.cdedata.Round<=2 && pbft.currentHeight>=10 && false {
 						// mechanism1
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
@@ -1101,8 +1101,9 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
 			pbft.persis.executedheight[pbft.currentHeight] = true
 
-
-			pbft.checkpointsignalCh <- pbft.currentHeight
+			if pbft.currentHeight%CheckPointInterv==0 {
+				pbft.checkpointsignalCh <- pbft.currentHeight
+			}
 
 			pbft.consenstatus = Unstarted
 			pbft.currentHeight += 1
@@ -1162,7 +1163,9 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
 				pbft.persis.executedheight[pbft.currentHeight] = true
 
-				pbft.checkpointsignalCh <- pbft.currentHeight
+				if pbft.currentHeight%CheckPointInterv==0 {
+					pbft.checkpointsignalCh <- pbft.currentHeight
+				}
 				pbft.reconfighappen = true
 				pbft.currentHeight += 1
 			} else if len(pbft.curblock.JoinTxList)>0 {
@@ -1200,7 +1203,9 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.persis.blockhashlist[pbft.currentHeight] = pbft.curblockhash
 				pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
 				pbft.persis.executedheight[pbft.currentHeight] = true
-				pbft.checkpointsignalCh <- pbft.currentHeight
+				if pbft.currentHeight%CheckPointInterv==0 {
+					pbft.checkpointsignalCh <- pbft.currentHeight
+				}
 				pbft.reconfighappen = true
 				pbft.currentHeight += 1
 
