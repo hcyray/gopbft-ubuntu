@@ -369,7 +369,7 @@ func (pbft *PBFT) Run() {
 		//if elap>74 {
 		//	pbft.Stop()
 		//}
-		if pbft.currentHeight > 70 {
+		if pbft.currentHeight > 60 {
 			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 && false {
@@ -392,7 +392,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round<=2 && pbft.currentHeight>=10 {
+					if pbft.cdeupdateflag && pbft.cdedata.Round<=2 && pbft.currentHeight>=10 && false {
 						// mechanism1
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
