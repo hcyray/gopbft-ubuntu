@@ -742,7 +742,7 @@ func (pbft *PBFT) snapshot() {
 			// wait for Q vote
 			res := pbft.scanCheckPoint(ckph, thehash,quorumsize) //block here
 			if res {
-				fmt.Println("stable checkpoint generated at height", ckph)
+				fmt.Println("stable checkpoint generated at height", ckph, "system hash: ", thehash)
 				pbft.persis.checkpointheight = ckph
 				pbft.persis.accountbalance = pbft.accountbalance
 				// todo checkpoint qc
@@ -1624,7 +1624,8 @@ func (pbft *PBFT) ReplyStateTransfer(height, id int) {
 	destlist = append(destlist, id)
 	datatosend := datastruc.Datatosend{destlist, "replystatetran", content}
 	pbft.broadcdataCh <- datatosend
-	fmt.Println("instance", pbft.Id, "sends state-transfer-reply to instance", id)
+	fmt.Println("instance", pbft.Id, "sends state-transfer-reply to instance", id, "from checkpoint height", ckph,
+		"to height", height, "which the querier has, including", len(blocklist), "blocks in it")
 }
 
 func (pbft *PBFT) broadcastMeasurementResult(mrmsg datastruc.MeasurementResultMsg) {
