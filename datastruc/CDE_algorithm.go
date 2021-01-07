@@ -404,6 +404,7 @@ func (cdedata *CDEdata) FullTestNewNode(reqtest RequestTestMsg) {
 	for i:=0; i<4; i++ {
 		delays = append(delays, MAXWAITTIME)
 	}
+	delays[1] = 0
 	dests := make([]string, 0)
 	dests = append(dests, testeeip)
 	closed := make(chan bool)

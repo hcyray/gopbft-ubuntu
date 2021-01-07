@@ -369,7 +369,7 @@ func (pbft *PBFT) Run() {
 		//if elap>74 {
 		//	pbft.Stop()
 		//}
-		if pbft.currentHeight > 60 {
+		if pbft.currentHeight > 90 {
 			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 && false {
@@ -1663,7 +1663,8 @@ func (pbft *PBFT) broadcastMeasurementResult(mrmsg datastruc.MeasurementResultMs
 //}
 
 func EvaluateCapacity(resselfasleader []int, resnewasleader []int, selfid int, newid int) bool {
-	return resselfasleader[newid]<JOININGTHRES && resnewasleader[selfid]<JOININGTHRES
+	//return resselfasleader[newid]<JOININGTHRES && resnewasleader[selfid]<JOININGTHRES
+	return true
 }
 
 func (pbft *PBFT) computeTps() {
