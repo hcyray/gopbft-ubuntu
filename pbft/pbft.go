@@ -72,6 +72,7 @@ type PBFT struct {
 	censorshipnothappenCh chan bool
 	viewchangeduetocensorship [32]byte
 
+	checkpointsignalCh chan int
 	statetransferquerymonitorCh chan datastruc.QueryStateTransMsg
 	statetransferreplyCh chan datastruc.ReplyStateTransMsg
 
@@ -205,6 +206,7 @@ func (pbft *PBFT) initializeMapChan() {
 	pbft.configchangeCh = make(chan int)
 	pbft.censorshiphappenCh = make(chan bool)
 	pbft.censorshipnothappenCh = make(chan bool)
+	pbft.checkpointsignalCh = make(chan int)
 	pbft.systemhash = make(map[int][32]byte)
 
 	pbft.sentviewchangemsg = make(map[datastruc.Term]bool)
@@ -256,9 +258,9 @@ func (pbft *PBFT) InitialSetup() {
 	confighash := pbft.succLine.GetHash()
 	cdedatahash := pbft.cdedata.GenerateStateHash()
 	pbft.systemhash[0] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, [32]byte{}, cdedatahash)
-	genesisb := datastruc.ConstructGenesisBlock(pbft.curConfigure, pbft.systemhash[0])
-	pbft.persis.blockhashlist[0] = genesisb.GetHash()
+	genesisb := datastruc.ConstructGenesisBlock(pbft.curConfigure)
 	pbft.cachedb.UpdateFromGenesisb(genesisb)
+	pbft.persis.blockhashlist[0] = genesisb.GetHash()
 	pbft.persis.executedheight[0] = true
 	pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
 	//fmt.Println("instance", pbft.Id, "updates msgbuff.curconfig:", pbft.succLine.ConverToList())
@@ -300,13 +302,15 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.cdedata.UpdateUsingPureDelayData(cblock.Cdedelaydata)
 	fmt.Println("new-instance-cdedata.peers:", pbft.cdedata.Peers)
 	// invoke state transfer and wait for state-transfer-reply
-	pbft.QueryStateTransfer(cblock.Bloc.Blockhead.Height-1, 0) // todo, pick a dest or broadcast to the system
-	thebalance := pbft.waitForStateTransferReply(cblock.Bloc.Blockhead.Height-1)
+	pbft.QueryStateTransfer(cblock.Bloc.Blockhead.Height, 0) // todo, pick a dest or broadcast to the system
+	thebalance := pbft.waitForStateTransferReply(cblock.Bloc.Blockhead.Height)
 	//fmt.Println("node", pbft.Id, "is a new node, got the state transfer")
 
 	// update persister and blockcachedb
 	pbft.cachedb.UpdateAfterConfirmB(cblock)
 	pbft.cachedb.UpdateAccountBalanceAtHeight(cblock.Bloc.Blockhead.Height-1, thebalance)
+
+
 	pbft.persis.blockhashlist[cblock.Bloc.Blockhead.Height] = cblock.Bloc.GetHash()
 	pbft.persis.logterm[cblock.Bloc.Blockhead.Height] = datastruc.Term{cblock.Bloc.Blockhead.Ver, cblock.CommiQC.CommitMsgSet[0].View}
 	pbft.persis.executedheight[cblock.Bloc.Blockhead.Height] = true
@@ -315,6 +319,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	for k,v := range thebalance {
 		pbft.persis.accountbalance[k] = v
 	}
+
 	// generate a new succession line and config, includes itself
 	pbft.curConfigure = cblock.Bloc.Configure
 	//fmt.Println("new instance config:", cblock.Bloc.Configure)
@@ -327,7 +332,7 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 		pbft.accountbalance[k] = v
 	}
 	pbft.currentHeight = cblock.Bloc.Blockhead.Height
-	balancehash := pbft.generateaccountbalancehash()
+	balancehash := pbft.generateaccountbalancehash(pbft.clientaccount, pbft.accountbalance)
 	confighash := pbft.succLine.GetHash()
 	cdedatahash := pbft.cdedata.GenerateStateHash()
 	pbft.vernumber = cblock.Bloc.Blockhead.Ver
@@ -350,6 +355,7 @@ func (pbft *PBFT) Run() {
 	fmt.Println("instance", pbft.Id, "cde data module fetches", len(thetxs), "txs")
 
 	pbft.tpsstarttime = time.Now()
+	go pbft.snapshot()
 	go pbft.statetransfermonitor()
 	go pbft.censorshipmonitor()
 	go pbft.cdedata.CDEInformTestMonitor()
@@ -386,7 +392,7 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round<=2 && pbft.currentHeight>=10 {
+					if pbft.cdeupdateflag && pbft.cdedata.Round<=2 && pbft.currentHeight>=10 && false {
 						// mechanism1
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
@@ -432,7 +438,7 @@ func (pbft *PBFT) Run() {
 						fmt.Println("leader", pbft.Id, "has", len(pbft.MsgBuff.TxPool), "txs in its buffer, packing tx-block, reading tx number:", len(thetxpool))
 						themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
 						bloc = datastruc.NewTxBlock(pbft.Id, pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
-							pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+							pbft.persis.blockhashlist[pbft.currentHeight-1])
 						blockhash = bloc.GetHash()
 						go pbft.broadcastTxBlock(&bloc)
 					} else if tmpres=="leavetxexists" {
@@ -442,7 +448,7 @@ func (pbft *PBFT) Run() {
 							fmt.Println("leader", pbft.Id, "has leave-tx in its buffer, packing config-block for instance leaving at height",
 								pbft.currentHeight, "the new config has", len(peers), "instances")
 							bloc = datastruc.NewLeaveConfigBlock(pbft.PubKeystr, pbft.PriKey, theleavetx, peers, pbft.currentHeight, pbft.vernumber,
-								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+								pbft.persis.blockhashlist[pbft.currentHeight-1])
 							blockhash = bloc.GetHash()
 							go pbft.broadcastConfigBlock(&bloc)
 						} else {
@@ -450,7 +456,7 @@ func (pbft *PBFT) Run() {
 							thetxpool := pbft.MsgBuff.ReadTxBatch(BlockVolume)
 							themeasurespool := pbft.MsgBuff.ReadMeasuremenResBatch()
 							bloc = datastruc.NewTxBlock(pbft.Id, pbft.PubKeystr, pbft.PriKey, &thetxpool, themeasurespool, pbft.currentHeight, pbft.vernumber,
-								pbft.persis.blockhashlist[pbft.currentHeight-1], pbft.systemhash[pbft.currentHeight-1])
+								pbft.persis.blockhashlist[pbft.currentHeight-1])
 							blockhash = bloc.GetHash()
 							go pbft.broadcastTxBlock(&bloc)
 							//time.Sleep(time.Millisecond * MonitorTimer)
@@ -492,8 +498,8 @@ func (pbft *PBFT) Run() {
 					fmt.Println("instance", pbft.Id, "thinks censorship attack for some leave-tx happens at height", pbft.currentHeight, "starts view change")
 					pbft.mu.Lock()
 					if pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber, pbft.viewnumber+1}]==false{
-						ckpqc, plock, clock := pbft.GenerateQCandLockForVC()
-						go pbft.broadcastViewChange(pbft.vernumber, pbft.viewnumber+1, pbft.MsgBuff.ReadLeaveTx(), pbft.persis.checkpointheight, ckpqc, plock, clock, pbft.PubKeystr, pbft.PriKey)
+						plock, clock := pbft.GenerateQCandLockForVC()
+						go pbft.broadcastViewChange(pbft.vernumber, pbft.viewnumber+1, pbft.MsgBuff.ReadLeaveTx(), plock, clock, pbft.PubKeystr, pbft.PriKey)
 						pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber, pbft.viewnumber+1}]=true
 					}
 					pbft.resetVariForViewChange()
@@ -503,8 +509,8 @@ func (pbft *PBFT) Run() {
 					fmt.Println("instance", pbft.Id, "fails when consens height", pbft.currentHeight, "starts view change")
 					pbft.mu.Lock()
 					if pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber, pbft.viewnumber+1}]==false{
-						ckpqc, plock, clock := pbft.GenerateQCandLockForVC()
-						go pbft.broadcastViewChange(pbft.vernumber, pbft.viewnumber+1, pbft.MsgBuff.ReadLeaveTx(), pbft.persis.checkpointheight, ckpqc, plock, clock, pbft.PubKeystr, pbft.PriKey)
+						plock, clock := pbft.GenerateQCandLockForVC()
+						go pbft.broadcastViewChange(pbft.vernumber, pbft.viewnumber+1, pbft.MsgBuff.ReadLeaveTx(), plock, clock, pbft.PubKeystr, pbft.PriKey)
 						pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber, pbft.viewnumber+1}]=true
 					}
 					pbft.resetVariForViewChange()
@@ -574,8 +580,8 @@ func (pbft *PBFT) Run() {
 						pbft.mu.Lock()
 						pbft.currentHeight -= 1
 						if pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber+1, 0}]==false{
-							ckpqc, plock, clock := pbft.GenerateQCandLockForVC()
-							go pbft.broadcastViewChange(pbft.vernumber+1, 0, pbft.MsgBuff.ReadLeaveTx(), pbft.persis.checkpointheight, ckpqc, plock, clock, pbft.PubKeystr, pbft.PriKey)
+							plock, clock := pbft.GenerateQCandLockForVC()
+							go pbft.broadcastViewChange(pbft.vernumber+1, 0, pbft.MsgBuff.ReadLeaveTx(), plock, clock, pbft.PubKeystr, pbft.PriKey)
 							pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber+1, 0}]=true
 						}
 						pbft.resetVariForViewChangeAfterReconfig()
@@ -587,8 +593,8 @@ func (pbft *PBFT) Run() {
 							pbft.mu.Lock()
 							pbft.singleviewchangestarttime = time.Now()
 							if pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber, pbft.viewnumber+1}]==false{
-								ckpqc, plock, clock := pbft.GenerateQCandLockForVC()
-								go pbft.broadcastViewChange(pbft.vernumber, pbft.viewnumber+1, pbft.MsgBuff.ReadLeaveTx(), pbft.persis.checkpointheight, ckpqc, plock, clock, pbft.PubKeystr, pbft.PriKey)
+								plock, clock := pbft.GenerateQCandLockForVC()
+								go pbft.broadcastViewChange(pbft.vernumber, pbft.viewnumber+1, pbft.MsgBuff.ReadLeaveTx(), plock, clock, pbft.PubKeystr, pbft.PriKey)
 								pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber, pbft.viewnumber+1}]=true
 							}
 							pbft.resetVariForViewChange()
@@ -647,11 +653,12 @@ func (pbft *PBFT) Run() {
 					fmt.Println("instance", pbft.Id, "view-change timer expires when waiting for the new leader's inauguration in ver",pbft.vernumber, "view",pbft.viewnumber, "height", pbft.currentHeight)
 					pbft.mu.Lock()
 					if pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber, pbft.viewnumber+1}]==false{
-						ckpqc, plock, clock := pbft.GenerateQCandLockForVC()
-						go pbft.broadcastViewChange(pbft.vernumber, pbft.viewnumber+1, pbft.MsgBuff.ReadLeaveTx(), pbft.persis.checkpointheight, ckpqc, plock, clock, pbft.PubKeystr, pbft.PriKey)
+						plock, clock := pbft.GenerateQCandLockForVC()
+						go pbft.broadcastViewChange(pbft.vernumber, pbft.viewnumber+1, pbft.MsgBuff.ReadLeaveTx(), plock, clock, pbft.PubKeystr, pbft.PriKey)
 						pbft.sentviewchangemsg[datastruc.Term{pbft.vernumber, pbft.viewnumber+1}]=true
-						fmt.Println("instance", pbft.Id, "broadcasts view-change msg in view", pbft.viewnumber, ", checkpoint height:", pbft.persis.checkpointheight,
-							"prepare-locked height:", pbft.persis.preparelock.LockedHeight, "commit-locked height:", pbft.persis.commitlock.LockedHeight)
+						fmt.Println("instance", pbft.Id, "broadcasts view-change msg in view", pbft.viewnumber,
+							"prepare-locked height:", pbft.persis.preparelock.LockedHeight, "commit-locked height:",
+							pbft.persis.commitlock.LockedHeight)
 					}
 					pbft.resetVariForViewChange()
 					pbft.mu.Unlock()
@@ -699,6 +706,71 @@ func (pbft *PBFT) censorshipmonitor() {
 	}
 }
 
+
+func (pbft *PBFT) snapshot() {
+
+	for {
+		select {
+		case ckph :=<- pbft.checkpointsignalCh:
+			// keep all state data, in case that consensus is too fast and change them
+			starttime := time.Now()
+			pbft.mu.Lock()
+			ver := pbft.vernumber
+			clientacc := make(map[int]string)
+			for k,v:=range pbft.clientaccount {
+				clientacc[k] = v
+			}
+			accbalance := make(map[string]int)
+			for k,v:=range pbft.accountbalance {
+				accbalance[k] = v
+			}
+			quorumsize := pbft.quorumsize
+			pbft.mu.Unlock()
+			elasp := time.Since(starttime).Milliseconds()
+			fmt.Println("copy state data costs", elasp, "ms")
+
+			// generate system hash
+			balancehash := pbft.generateaccountbalancehash(clientacc, accbalance)
+			confighash := pbft.succLine.GetHash() // todo, may be problematic
+			cdedatahash := pbft.cdedata.GenerateStateHash()
+			thehash := datastruc.GenerateSystemHash(ver, ckph, confighash, balancehash, cdedatahash)
+			pbft.systemhash[pbft.currentHeight] = thehash
+			// broadcast syshash
+			checkpmsg := datastruc.NewCheckPointMsg(pbft.Id, ckph, thehash, pbft.PubKeystr)
+			go pbft.broadcastCheckPoint(checkpmsg)
+
+			// wait for Q vote
+			res := pbft.scanCheckPoint(ckph, thehash,quorumsize) //block here
+			if res {
+				pbft.persis.checkpointheight = ckph
+				pbft.persis.accountbalance = pbft.accountbalance
+				// todo checkpoint qc
+			} else {
+				fmt.Println("can't collect enough checkpoint message at height", ckph, "exit")
+			}
+		}
+	}
+}
+
+func (pbft *PBFT) scanCheckPoint(h int, syshash [32]byte, q int) bool {
+	timeouter := time.NewTimer(time.Second*ThreadExit)
+	for {
+		select {
+		case <- timeouter.C:
+			return false
+		default:
+			// todo scancheckpoint
+			acc := pbft.MsgBuff.CountCheckpointVote(h, syshash)
+			if acc>=q {
+				return true
+			} else {
+				time.Sleep(time.Millisecond*ScanInterval)
+			}
+		}
+	}
+}
+
+
 func (pbft *PBFT) statetransfermonitor() {
 	for {
 		select {
@@ -736,10 +808,6 @@ func CalculateQuorumSize(n int) int {
 }
 
 func (pbft *PBFT) updateaccountbalance() {
-	//for _, tx := range pbft.curblock.TransactionList {
-	//	vout := tx.Vout[0]
-	//	pbft.accountbalance[vout.PubKey] += vout.Value
-	//}
 
 	for _, tx := range pbft.curblock.TransactionList {
 		pbft.accountbalance[tx.Source] -= tx.Value
@@ -788,7 +856,7 @@ func (pbft *PBFT) scanPreprepare(ver, view, heigh int, leaderpubkey string, sysh
 					return
 				} else {
 					if view == thepreprepare.View && thepreprepare.Pubkey == leaderpubkey {
-						searchres, theblock := pbft.MsgBuff.SearchBlock(thepreprepare.Digest, syshash)
+						searchres, theblock := pbft.MsgBuff.SearchBlock(thepreprepare.Digest)
 						if searchres {
 							pbft.curblockhash = thepreprepare.Digest
 							pbft.curblock = theblock
@@ -823,10 +891,6 @@ func (pbft *PBFT) scanPrepare(ver, view, heigh int, digest [32]byte, quorumsize 
 				thepreprepare, _ := pbft.MsgBuff.ReadPrepreparelog(theprog)
 				pbft.persis.preparelock = datastruc.PreparedLock{heigh, thepreprepare, thepreprepare.Digest,
 					datastruc.PrepareQC{pbft.MsgBuff.ReadPrepareVoteQuorum(theterm, heigh, quorumsize)}}
-				if heigh>=2 {
-					pbft.persis.checkpointheight = heigh-1
-					pbft.persis.accountbalance = pbft.accountbalance
-				}
 				pbft.mu.Unlock()
 				//fmt.Println("instance", pbft.Id, "got", acc, "prepare-vote at height", heigh)
 				pbft.cachedb.UpdateAfterPrepare(heigh, digest, pbft.persis.preparelock.LockedQC)
@@ -902,65 +966,25 @@ func (pbft *PBFT) scanNewView(ver, view int, leaderpubkey string) {
 			pbft.mu.Lock()
 			if ok {
 				if nvmsg.Pubkey==leaderpubkey {
-					if pbft.persis.commitlock.LockedHeight<nvmsg.CKpoint {
-						// TODO, query and commit lost blocks
-						//fmt.Println("I'm instance", pbft.Id, "and I'm lost!")
-						log.Panic("instance ", pbft.Id," realizes it's lost when analysing new-view msg")
-					} else if pbft.persis.commitlock.LockedHeight==nvmsg.CKpoint {
-						if nvmsg.Clock.LockedHeight==0 {
-							log.Panic("instance ", pbft.Id, " finds a reproposed pre-prepare msg in the new-view msg, stop executing")
-							// case1 the nvmsg has only reproposed pre-prepare
-							//pbft.remainblocknuminnewview = len(nvmsg.PPMsgSet)
-							//for _, pppmsg := range nvmsg.PPMsgSet {
-							//	theprog := datastruc.Progres{pppmsg.Ver, pppmsg.View, pppmsg.Order}
-							//	//fmt.Println("instance", pbft.id, "insert a pre-prepare msg to its pre-prepare_log, which has ver", pppmsg.Ver, "view", pppmsg.View, "height", pppmsg.Order, "digest", pppmsg.Digest[0:10])
-							//}
-							//pbft.mu.Unlock()
-							//fmt.Println("instance",pbft.Id,"local committed height equals the new-view msg checkpoint height, enters the next height to deal with the", len(nvmsg.PPMsgSet),"re-proposal")
-							//pbft.inauguratedCh <- datastruc.Progres{ver, view, nvmsg.CKpoint + 1}
+					if nvmsg.Kind=="c" && pbft.persis.commitlock.LockedHeight==nvmsg.Lockheight {
+						if nvmsg.Bloc.Blockhead.Height==0 {
+							// means there is no config-block in new-view msg
+							fmt.Println("instance ",pbft.Id," local committed height equals the new-view msg commit-locked height, enters the next height, the leade will freely propose")
+							pbft.remainblocknuminnewview = 0
+							pbft.mu.Unlock()
+							pbft.inauguratedCh <- datastruc.Progres{ver, view, pbft.persis.commitlock.LockedHeight + 1}
 							return
 						} else {
-							// case2 the nvmsg has only commit-lock, which is higher than local commit height
-							pbft.succLine.SucclinePrint()
-							log.Panic("instance ", pbft.Id, " finds a commit-lock in the new-view msg from", nvmsg.Pubkey, "while it only prepares it, stop executing")
-							// TODO, query and commit that block
-							//fmt.Println("I'm instance", pbft.Id, "and I'm lost!")
-						}
-					} else if pbft.persis.commitlock.LockedHeight==nvmsg.CKpoint+1 {
-						if nvmsg.Clock.LockedHeight==0 {
-							log.Panic("instance ", pbft.Id, " finds a prepare-lock in the new-view msg but it has commit-lock at that height, stop executing")
-							// case1 the nvmsg has only reproposed pre-prepare, but this pre-prepare is exexuted locally, avoid re-excution
-							//pbft.remainblocknuminnewview = len(nvmsg.PPMsgSet)
-							//for _, pppmsg := range nvmsg.PPMsgSet {
-							//	theprog := datastruc.Progres{pppmsg.Ver, pppmsg.View, pppmsg.Order}
-							//}
-							//pbft.mu.Unlock()
-							//fmt.Println("instance",pbft.Id,"local committed height==the new-view msg checkpoint height + 1, enters the next height to deal with the re-proposal and will avoid re-execution")
-							//pbft.inauguratedCh <- datastruc.Progres{ver, view, nvmsg.CKpoint + 1}
+							pbft.remainblocknuminnewview = 1
+							pppmsg := nvmsg.PPMsgSet[0]
+							theprog := datastruc.Progres{pppmsg.Ver, pppmsg.View, pppmsg.Order}
+							pbft.mu.Unlock()
+							fmt.Println("instance ",pbft.Id," finds a config-block in new-view msg, enters the next height", pppmsg.Order, "to deal with it")
+							pbft.inauguratedCh <- theprog
 							return
-						} else {
-							// case2 the nvmsg has only commit-lock, new leader will freely propose
-							// the main interested case in this experiment
-							// query lost blocks, hoping this condition will never trigger after state recovery
-							if nvmsg.Bloc.Blockhead.Height==0 {
-								// means there is no config-block in new-view msg
-								fmt.Println("instance ",pbft.Id," local committed height equals the new-view msg commit-locked height, enters the next height, the leade will freely propose")
-								pbft.remainblocknuminnewview = 0
-								pbft.mu.Unlock()
-								pbft.inauguratedCh <- datastruc.Progres{ver, view, pbft.persis.commitlock.LockedHeight + 1}
-								return
-							} else {
-								pbft.remainblocknuminnewview = 1
-								pppmsg := nvmsg.PPMsgSet[0]
-								theprog := datastruc.Progres{pppmsg.Ver, pppmsg.View, pppmsg.Order}
-								pbft.mu.Unlock()
-								fmt.Println("instance ",pbft.Id," finds a config-block in new-view msg, enters the next height", pppmsg.Order, "to deal with it")
-								pbft.inauguratedCh <- theprog
-								return
-							}
 						}
 					} else {
-						fmt.Println("the new-view msg checkpoint is wrong!")
+						log.Panic("corner case happens")
 					}
 				}
 			}
@@ -970,11 +994,11 @@ func (pbft *PBFT) scanNewView(ver, view int, leaderpubkey string) {
 	}
 }
 
-func (pbft *PBFT) generateaccountbalancehash() [32]byte {
+func (pbft *PBFT) generateaccountbalancehash(clientaccount map[int]string, accountbalance map[string]int) [32]byte {
 
 	value := make([]int, 0)
-	for i:=0; i<len(pbft.clientaccount); i++ {
-		value = append(value, pbft.accountbalance[pbft.clientaccount[i]])
+	for i:=0; i<len(clientaccount); i++ {
+		value = append(value, accountbalance[clientaccount[i]])
 	}
 
 	var content []byte
@@ -986,30 +1010,30 @@ func (pbft *PBFT) generateaccountbalancehash() [32]byte {
 	return hashv
 }
 
-func (pbft *PBFT) GenerateQCandLockForVC() (datastruc.CheckPointQC, datastruc.PreparedLock, datastruc.CommitedLock) {
-	ckpqc := datastruc.CheckPointQC{}
+func (pbft *PBFT) GenerateQCandLockForVC() (datastruc.PreparedLock, datastruc.CommitedLock) {
+	//ckpqc := datastruc.CheckPointQC{}
 	plock := datastruc.PreparedLock{}
 	clock := datastruc.CommitedLock{}
 
 	if pbft.persis.preparelock.LockedHeight>pbft.persis.commitlock.LockedHeight {
 		// case1 has a prepared but uncommited block
-		blochead := pbft.cachedb.ReadBlockHeadFromDB(pbft.persis.commitlock.LockedHeight)
-		ckpointqc := pbft.persis.preparelock.LockedQC
-		ckpqc = datastruc.CheckPointQC{blochead, ckpointqc}
+		//blochead := pbft.cachedb.ReadBlockHeadFromDB(pbft.persis.commitlock.LockedHeight)
+		//ckpointqc := pbft.persis.preparelock.LockedQC
+		//ckpqc = datastruc.CheckPointQC{blochead, ckpointqc}
 		plock = pbft.persis.preparelock
 		// clock is empty
 		//fmt.Println("instance", pbft.Id, "generates a valid prepare-lock and an empty commit-lock at height", plock.LockedHeight)
 	} else {
 		// case2 doesn't have a parpared block
 		// read the stable checkpoint block from database
-		blochead := pbft.cachedb.ReadBlockHeadFromDB(pbft.persis.commitlock.LockedHeight)
-		ckpointqc := pbft.cachedb.ReadPrepareQCFromDB(pbft.persis.commitlock.LockedHeight, pbft.persis.commitlock.LockedHeight)[0]
-		ckpqc = datastruc.CheckPointQC{blochead, ckpointqc}
+		//blochead := pbft.cachedb.ReadBlockHeadFromDB(pbft.persis.commitlock.LockedHeight)
+		//ckpointqc := pbft.cachedb.ReadPrepareQCFromDB(pbft.persis.commitlock.LockedHeight, pbft.persis.commitlock.LockedHeight)[0]
+		//ckpqc = datastruc.CheckPointQC{blochead, ckpointqc}
 		// plock is empty
 		clock = pbft.persis.commitlock
 		//fmt.Println("instance", pbft.Id, "generates a valid commit-lock and an empty prepare-lock at height", clock.LockedHeight)
 	}
-	return ckpqc, plock, clock
+	return plock, clock
 }
 
 func (pbft *PBFT) resetVariForViewChange() {
@@ -1058,24 +1082,15 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.updateaccountbalance()
 			pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
 
-			tmp1 := time.Now()
-			balancehash := pbft.generateaccountbalancehash()
-			fmt.Println("instance", pbft.Id, "generates account balance hash, costs", time.Since(tmp1).Milliseconds(), "ms")
-
-			confighash := pbft.succLine.GetHash()
-			cdedatahash := pbft.cdedata.GenerateStateHash()
-			thehash := datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
-			pbft.systemhash[pbft.currentHeight] = thehash
-
 			pbft.MsgBuff.UpdateTxPoolAfterCommitBlock(pbft.curblock)
 			pbft.MsgBuff.UpdateMeasurementResAfterCommitBlock(pbft.curblock)
 			pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
 
-			if pbft.currentHeight%15==0 {
-				fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
-				pbft.cdedata.PrintResult()
-			} // mechanism1
+			//if pbft.currentHeight%15==0 {
+			//	fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
+			//	pbft.cdedata.PrintResult()
+			//} // mechanism1
 
 
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
@@ -1084,6 +1099,9 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.persis.blockhashlist[pbft.currentHeight] = pbft.curblockhash
 			pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
 			pbft.persis.executedheight[pbft.currentHeight] = true
+
+
+			pbft.checkpointsignalCh <- pbft.currentHeight
 
 			pbft.consenstatus = Unstarted
 			pbft.currentHeight += 1
@@ -1114,7 +1132,6 @@ func (pbft *PBFT) CommitCurConsensOb() {
 					fmt.Println("the leaving-tx processing time(ms) is", requestprocessingtime)
 					pbft.Stop()
 				} else {
-
 					// update member and memberexceptme
 					tmp1 := make([]int, 0)
 					tmp2 := make([]int, 0)
@@ -1134,22 +1151,17 @@ func (pbft *PBFT) CommitCurConsensOb() {
 
 				}
 
-				balancehash := pbft.generateaccountbalancehash()
+
 				pbft.succLine = datastruc.ConstructSuccessionLine(pbft.curblock.Configure)
 				pbft.succLine.CurLeader = pbft.succLine.Tail.Next
 				pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
 
-				//pbft.UpdateByzantineIdentity()
-
-				confighash := pbft.succLine.GetHash()
-				cdedatahash := pbft.cdedata.GenerateStateHash()
-				pbft.systemhash[pbft.currentHeight] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
-
 				pbft.persis.blockhashlist[pbft.currentHeight] = pbft.curblockhash
 				pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
 				pbft.persis.executedheight[pbft.currentHeight] = true
 
+				pbft.checkpointsignalCh <- pbft.currentHeight
 				pbft.reconfighappen = true
 				pbft.currentHeight += 1
 			} else if len(pbft.curblock.JoinTxList)>0 {
@@ -1179,25 +1191,15 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.MsgBuff.UpdateCurConfig(pbft.succLine.ConverToList())
 				pbft.UpdateQuorumSize(pbft.succLine.Leng)
 				fmt.Println("instance", pbft.Id, "thinks the current quorum size is", pbft.quorumsize)
-				//pbft.UpdateByzantineIdentity()
 
 				//if pbft.Id==0 {
 				//	pbft.cdedata.PrintResult()
 				//}
 
-				balancehash := pbft.generateaccountbalancehash()
-				//fmt.Println("INSTANCE", pbft.Id, "balance hash:", balancehash)
-				//fmt.Println("instace", pbft.Id, "thinks the leader succession line is")
-				//pbft.succLine.SucclinePrint()
-				confighash := pbft.succLine.GetHash()
-				//fmt.Println("INSTANCE", pbft.Id, "confighash:", confighash)
-				cdedatahash := pbft.cdedata.GenerateStateHash()
-				//fmt.Println("INSTANCE", pbft.Id, "cdedatahash:", cdedatahash)
-				//fmt.Println("INSTANCE", pbft.Id, "ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
-				pbft.systemhash[pbft.currentHeight] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
 				pbft.persis.blockhashlist[pbft.currentHeight] = pbft.curblockhash
 				pbft.persis.logterm[pbft.currentHeight] = datastruc.Term{pbft.vernumber, pbft.viewnumber}
 				pbft.persis.executedheight[pbft.currentHeight] = true
+				pbft.checkpointsignalCh <- pbft.currentHeight
 				pbft.reconfighappen = true
 				pbft.currentHeight += 1
 
@@ -1387,13 +1389,16 @@ func (pbft *PBFT) broadcastCommit(ver, view, n int, digest [32]byte) {
 	pbft.broadcdataCh <- datatosend
 }
 
-func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.LeaveTx, ckpheigh int, ckpqc datastruc.CheckPointQC,
-	plock datastruc.PreparedLock, clock datastruc.CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) {
+func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.LeaveTx, plock datastruc.PreparedLock,
+	clock datastruc.CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) {
 	//ltxset = []datastruc.LeaveTx{} // mechanism2
-	vcmsg := datastruc.NewViewChangeMsg(ver, view, pbft.Id, ltxset, ckpheigh, ckpqc, plock, clock, pubkey, prvkey)
+	var vcmsg datastruc.ViewChangeMsg
+
 	if clock.LockedHeight >0 {
+		vcmsg = datastruc.NewViewChangeMsg(ver, view, pbft.Id, ltxset, clock.LockedHeight, plock, clock, pubkey, prvkey)
 		fmt.Println("instance",pbft.Id, "creates a view-change msg at ver", ver, "view", view, "with commit-lock at height", vcmsg.Clock.LockedHeight, "with digest", vcmsg.Clock.LockedHash[0:6])
 	} else {
+		vcmsg = datastruc.NewViewChangeMsg(ver, view, pbft.Id, ltxset, plock.LockedHeight, plock, clock, pubkey, prvkey)
 		fmt.Println("instance",pbft.Id, "creates a view-change msg at ver", ver, "view", view, "with prepare-lock at height", vcmsg.Plock.LockedHeight, "with digest", vcmsg.Plock.LockedHash[0:6])
 	}
 	var buff bytes.Buffer
@@ -1431,18 +1436,18 @@ func (pbft *PBFT) decideNewViewMsgKind(vcset []datastruc.ViewChangeMsg) (string,
 
 	if hasltx {
 		thekind = "withblock"
-		maxckpheight := 0
+		maxlockheight := 0
 		for _, vcmsg := range vcset {
-			maxckpheight = datastruc.Takemax(maxckpheight, vcmsg.Ckpheight)
+			maxlockheight = datastruc.Takemax(maxlockheight, vcmsg.Lockheight)
 		}
-		proposeheight := maxckpheight + 2 // height of the config-block including the theltx
+		proposeheight := maxlockheight+1  // height of the config-block including the theltx
 
 		// pack config-block at proposeheight
-		if pbft.persis.commitlock.LockedHeight==maxckpheight+1 {
+		if pbft.persis.commitlock.LockedHeight==maxlockheight {
 			// means it can directly pack a new config-block
 			peers := datastruc.GenerateNewConfigForLeave(pbft.succLine.ConverToList(), theltx)
 			bloc = datastruc.NewLeaveConfigBlock(pbft.PubKeystr, pbft.PriKey, theltx, peers, proposeheight, pbft.vernumber,
-				pbft.persis.blockhashlist[pbft.persis.commitlock.LockedHeight], pbft.systemhash[pbft.persis.commitlock.LockedHeight])
+				pbft.persis.blockhashlist[pbft.persis.commitlock.LockedHeight])
 		} else {
 			//fmt.Println("leader can't pack config-block for the leave-tx because it's left behind")
 			log.Panic("leader ", pbft.Id, " can't pack config-block for the leave-tx because it's left behind")
@@ -1508,6 +1513,26 @@ func (pbft *PBFT) broadcastNewViewWithBlock(ver int, view int, vcset []datastruc
 	pbft.broadcdataCh <- datatosend
 }
 
+
+func (pbft *PBFT) broadcastCheckPoint(ckpm datastruc.CheckPointMsg) {
+	var buff bytes.Buffer
+	enc := gob.NewEncoder(&buff)
+	err := enc.Encode(ckpm)
+	if err != nil {
+		log.Panic(err)
+	}
+	content := buff.Bytes()
+
+	pbft.MsgBuff.Msgbuffmu.Lock()
+	h := ckpm.Height
+	pbft.MsgBuff.CheckpointVote[h] = append(pbft.MsgBuff.CheckpointVote[h], ckpm)
+	pbft.MsgBuff.Msgbuffmu.Unlock()
+
+	datatosend := datastruc.Datatosend{pbft.membersexceptme, "checkpointmsg", content}
+	pbft.broadcdataCh <- datatosend
+}
+
+
 func (pbft *PBFT) InformNewPeer(cbloc datastruc.ConfirmedBlock,dest int) {
 	var buff bytes.Buffer
 	gob.Register(elliptic.P256())
@@ -1539,6 +1564,14 @@ func (pbft *PBFT) waitForStateTransferReply(height int) map[string]int {
 			if rstmsg.Height==height {
 				fmt.Println("instance", pbft.Id, "receives a state-transfer-reply at height", rstmsg.Height)
 				balance = rstmsg.AccountBalance
+				if rstmsg.CheckPointHeight<height-1 {
+					for _,block:=range rstmsg.BlockList {
+						for _, tx := range block.TransactionList {
+							balance[tx.Source] -= tx.Value
+							balance[tx.Recipient] += tx.Value
+						}
+					}
+				}
 				return balance
 			}
 		}
@@ -1546,6 +1579,7 @@ func (pbft *PBFT) waitForStateTransferReply(height int) map[string]int {
 }
 
 func (pbft *PBFT) QueryStateTransfer(heigh int, dest int) {
+	// heigh means that: I've the block at heigh, please send me the latest checkpoint and blocks from the checkpoint to heigh
 	querymsg := datastruc.NewQueryStateTransfer(pbft.Id, heigh, pbft.PubKeystr, pbft.PriKey)
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)
@@ -1561,7 +1595,18 @@ func (pbft *PBFT) QueryStateTransfer(heigh int, dest int) {
 }
 
 func (pbft *PBFT) ReplyStateTransfer(height, id int) {
-	replymsg := datastruc.NewReplyStateTransfer(height, pbft.cachedb.ReadAccountBalanceAtHeight(height), pbft.PubKeystr, pbft.PriKey)
+	// find most recent checkpoint.
+	ckph := pbft.persis.checkpointheight
+	var blocklist []datastruc.Block
+	if ckph>=height-1 {
+		// do nothing, keep blocklist empty
+	} else if ckph<height-1  {
+		blocklist = pbft.cachedb.ReadBlockFromDB(ckph+1, height-1)
+	} else {
+		fmt.Println("state transfer queried height is not valid")
+	}
+
+	replymsg := datastruc.NewReplyStateTransfer(height, ckph, pbft.cachedb.ReadAccountBalanceAtHeight(ckph), blocklist, pbft.PubKeystr, pbft.PriKey)
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(replymsg)

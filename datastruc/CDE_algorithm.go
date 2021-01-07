@@ -32,7 +32,7 @@ type CDEdata struct {
 
 	sanitizationflag map[int]int
 	validatetxbatachtime []int
-	hashgeneratetime []int
+	//hashgeneratetime []int
 
 	SendCh chan DatatosendWithIp
 	BroadcastCh chan Datatosend
@@ -250,56 +250,56 @@ func (cdedata *CDEdata) responseWriteWoHash(writetestmsg WriteTestMsg, replytone
 	}
 }
 
-func (cdedata *CDEdata) responseWriteWithHash(writetestmsg WriteTestMsg, replytonew bool) {
-	var hv [32]byte
-
-	if replytonew {
-		if len(cdedata.hashgeneratetime)==0 {
-			time.Sleep(time.Duration(50)*time.Millisecond)
-		} else {
-			t := 0
-			for _,v := range cdedata.hashgeneratetime {
-				t += v
-			}
-			t = t/len(cdedata.hashgeneratetime)
-			fmt.Println("sleep to replace system_hash_generation, time:", t, "ms")
-			time.Sleep(time.Duration(t)*time.Millisecond)
-		}
-	} else {
-		start := time.Now()
-		var content []byte
-		for i:=0; i<20000; i++ {
-			EncodeInt(&content, i)
-		}
-		hv = sha256.Sum256(content)
-		elaps := int(time.Since(start).Milliseconds())
-		cdedata.hashgeneratetime = append(cdedata.hashgeneratetime, elaps)
-		fmt.Println("instance", cdedata.Id, "generate_account_balance_hash_costs", elaps, "ms")
-	}
-
-	wrrmsg := NewWriteResponseWithHashMsg(cdedata.Id, writetestmsg.Round, writetestmsg.Challange, hv)
-	var buff bytes.Buffer
-	gob.Register(elliptic.P256())
-	enc := gob.NewEncoder(&buff)
-	err := enc.Encode(wrrmsg)
-	if err != nil {
-		log.Panic(err)
-	}
-	content := buff.Bytes()
-
-	if replytonew {
-		destip := make([]string, 0)
-		tmp := writetestmsg.IpAddr
-		destip = append(destip, tmp)
-		datatosend := DatatosendWithIp{destip, "writeresponwfromold", content}
-		cdedata.SendCh <- datatosend
-	} else {
-		dest := make([]int, 0)
-		dest = append(dest, writetestmsg.Tester)
-		datatosend := Datatosend{dest, "writeresponw", content}
-		cdedata.BroadcastCh <- datatosend
-	}
-}
+//func (cdedata *CDEdata) responseWriteWithHash(writetestmsg WriteTestMsg, replytonew bool) {
+//	var hv [32]byte
+//
+//	if replytonew {
+//		if len(cdedata.hashgeneratetime)==0 {
+//			time.Sleep(time.Duration(50)*time.Millisecond)
+//		} else {
+//			t := 0
+//			for _,v := range cdedata.hashgeneratetime {
+//				t += v
+//			}
+//			t = t/len(cdedata.hashgeneratetime)
+//			fmt.Println("sleep to replace system_hash_generation, time:", t, "ms")
+//			time.Sleep(time.Duration(t)*time.Millisecond)
+//		}
+//	} else {
+//		start := time.Now()
+//		var content []byte
+//		for i:=0; i<20000; i++ {
+//			EncodeInt(&content, i)
+//		}
+//		hv = sha256.Sum256(content)
+//		elaps := int(time.Since(start).Milliseconds())
+//		cdedata.hashgeneratetime = append(cdedata.hashgeneratetime, elaps)
+//		fmt.Println("instance", cdedata.Id, "generate_account_balance_hash_costs", elaps, "ms")
+//	}
+//
+//	wrrmsg := NewWriteResponseWithHashMsg(cdedata.Id, writetestmsg.Round, writetestmsg.Challange, hv)
+//	var buff bytes.Buffer
+//	gob.Register(elliptic.P256())
+//	enc := gob.NewEncoder(&buff)
+//	err := enc.Encode(wrrmsg)
+//	if err != nil {
+//		log.Panic(err)
+//	}
+//	content := buff.Bytes()
+//
+//	if replytonew {
+//		destip := make([]string, 0)
+//		tmp := writetestmsg.IpAddr
+//		destip = append(destip, tmp)
+//		datatosend := DatatosendWithIp{destip, "writeresponwfromold", content}
+//		cdedata.SendCh <- datatosend
+//	} else {
+//		dest := make([]int, 0)
+//		dest = append(dest, writetestmsg.Tester)
+//		datatosend := Datatosend{dest, "writeresponw", content}
+//		cdedata.BroadcastCh <- datatosend
+//	}
+//}
 
 func (cdedata *CDEdata) CDETestMonitor(closeCh chan bool) {
 	// respond when receiving a test.
@@ -317,7 +317,7 @@ theloop:
 				var writetest WriteTestMsg
 				writetest.Deserialize(thetest.Msg)
 				go cdedata.responseWriteWoHash(writetest, false)
-				go cdedata.responseWriteWithHash(writetest, false)
+				//go cdedata.responseWriteWithHash(writetest, false)
 			case "proposetestfromnew":
 				var proposetest ProposeTestMsg
 				proposetest.Deserialize(thetest.Msg)
@@ -328,7 +328,7 @@ theloop:
 				writetest.Deserialize(thetest.Msg)
 				fmt.Println("instance", cdedata.Id, "receives a write-test from new")
 				go cdedata.responseWriteWoHash(writetest, true)
-				go cdedata.responseWriteWithHash(writetest, true)
+				//go cdedata.responseWriteWithHash(writetest, true)
 			case "proposetestfromold":
 				var proposetest ProposeTestMsg
 				proposetest.Deserialize(thetest.Msg)
@@ -339,7 +339,7 @@ theloop:
 				writetest.Deserialize(thetest.Msg)
 				//fmt.Println("instance", cdedata.Id, "receives a write-test from old instance")
 				go cdedata.responseWriteWoHash(writetest, false)
-				go cdedata.responseWriteWithHash(writetest, false)
+				//go cdedata.responseWriteWithHash(writetest, false)
 			}
 		case <-closeCh:
 			//fmt.Println("CDEResponseMonitor function exits")

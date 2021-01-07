@@ -105,7 +105,7 @@ func (delayv *DelayVector) UpdateWrite() {
 	starttime := time.Now()
 	for _,v:=range delayv.Peers {
 		delayv.WriteDelaydata[v] = MAXWAITTIME
-		delayv.HashDelaydata[v] = MAXWAITTIME
+		delayv.HashDelaydata[v] = 0
 	}
 	delayv.WriteDelaydata[delayv.Tester] = 0
 	delayv.HashDelaydata[delayv.Tester] = 0
@@ -246,7 +246,7 @@ func (delayv *DelayVector) UpdateWriteAtNew() {
 	starttime := time.Now()
 	for _,v:=range delayv.Peers {
 		delayv.WriteDelaydata[v] = MAXWAITTIME
-		delayv.HashDelaydata[v] = MAXWAITTIME
+		delayv.HashDelaydata[v] = 0
 	} // note do not need to set delayv.WriteDelaydata[v] = 0, because delayv.peers doesn't contain tester.
 
 	thetimer := time.NewTimer(time.Millisecond*MAXWAITTIME)

@@ -31,6 +31,7 @@ type MessageBuffer struct {
 	PrepareVote map[Term]map[int][]PrepareMsg // (ver, view) -> map[height]msgset
 	CommitVote map[Term]map[int][]CommitMsg // (ver, view) -> map[height]msgset
 	Vcmsg map[Term][]ViewChangeMsg // (ver, view) -> msgset
+	CheckpointVote map[int][]CheckPointMsg // height -> msg
 
 	AccountBalance map[string]int
 	MeasurementResPool map[[32]byte]MeasurementResultMsg
@@ -47,6 +48,7 @@ func (msgbuf *MessageBuffer) Initialize() {
 	msgbuf.PrepareVote = make(map[Term]map[int][]PrepareMsg)
 	msgbuf.CommitVote = make(map[Term]map[int][]CommitMsg)
 	msgbuf.Vcmsg = make(map[Term][]ViewChangeMsg)
+	msgbuf.CheckpointVote = make(map[int][]CheckPointMsg)
 	msgbuf.AccountBalance = make(map[string]int)
 
 	msgbuf.MeasurementResPool = make(map[[32]byte]MeasurementResultMsg)
@@ -82,17 +84,15 @@ func (msgbuf *MessageBuffer) ReadInitialConfig(targetnum int) (bool, []PeerIdent
 	return false, []PeerIdentity{}
 }
 
-func (msgbuf *MessageBuffer) SearchBlock(blockhash [32]byte, syshash [32]byte) (bool, *Block) {
+func (msgbuf *MessageBuffer) SearchBlock(blockhash [32]byte) (bool, *Block) {
 	msgbuf.Msgbuffmu.Lock()
 	defer msgbuf.Msgbuffmu.Unlock()
 	var pblock *Block
 
 	for _, bloc := range msgbuf.BlockPool {
 		if TwoHashEqual(blockhash, bloc.GetHash()) {
-			if TwoHashEqual(syshash, bloc.Blockhead.SystemHash) {
-				pblock = &bloc
-				return true, pblock
-			}
+			pblock = &bloc
+			return true, pblock
 		}
 	}
 	return false, pblock
@@ -191,6 +191,19 @@ func (msgbuf *MessageBuffer) CountCommitVote(theterm Term, heigh int, digest [32
 			} else {
 				//fmt.Println("commit vote ", i, " digest not match, vote digest is ", vote.Digest[0:6], " vote ver ", vote.Ver, " vote view ", vote.View, " vote order ", vote.Order)
 			}
+		}
+	}
+	return acc
+}
+
+func (msgbuf *MessageBuffer) CountCheckpointVote(h int, syshash [32]byte) int {
+	msgbuf.Msgbuffmu.Lock()
+	defer msgbuf.Msgbuffmu.Unlock()
+
+	acc := 0
+	for _, vote := range msgbuf.CheckpointVote[h] {
+		if TwoHashEqual(syshash, vote.Syshash) {
+			acc += 1
 		}
 	}
 	return acc

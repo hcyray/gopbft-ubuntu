@@ -36,8 +36,9 @@ type ViewChangeMsg struct {
 	Ver int
 	View int
 	SenderId int
-	Ckpheight int
-	Ckpqc CheckPointQC
+	//Ckpheight int
+	//Ckpqc CheckPointQC
+	Lockheight int
 	Plock PreparedLock
 	Clock CommitedLock
 
@@ -53,9 +54,13 @@ type NewViewMsg struct {
 	Pubkey string
 	VCMsgSet []ViewChangeMsg
 
-	CKpoint int // validator could verify the checkpoint by computing from those Clock components.
-	PPMsgSet []PrePrepareMsg
+	//CKpoint int // validator could verify the checkpoint by computing from those Clock components.
+	Lockheight int
+	Kind string
+	Plock PreparedLock
 	Clock CommitedLock
+	PPMsgSet []PrePrepareMsg
+
 
 	//LtxSet []LeaveTx
 	Bloc Block // a config-block for the Leave-tx
@@ -128,22 +133,20 @@ func NewCommitMsg(ver int, view int, order int, digest [32]byte, pubkeystr strin
 	return commitmsg
 }
 
-func NewViewChangeMsg(ver int, view int, senderid int, ltxset []LeaveTx, ckpheigh int, ckpqc CheckPointQC, plock PreparedLock, clock CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) ViewChangeMsg {
+func NewViewChangeMsg(ver int, view int, senderid int, ltxset []LeaveTx, lockheight int, plock PreparedLock, clock CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) ViewChangeMsg {
 	vcmsg := ViewChangeMsg{}
 	vcmsg.Ver = ver
 	vcmsg.View = view
 	vcmsg.SenderId = senderid
-	vcmsg.Ckpheight = ckpheigh
-	vcmsg.Ckpqc = ckpqc
+	//vcmsg.Ckpheight = ckpheigh
+	//vcmsg.Ckpqc = ckpqc
+	vcmsg.Lockheight = lockheight
 	vcmsg.Plock = plock
 	vcmsg.Clock = clock
 	vcmsg.LtxSet = ltxset
 
 
-	//datatosign := sha256.Sum256(vcmsg.Serialize()) // test if the hash is same in sender and receiver
-	//vcmsg.Sig.Sign(datatosign[:], prvkey)
-	datatosign := string(vcmsg.Ver) + "," + string(vcmsg.View) + "," + string(vcmsg.SenderId) + "," +string(vcmsg.Ckpheight)
-	//fmt.Println("create view-change msg sender id: ", senderid, " signs data ", datatosign)
+	datatosign := string(vcmsg.Ver) + "," + string(vcmsg.View) + "," + string(vcmsg.SenderId) + "," +string(vcmsg.Lockheight)
 	vcmsg.Sig.Sign([]byte(datatosign), prvkey)
 	vcmsg.Pubkey = pubkey
 
@@ -158,30 +161,40 @@ func NewNewViewMsgWithBlock(ver int, view int, pubkey string, vcset []ViewChange
 	nvmsg.VCMsgSet = make([]ViewChangeMsg, len(vcset))
 	copy(nvmsg.VCMsgSet, vcset)
 
-	nvmsg.PPMsgSet = []PrePrepareMsg{}
-	// first, find the maximum block height
-	// then, get the locked hash
-	max_s := 0 // the latest checkpoint
+	lockedheigh := 0 // height for the locked(prepared) block
+	kind := "n"
+	var plock PreparedLock
+	var clock CommitedLock
+	thediges := [32]byte{}
+	// first find maximum lockheight in all view-change msg
 	for _, vcmsg := range vcset {
-		max_s = Takemax(max_s, vcmsg.Ckpheight)
+		lockedheigh = Takemax(lockedheigh, vcmsg.Lockheight)
 	}
-	nvmsg.CKpoint = max_s
-	// find if there exists a commitlock
 	for _, vcmsg := range nvmsg.VCMsgSet {
-		if max_s == vcmsg.Ckpheight {
-			if vcmsg.Clock.LockedHeight == max_s + 1 {
-				// believe this is right for some vcmsg, at least the one from leader itself
-				nvmsg.Clock = vcmsg.Clock
+		if lockedheigh == vcmsg.Lockheight {
+			if vcmsg.Clock.LockedHeight>0 {
+				clock = vcmsg.Clock
+				kind = "c"
 				break
+			} else {
+				plock = vcmsg.Plock
+				kind = "p"
+				thediges = vcmsg.Plock.LockedHash
 			}
 		}
 	}
 
-	if nvmsg.Clock.LockedHeight==0 {
-		log.Panic("leader fail when create new-view msg for config-block")
+	nvmsg.Kind = kind
+	nvmsg.Lockheight = lockedheigh
+	nvmsg.Plock = plock
+	nvmsg.Clock = clock
+
+	if nvmsg.Kind=="p" {
+		log.Panic("leader fail when create new-view msg for config-block, it needs to repropose", thediges)
 	}
 
 	// construct the new pre-prepare msg for the config-block
+	nvmsg.PPMsgSet = []PrePrepareMsg{}
 	prepremsg := PrePrepareMsg{}
 	prepremsg.View = view
 	prepremsg.Order = bloc.Blockhead.Height
@@ -193,8 +206,6 @@ func NewNewViewMsgWithBlock(ver int, view int, pubkey string, vcset []ViewChange
 
 	nvmsg.Bloc = bloc
 
-	//datatosign := sha256.Sum256(nvmsg.Serialize())
-	//nvmsg.Sig.Sign(datatosign[:], prvkey)
 	datatosign := "newviewmsg," + string(nvmsg.Ver) + "," + string(nvmsg.View)
 	nvmsg.Sig.Sign([]byte(datatosign), prvkey)
 	nvmsg.Pubkey = pubkey
@@ -212,31 +223,38 @@ func NewNewViewMsgWithoutBlock(ver int, view int, pubkey string, vcset []ViewCha
 	nvmsg.VCMsgSet = make([]ViewChangeMsg, len(vcset))
 	copy(nvmsg.VCMsgSet, vcset)
 
-	// calculate nvmsg.PPMsgSet
-	nvmsg.PPMsgSet = []PrePrepareMsg{}
-	// first, find the maximum block height
-	// then, get the locked hash
-	max_s := 0 // the latest checkpoint
+
 	lockedheigh := 0 // height for the locked(prepared) block
+	kind := "n"
+	var plock PreparedLock
+	var clock CommitedLock
 	thediges := [32]byte{}
+	// first find maximum lockheight in all view-change msg
 	for _, vcmsg := range vcset {
-		max_s = Takemax(max_s, vcmsg.Ckpheight)
+		lockedheigh = Takemax(lockedheigh, vcmsg.Lockheight)
 	}
-	nvmsg.CKpoint = max_s
-	// find if there exists a commitlock
 	for _, vcmsg := range nvmsg.VCMsgSet {
-		if max_s == vcmsg.Ckpheight {
-			if vcmsg.Clock.LockedHeight == max_s + 1 {
-				nvmsg.Clock = vcmsg.Clock
+		if lockedheigh == vcmsg.Lockheight {
+			if vcmsg.Clock.LockedHeight>0 {
+				clock = vcmsg.Clock
+				kind = "c"
 				break
+			} else {
+				plock = vcmsg.Plock
+				kind = "p"
+				thediges = vcmsg.Plock.LockedHash
 			}
-			lockedheigh = vcmsg.Plock.LockedHeight
-			thediges = vcmsg.Plock.LockedHash
 		}
 	}
 
+	nvmsg.Kind = kind
+	nvmsg.Lockheight = lockedheigh
+	nvmsg.Plock = plock
+	nvmsg.Clock = clock
+
 	// construct the new pre-prepare msg for the locked hash(block)
-	if nvmsg.Clock.LockedHeight==0 {
+	nvmsg.PPMsgSet = []PrePrepareMsg{}
+	if nvmsg.Kind=="p" {
 		prepremsg := PrePrepareMsg{}
 		prepremsg.View = view
 		prepremsg.Order = lockedheigh
@@ -295,109 +313,3 @@ func AddVcmsg(vcmset *[]ViewChangeMsg, vcmsg ViewChangeMsg) {
 		*vcmset = append(*vcmset, vcmsg)
 	}
 }
-
-//func (prepreparemsg PrePrepareMsg) Serialize() []byte {
-//	var encoded bytes.Buffer
-//
-//	gob.Register(elliptic.P256())
-//	enc := gob.NewEncoder(&encoded)
-//	err := enc.Encode(prepreparemsg)
-//	if err != nil {
-//		log.Panic(err)
-//	}
-//
-//	return encoded.Bytes()
-//}
-
-//func (preparemsg PrepareMsg) Serialize() []byte {
-//	var encoded bytes.Buffer
-//
-//	gob.Register(elliptic.P256())
-//	enc := gob.NewEncoder(&encoded)
-//	err := enc.Encode(preparemsg)
-//	if err != nil {
-//		log.Panic(err)
-//	}
-//
-//	return encoded.Bytes()
-//}
-
-//func (commitmsg CommitMsg) Serialize() []byte {
-//	var encoded bytes.Buffer
-//	gob.Register(elliptic.P256())
-//	enc := gob.NewEncoder(&encoded)
-//	err := enc.Encode(commitmsg)
-//	if err != nil {
-//		log.Panic(err)
-//	}
-//
-//	return encoded.Bytes()
-//}
-
-//func (vcmsg *ViewChangeMsg) Serialize() []byte {
-//	var encoded bytes.Buffer
-//	gob.Register(elliptic.P256())
-//	enc := gob.NewEncoder(&encoded)
-//	err := enc.Encode(vcmsg)
-//	if err != nil {
-//		log.Panic(err)
-//	}
-//
-//	return encoded.Bytes()
-//}
-
-//func (nvmsg NewViewMsg) Serialize() []byte {
-//	var encoded bytes.Buffer
-//	gob.Register(elliptic.P256())
-//	enc := gob.NewEncoder(&encoded)
-//	err := enc.Encode(nvmsg)
-//	if err != nil {
-//		log.Panic(err)
-//	}
-//
-//	return encoded.Bytes()
-//}
-//
-//func (prepareqc *PrepareQC) Serialize() []byte {
-//	var encoded bytes.Buffer
-//	enc := gob.NewEncoder(&encoded)
-//	err := enc.Encode(*prepareqc)
-//	if err != nil {
-//		log.Panic(err)
-//	}
-//	return encoded.Bytes()
-//}
-
-//func (prepareqc *PrepareQC) Deserialize(conten []byte) {
-//	var buff bytes.Buffer
-//	var theqc PrepareQC
-//	buff.Write(conten)
-//	dec := gob.NewDecoder(&buff)
-//	err := dec.Decode(&theqc)
-//	if err != nil {
-//		log.Panic(err)
-//	}
-//	prepareqc.PrepareMsgSet = theqc.PrepareMsgSet
-//}
-
-//func (commitqc *CommitQC) Serialize() []byte {
-//	var encoded bytes.Buffer
-//	enc := gob.NewEncoder(&encoded)
-//	err := enc.Encode(*commitqc)
-//	if err != nil {
-//		log.Panic(err)
-//	}
-//	return encoded.Bytes()
-//}
-//
-//func (commitqc *CommitQC) Deserialize(conten []byte) {
-//	var buff bytes.Buffer
-//	buff.Write(conten)
-//	dec := gob.NewDecoder(&buff)
-//	err := dec.Decode(&commitqc)
-//	if err != nil {
-//		fmt.Println("serialized commitqc decoding error")
-//		log.Panic(err)
-//	}
-//}
-

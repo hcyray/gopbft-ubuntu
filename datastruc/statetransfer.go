@@ -2,6 +2,14 @@ package datastruc
 
 import "crypto/ecdsa"
 
+type CheckPointMsg struct {
+	Id int
+	Height int
+	Syshash [32]byte
+	Pubkey string
+	Sig PariSign
+}
+
 type ConfirmedBlock struct {
 	PreppMsg PrePrepareMsg
 	Bloc Block
@@ -17,8 +25,11 @@ type QueryStateTransMsg struct {
 }
 
 type ReplyStateTransMsg struct {
+
 	Height int
 	AccountBalance map[string]int
+	CheckPointHeight int
+	BlockList []Block
 
 	Pubkey string
 	Sig PariSign
@@ -33,6 +44,16 @@ type ReadConfigReply struct {
 	Config []PeerIdentity
 }
 
+func NewCheckPointMsg(id int, h int, syshash [32]byte, pubk string) CheckPointMsg {
+	cpm := CheckPointMsg{}
+	cpm.Id = id
+	cpm.Height = h
+	cpm.Syshash = syshash
+	cpm.Pubkey = pubk
+	// todo, add sig
+	return cpm
+}
+
 func NewQueryStateTransfer(id int, height int, pubkey string, prvkey *ecdsa.PrivateKey) QueryStateTransMsg {
 	qstmsg := QueryStateTransMsg{}
 	qstmsg.Id = id
@@ -44,10 +65,12 @@ func NewQueryStateTransfer(id int, height int, pubkey string, prvkey *ecdsa.Priv
 	return qstmsg
 }
 
-func NewReplyStateTransfer(height int, balance map[string]int, pubkey string, prvkey *ecdsa.PrivateKey) ReplyStateTransMsg {
+func NewReplyStateTransfer(height int, ckpheight int, balance map[string]int, blocklist []Block, pubkey string, prvkey *ecdsa.PrivateKey) ReplyStateTransMsg {
 	replymsg := ReplyStateTransMsg{}
 	replymsg.Height = height
+	replymsg.CheckPointHeight = ckpheight
 	replymsg.AccountBalance = balance
+	replymsg.BlockList = blocklist
 	datatosign := "replyforstatetransfer" + string(height)
 
 	replymsg.Pubkey = pubkey

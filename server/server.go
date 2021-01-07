@@ -252,6 +252,8 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 			go serv.handleBlock(request[commandLength:])
 		case "confirmedblock":
 			go serv.handleConfirmedBlock(request[commandLength:])
+		case "checkpointmsg":
+			go serv.handleCheckpointMsg(request[commandLength:])
 		case "prepreparemsg":
 			go serv.handlePreprepareMsg(request[commandLength:])
 		case "preparemsg":
@@ -729,6 +731,27 @@ func (serv *Server) handleConfirmedBlock(content []byte) {
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
+
+func (serv *Server) handleCheckpointMsg(content []byte) {
+	var buff bytes.Buffer
+	var ckpm datastruc.CheckPointMsg
+	buff.Write(content)
+	dec := gob.NewDecoder(&buff)
+	err := dec.Decode(&ckpm)
+	if err != nil {
+		fmt.Println("checkpoint msg decoding error")
+	}
+
+	// add verification
+
+	serv.msgbuff.Msgbuffmu.Lock()
+	h := ckpm.Height
+	serv.msgbuff.CheckpointVote[h] = append(serv.msgbuff.CheckpointVote[h], ckpm)
+	serv.msgbuff.Msgbuffmu.Unlock()
+}
+
+
+
 func (serv *Server) handlePreprepareMsg(content []byte) {
 	var buff bytes.Buffer
 	var prepreparemsg datastruc.PrePrepareMsg
@@ -839,7 +862,7 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 		log.Panic(err)
 	}
 
-	datatoverify := []byte(string(vcmsg.Ver) + "," + string(vcmsg.View) + "," + string(vcmsg.SenderId) + "," +string(vcmsg.Ckpheight))
+	datatoverify := []byte(string(vcmsg.Ver) + "," + string(vcmsg.View) + "," + string(vcmsg.SenderId) + "," +string(vcmsg.Lockheight))
 	pub := datastruc.DecodePublic(vcmsg.Pubkey)
 	if !vcmsg.Sig.Verify(datatoverify[:], pub) {
 		fmt.Println("serve", serv.id, "receives a view-change msg, but the signature is wrong!")
@@ -882,10 +905,10 @@ func (serv *Server) handleNewViewMsg(conten []byte) {
 		return
 	}
 
-	if nvmsg.Clock.LockedHeight==0 {
-		fmt.Println("server", serv.id, "received new-view msg in ver", nvmsg.Ver, "view", nvmsg.View, "with a reproposed pre-prepare at height", nvmsg.CKpoint+1)
-	} else {
-		fmt.Println("server", serv.id, "received new-view msg in ver", nvmsg.Ver, "view", nvmsg.View, "with a commit-lock at height", nvmsg.Clock.LockedHeight)
+	if nvmsg.Kind=="p" {
+		fmt.Println("server", serv.id, "received new-view msg in ver", nvmsg.Ver, "view", nvmsg.View, "with a prepare-lock at height", nvmsg.Lockheight)
+	} else if nvmsg.Kind=="c" {
+		fmt.Println("server", serv.id, "received new-view msg in ver", nvmsg.Ver, "view", nvmsg.View, "with a commit-lock at height", nvmsg.Lockheight)
 	}
 
 	theterm := datastruc.Term{nvmsg.Ver, nvmsg.View}
