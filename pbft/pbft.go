@@ -1090,7 +1090,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
 
-			if pbft.currentHeight%15==0 {
+			if pbft.currentHeight%15==4 {
 				fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
 				pbft.cdedata.PrintResult()
 			} // mechanism1
@@ -1111,7 +1111,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.currentHeight += 1
 			pbft.curblockhash = [32]byte{}
 		} else {
-			log.Panic("the height has been executed")
+			log.Panic("the height has been executed before, avoid re-execution")
 		}
 	} else if pbft.curblock.Blockhead.Kind=="configblock" {
 		if pbft.persis.executedheight[pbft.currentHeight]==false {
