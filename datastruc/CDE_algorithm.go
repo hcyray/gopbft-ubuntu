@@ -911,9 +911,9 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 	for k:=0; k<5; k++ {
 		for i:=0; i<N; i++ {
 			if O_set[i]>0 {
-				Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i] + O_set[i]
+				Time_recv_pre_prepare[i] += blockdelay[l][i] + validatedelay[l][i] + O_set[i]
 			} else {
-				Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i]
+				Time_recv_pre_prepare[i] += blockdelay[l][i] + validatedelay[l][i]
 			}
 		}
 		for i:=0; i<N; i++ {
