@@ -950,10 +950,20 @@ func (cdedata *CDEdata) CopyData() CDEdata {
 		newcdedata.ValidationDelayMatrix[v] = make(map[int]int)
 		newcdedata.HashDelayMatrix[v] = make(map[int]int)
 
-		newcdedata.ProposeDelayMatrix[v] = cdedata.ProposeDelayMatrix[v]
-		newcdedata.ValidationDelayMatrix[v] = cdedata.ValidationDelayMatrix[v]
-		newcdedata.WriteDelayMatrix[v] = cdedata.WriteDelayMatrix[v]
-		newcdedata.HashDelayMatrix[v] = cdedata.HashDelayMatrix[v]
+
+		for ke,va:=range cdedata.ProposeDelayMatrix[v] {
+			newcdedata.ProposeDelayMatrix[v][ke] = va
+		}
+		for ke,va := range cdedata.ValidationDelayMatrix[v] {
+			newcdedata.ValidationDelayMatrix[v][ke] = va
+		}
+		for ke,va := range cdedata.WriteDelayMatrix[v] {
+			newcdedata.WriteDelayMatrix[v][ke] = va
+		}
+		for ke,va := range cdedata.HashDelayMatrix[v] {
+			newcdedata.HashDelayMatrix[v][ke] = va
+		}
+
 	}
 	newcdedata.sanitizationflag = make(map[int]int)
 	for k,v:=range cdedata.sanitizationflag {
