@@ -371,7 +371,7 @@ func (pbft *PBFT) Run() {
 		//if elap>74 {
 		//	pbft.Stop()
 		//}
-		if pbft.currentHeight > 180 {
+		if pbft.currentHeight > 200 {
 			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 && false {
@@ -1696,7 +1696,7 @@ func (pbft *PBFT) Stop() {
 	for l:=0; l<pbft.succLine.Leng; l++ {
 		pt[l] = pbft.cdedata.CalculateConsensusDelay(l, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]/LeaderLease
 	}
-	for h:=100; h<len(pbft.leaderlog); h++ {
+	for h:=100; h<=len(pbft.leaderlog); h++ {
 		pconsensusdelay := pt[pbft.leaderlog[h]]
 		pbft.predictedconsensustimelog[h] = pconsensusdelay // turnoff this when testing mechanism2
 	}
