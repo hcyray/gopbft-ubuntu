@@ -1701,7 +1701,6 @@ func (pbft *PBFT) Stop() {
 		pbft.predictedconsensustimelog[h] = pconsensusdelay // turnoff this when testing mechanism2
 	}
 
-
 	fmt.Println("end-------------------------------")
 	fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends time", time.Since(pbft.starttime).Seconds(), "s")
 	fmt.Println("tps starttime is", pbft.tpsstarttime.Sub(pbft.starttime).Seconds(), "s, total processed tx is", pbft.acctx,
