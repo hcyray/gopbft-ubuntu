@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const MAXWAITTIME = 1000 // maximum waiting time for reponse message(ms)
+const MAXWAITTIME = 2000 // maximum waiting time for reponse message(ms)
 
 type CDEdata struct {
 	mu sync.Mutex
