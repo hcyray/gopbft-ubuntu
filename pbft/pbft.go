@@ -1689,9 +1689,9 @@ func (pbft *PBFT) Stop() {
 	pbft.stopCh<-true
 
 	// calculate consensu delay
-	for h:=1; h<100; h++ {
-		pbft.predictedconsensustimelog[h] = 2000
-	}
+	//for h:=1; h<100; h++ {
+	//	pbft.predictedconsensustimelog[h] = 2000
+	//}
 	pt := make(map[int]int)
 	for l:=0; l<pbft.succLine.Leng; l++ {
 		pt[l] = pbft.cdedata.CalculateConsensusDelay(l, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]/LeaderLease
