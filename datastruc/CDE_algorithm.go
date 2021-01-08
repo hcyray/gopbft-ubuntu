@@ -802,7 +802,7 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 	}
 	if sanitize {
 		cdeda.Sanitization()
-		fmt.Println("sanitization happens")
+		fmt.Println("sanitization happens at the copy of cdedata when calculating consensus delay for static system")
 	}
 
 
@@ -866,11 +866,11 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 
 	newcdedata := cdedata.CopyData() // current cdedata dimension is N-1
 	fmt.Println("invoke consensus delay calculation for new join, leader is", l, "total number is", N, "qurorum size is", Q)
-	newcdedata.AddNewInstanceData(jtx) // cdedata dimension becomes N after adding the  new node
+	newcdedata.AddNewInstanceData(jtx) // cdedata dimension becomes N after adding the new node
 
-	fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	fmt.Println("\n~~~~~~~~~~~~~~~~newcdedata in CalculateConsensusDelayForNewJointx~~~~~~~~~~~~~~~~~~~~~~~~~")
 	newcdedata.PrintResult()
-	fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	fmt.Println("~~~~~~~~~~~~~~~~newcdedata in CalculateConsensusDelayForNewJointx~~~~~~~~~~~~~~~~~~~~~~~~~\n")
 	sanitize := true
 	for _, id := range newcdedata.Peers {
 		if newcdedata.sanitizationflag[id] == 0 {
@@ -879,9 +879,8 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 	}
 	if sanitize {
 		newcdedata.Sanitization()
-		fmt.Println("sanitization happens when adding new instance")
+		fmt.Println("sanitization happens when calculating consensus delay for adding new instance")
 	}
-
 
 	blockdelay := newcdedata.ProposeDelayConvertToMatrix()
 	validatedelay := newcdedata.ValidationDelayConverToMatrix()

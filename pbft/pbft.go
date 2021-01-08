@@ -300,7 +300,10 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.MsgBuff.UpdateJoinLeaveTxSetAfterCommitBlock(&cblock.Bloc)
 	pbft.MsgBuff.UpdateConfirmedBlockPool(&cblock)
 	pbft.cdedata.UpdateUsingPureDelayData(cblock.Cdedelaydata)
+	fmt.Println("\n~~~~~~~~~~~~~~~~newcdedata in LateSetup~~~~~~~~~~~~~~~~~~~~~~~~~")
 	fmt.Println("new-instance-cdedata.peers:", pbft.cdedata.Peers)
+	pbft.cdedata.PrintResult()
+	fmt.Println("~~~~~~~~~~~~~~~~newcdedata in LateSetup~~~~~~~~~~~~~~~~~~~~~~~~~\n")
 	// invoke state transfer and wait for state-transfer-reply
 	pbft.QueryStateTransfer(cblock.Bloc.Blockhead.Height, 0) // todo, pick a dest or broadcast to the system
 	thebalance := pbft.waitForStateTransferReply(cblock.Bloc.Blockhead.Height)
@@ -338,7 +341,6 @@ func (pbft *PBFT) LateSetup(peerlist []datastruc.PeerIdentity) {
 	pbft.vernumber = cblock.Bloc.Blockhead.Ver
 	pbft.viewnumber = cblock.CommiQC.CommitMsgSet[0].View
 	fmt.Println("new instance ver:", pbft.vernumber, "currheight:", pbft.currentHeight)
-	pbft.cdedata.PrintResult()
 	pbft.systemhash[pbft.currentHeight] = datastruc.GenerateSystemHash(pbft.vernumber, pbft.currentHeight, confighash, balancehash, cdedatahash)
 
 	// enter view-change stage
@@ -1171,11 +1173,13 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			} else if len(pbft.curblock.JoinTxList)>0 {
 				pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 				pbft.MsgBuff.UpdateJoinLeaveTxSetAfterCommitBlock(pbft.curblock)
-				fmt.Println("instance", pbft.Id, "cdedata before adding new node:")
+				fmt.Println("\n~~~~~~~~~~~~~~~~newcdedata in commitcurconsensob before adding new replica~~~~~~~~~~~~~~~~~")
 				pbft.cdedata.PrintResult()
+				fmt.Println("~~~~~~~~~~~~~~~newcdedata in commitcurconsensob before adding new replica~~~~~~~~~~~~~~~~~\n")
 				pbft.cdedata.AddNewInstanceData(pbft.curblock.JoinTxList[0])
-				fmt.Println("instance", pbft.Id, "cdedata after adding new node:")
+				fmt.Println("\n~~~~~~~~~~~~~~~~newcdedata in commitcurconsensob after adding new replica~~~~~~~~~~~~~~~~~")
 				pbft.cdedata.PrintResult()
+				fmt.Println("~~~~~~~~~~~~~~~~newcdedata in commitcurconsensob after adding new replica~~~~~~~~~~~~~~~~~\n")
 				//fmt.Println(pbft.Id, "instance-cdedata.peers:", pbft.cdedata.Peers)
 
 				theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
@@ -1699,7 +1703,8 @@ func (pbft *PBFT) Stop() {
 
 	fmt.Println("viewchagnetime =", pbft.viewchangetimelog)
 	fmt.Println("inauguratetime =", pbft.inauguratetimelog)
-	pbft.cdedata.Sanitization()
+	//pbft.cdedata.Sanitization()
 	pbft.cdedata.PrintResult()
+
 	time.Sleep(time.Second * 100)
 }
