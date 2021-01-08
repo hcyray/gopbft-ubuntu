@@ -1670,7 +1670,6 @@ func EvaluateCapacity(resselfasleader []int, resnewasleader []int, selfid int, n
 }
 
 func (pbft *PBFT) computeTps() {
-
 	for {
 		pbft.mu.Lock()
 		elapsedtime := time.Since(pbft.tpsstarttime).Seconds()
@@ -1693,8 +1692,12 @@ func (pbft *PBFT) Stop() {
 	for h:=1; h<100; h++ {
 		pbft.predictedconsensustimelog[h] = 2000
 	}
+	pt := make(map[int]int)
+	for l:=0; l<pbft.succLine.Leng; l++ {
+		pt[l] = pbft.cdedata.CalculateConsensusDelay(l, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]/LeaderLease
+	}
 	for h:=100; h<len(pbft.leaderlog); h++ {
-		pconsensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.leaderlog[h], pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]/LeaderLease
+		pconsensusdelay := pt[pbft.leaderlog[h]]
 		pbft.predictedconsensustimelog[h] = pconsensusdelay // turnoff this when testing mechanism2
 	}
 

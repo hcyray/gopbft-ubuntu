@@ -823,21 +823,20 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 	for i:=0; i<N; i++ {
 		O_set[i] = 0
 	}
+	for i:=0; i<N; i++ {
+		Time_recv_prepare[i] = make([]int, N)
+	}
+	for i:=0; i<N; i++ {
+		Time_recv_commit[i] = make([]int, N)
+	}
 
 	for k:=0; k<5; k++ {
 		for i:=0; i<N; i++ {
 			if O_set[i]>0 {
-				Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i] + O_set[i]
+				Time_recv_pre_prepare[i] += blockdelay[l][i] + validatedelay[l][i] + O_set[i]
 			} else {
-				Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i]
+				Time_recv_pre_prepare[i] += blockdelay[l][i] + validatedelay[l][i]
 			}
-		}
-
-		for i:=0; i<N; i++ {
-			Time_recv_prepare[i] = make([]int, N)
-		}
-		for i:=0; i<N; i++ {
-			Time_recv_commit[i] = make([]int, N)
 		}
 
 		for i:=0; i<N; i++ {
