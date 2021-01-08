@@ -1090,10 +1090,10 @@ func (pbft *PBFT) CommitCurConsensOb() {
 			pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 			pbft.cdedata.UpdateUsingNewMeasurementRes(pbft.curblock.MeasurementResList)
 
-			//if pbft.currentHeight%15==0 {
-			//	fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
-			//	pbft.cdedata.PrintResult()
-			//} // mechanism1
+			if pbft.currentHeight%15==0 {
+				fmt.Println("cde data result at", time.Since(pbft.starttime).Seconds(), "s:")
+				pbft.cdedata.PrintResult()
+			} // mechanism1
 
 
 			theterm := datastruc.Term{pbft.vernumber, pbft.viewnumber}
@@ -1704,7 +1704,9 @@ func (pbft *PBFT) Stop() {
 	fmt.Println("viewchagnetime =", pbft.viewchangetimelog)
 	fmt.Println("inauguratetime =", pbft.inauguratetimelog)
 	//pbft.cdedata.Sanitization()
+	fmt.Println("\n~~~~~~~~~~~~~~~~cdedata in stop~~~~~~~~~~~~~~~~~~~~~~~~~")
 	pbft.cdedata.PrintResult()
+	fmt.Println("~~~~~~~~~~~~~~~~cdedata in stop~~~~~~~~~~~~~~~~~~~~~~~~~\n")
 
 	time.Sleep(time.Second * 100)
 }
