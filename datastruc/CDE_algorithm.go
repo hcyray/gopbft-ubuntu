@@ -811,53 +811,63 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 	blockdelay := cdeda.ProposeDelayConvertToMatrix()
 	validatedelay := cdeda.ValidationDelayConverToMatrix()
 	votedelay := cdeda.WriteDelayConvertToMatrix()
-	hashdelay := cdeda.HashDelayConvertToMatrix()
 
 	Time_recv_pre_prepare := make([]int, N)
 	Time_recv_prepare := make([][]int, N)
 	Time_recv_commit := make([][]int, N)
 	Time_prepare := make([]int, N)
 	Time_commit := make([]int, N)
-	Time_complete := make([]int, N)
+	//Time_complete := make([]int, N)
 
+	O_set := make([]int, N)
 	for i:=0; i<N; i++ {
-		Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i]
+		O_set[i] = 0
 	}
 
-	for i:=0; i<N; i++ {
-		Time_recv_prepare[i] = make([]int, N)
-	}
-	for i:=0; i<N; i++ {
-		Time_recv_commit[i] = make([]int, N)
-	}
-
-	for i:=0; i<N; i++ {
-		for j:=0; j<N; j++ {
-			Time_recv_prepare[i][j] = Time_recv_pre_prepare[j]+votedelay[j][i]
+	for k:=0; k<5; k++ {
+		for i:=0; i<N; i++ {
+			if O_set[i]>0 {
+				Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i] + O_set[i]
+			} else {
+				Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i]
+			}
 		}
-		sort.Ints(Time_recv_prepare[i])
-	}
 
-	for i:=0; i<N; i++ {
-		Time_prepare[i] = Time_recv_prepare[i][Q-1]
-	}
-
-	for i:=0; i<N; i++ {
-		for j:=0; j<N; j++ {
-			Time_recv_commit[i][j] = Time_prepare[j]+votedelay[j][i]
+		for i:=0; i<N; i++ {
+			Time_recv_prepare[i] = make([]int, N)
 		}
-		sort.Ints(Time_recv_commit[i])
+		for i:=0; i<N; i++ {
+			Time_recv_commit[i] = make([]int, N)
+		}
+
+		for i:=0; i<N; i++ {
+			for j:=0; j<N; j++ {
+				Time_recv_prepare[i][j] = Time_recv_pre_prepare[j]+votedelay[j][i]
+			}
+			sort.Ints(Time_recv_prepare[i])
+		}
+
+		for i:=0; i<N; i++ {
+			Time_prepare[i] = Time_recv_prepare[i][Q-1]
+		}
+
+		for i:=0; i<N; i++ {
+			for j:=0; j<N; j++ {
+				Time_recv_commit[i][j] = Time_prepare[j]+votedelay[j][i]
+			}
+			sort.Ints(Time_recv_commit[i])
+		}
+
+		for i:=0; i<N; i++ {
+			Time_commit[i] = Time_recv_commit[i][Q-1]
+		}
+
+		for i:=0; i<N; i++ {
+			O_set[i] = Time_commit[i] - Time_commit[l]
+		}
 	}
 
-	for i:=0; i<N; i++ {
-		Time_commit[i] = Time_recv_commit[i][Q-1]
-	}
-
-	for i:=0; i<N; i++ {
-		Time_complete[i] = Time_commit[i] + hashdelay[l][i]
-	}
-
-	return Time_complete
+	return Time_commit
 }
 
 func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx JoinTx) []int {
@@ -885,52 +895,63 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 	blockdelay := newcdedata.ProposeDelayConvertToMatrix()
 	validatedelay := newcdedata.ValidationDelayConverToMatrix()
 	votedelay := newcdedata.WriteDelayConvertToMatrix()
-	hashdelay := newcdedata.HashDelayConvertToMatrix()
+	//hashdelay := newcdedata.HashDelayConvertToMatrix()
 
 	Time_recv_pre_prepare := make([]int, N)
 	Time_recv_prepare := make([][]int, N)
 	Time_recv_commit := make([][]int, N)
 	Time_prepare := make([]int, N)
 	Time_commit := make([]int, N)
-	Time_complete := make([]int, N)
+	//Time_complete := make([]int, N)
 
+	O_set := make([]int, N)
 	for i:=0; i<N; i++ {
-		Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i]
-	}
-	for i:=0; i<N; i++ {
-		Time_recv_prepare[i] = make([]int, N)
-	}
-	for i:=0; i<N; i++ {
-		Time_recv_commit[i] = make([]int, N)
+		O_set[i] = 0
 	}
 
-	for i:=0; i<N; i++ {
-		for j:=0; j<N; j++ {
-			Time_recv_prepare[i][j] = Time_recv_pre_prepare[j]+votedelay[j][i]
+	for k:=0; k<5; k++ {
+		for i:=0; i<N; i++ {
+			if O_set[i]>0 {
+				Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i] + O_set[i]
+			} else {
+				Time_recv_pre_prepare[i] = blockdelay[l][i] + validatedelay[l][i]
+			}
 		}
-		sort.Ints(Time_recv_prepare[i])
-	}
-
-	for i:=0; i<N; i++ {
-		Time_prepare[i] = Time_recv_prepare[i][Q-1]
-	}
-
-	for i:=0; i<N; i++ {
-		for j:=0; j<N; j++ {
-			Time_recv_commit[i][j] = Time_prepare[j]+votedelay[j][i]
+		for i:=0; i<N; i++ {
+			Time_recv_prepare[i] = make([]int, N)
 		}
-		sort.Ints(Time_recv_commit[i])
+		for i:=0; i<N; i++ {
+			Time_recv_commit[i] = make([]int, N)
+		}
+
+		for i:=0; i<N; i++ {
+			for j:=0; j<N; j++ {
+				Time_recv_prepare[i][j] = Time_recv_pre_prepare[j]+votedelay[j][i]
+			}
+			sort.Ints(Time_recv_prepare[i])
+		}
+
+		for i:=0; i<N; i++ {
+			Time_prepare[i] = Time_recv_prepare[i][Q-1]
+		}
+
+		for i:=0; i<N; i++ {
+			for j:=0; j<N; j++ {
+				Time_recv_commit[i][j] = Time_prepare[j]+votedelay[j][i]
+			}
+			sort.Ints(Time_recv_commit[i])
+		}
+
+		for i:=0; i<N; i++ {
+			Time_commit[i] = Time_recv_commit[i][Q-1]
+		}
+
+		for i:=0; i<N; i++ {
+			O_set[i] = Time_commit[i] - Time_commit[l]
+		}
 	}
 
-	for i:=0; i<N; i++ {
-		Time_commit[i] = Time_recv_commit[i][Q-1]
-	}
-
-	for i:=0; i<N; i++ {
-		Time_complete[i] = Time_commit[i] + hashdelay[l][i]
-	}
-
-	return Time_complete
+	return Time_commit
 }
 
 func (cdedata *CDEdata) CopyData() CDEdata {

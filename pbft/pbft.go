@@ -571,8 +571,6 @@ func (pbft *PBFT) Run() {
 						elapsed := time.Since(pbft.singleconsensusstarttime).Milliseconds()
 						pbft.consensustimelog[curheight] = int(elapsed)
 						pbft.leaderlog[curheight] = pbft.succLine.CurLeader.Member.Id
-						pconsensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.succLine.CurLeader.Member.Id, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
-						pbft.predictedconsensustimelog[curheight] = pconsensusdelay // turnoff this when testing mechanism2
 
 						pbft.curleaderlease -= 1
 						fmt.Println("instance ", pbft.Id," now finishes height ", curheight, "time costs:", elapsed, "ms")
@@ -1668,8 +1666,7 @@ func (pbft *PBFT) broadcastMeasurementResult(mrmsg datastruc.MeasurementResultMs
 //}
 
 func EvaluateCapacity(resselfasleader []int, resnewasleader []int, selfid int, newid int) bool {
-	//return resselfasleader[newid]<JOININGTHRES && resnewasleader[selfid]<JOININGTHRES
-	return true
+	return resselfasleader[newid]<JOININGTHRES*LeaderLease && resnewasleader[selfid]<JOININGTHRES*LeaderLease
 }
 
 func (pbft *PBFT) computeTps() {
@@ -1691,6 +1688,17 @@ func (pbft *PBFT) computeTps() {
 func (pbft *PBFT) Stop() {
 	pbft.stopCh<-true
 	pbft.stopCh<-true
+
+	// calculate consensu delay
+	for h:=1; h<100; h++ {
+		pbft.predictedconsensustimelog[h] = 2000
+	}
+	for h:=100; h<len(pbft.leaderlog); h++ {
+		pconsensusdelay := pbft.cdedata.CalculateConsensusDelay(pbft.leaderlog[h], pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]/LeaderLease
+		pbft.predictedconsensustimelog[h] = pconsensusdelay // turnoff this when testing mechanism2
+	}
+
+
 	fmt.Println("end-------------------------------")
 	fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends time", time.Since(pbft.starttime).Seconds(), "s")
 	fmt.Println("tps starttime is", pbft.tpsstarttime.Sub(pbft.starttime).Seconds(), "s, total processed tx is", pbft.acctx,
