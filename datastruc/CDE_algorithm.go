@@ -806,7 +806,6 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 	}
 
 
-
 	fmt.Println("calculate consensus delay, Leader:", l, "Total:", N, "Quorumsize:", Q)
 	blockdelay := cdeda.ProposeDelayConvertToMatrix()
 	validatedelay := cdeda.ValidationDelayConverToMatrix()
@@ -834,10 +833,6 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 	for i:=0; i<K; i++ {
 		Time_commit[i] = make([]int, N)
 	}
-
-
-
-
 
 
 	for k:=0; k<5; k++ {
