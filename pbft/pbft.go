@@ -371,7 +371,7 @@ func (pbft *PBFT) Run() {
 		//if elap>74 {
 		//	pbft.Stop()
 		//}
-		if pbft.currentHeight > 250 {
+		if pbft.currentHeight > 50 {
 			pbft.Stop()
 		}
 		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 && false {
@@ -463,7 +463,7 @@ func (pbft *PBFT) Run() {
 							go pbft.broadcastTxBlock(&bloc)
 							//time.Sleep(time.Millisecond * MonitorTimer)
 						}
-					} else if tmpres=="jointxexists" {
+					} else if tmpres=="jointxexists" && pbft.currentHeight-pbft.persis.checkpointheight<=5 {
 						thejointx := pbft.MsgBuff.ReadJoinTx()[0]
 						fmt.Println("leader", pbft.Id, "has join-tx in its buffer, packing config-block for instance", thejointx.Id, "joining at height", pbft.currentHeight)
 						peers := datastruc.GenerateNewConfigForJoin(pbft.succLine.ConverToList(), thejointx)
