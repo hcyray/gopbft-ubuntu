@@ -144,7 +144,7 @@ func main() {
 				fmt.Println("the ", i, "client starts")
 			}
 		}
-		time.Sleep(time.Second * 165)
+		time.Sleep(time.Second * 95)
 	} else {
 		fmt.Printf("tmp is ", tmp)
 	}
