@@ -794,6 +794,11 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 	//defer cdedata.mu.Unlock()
 
 	cdeda := cdedata.CopyData()
+	if l==0 {
+		fmt.Println("the cdeda in calculation\n\n")
+		cdeda.PrintResult()
+		fmt.Println("\n\nthe end\n\n")
+	}
 	sanitize := true
 	for _, id := range cdeda.Peers {
 		if cdeda.sanitizationflag[id] == 0 {
@@ -866,7 +871,6 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 		for i:=0; i<N; i++ {
 			Time_commit[k][i] = Takemax(Time_recv_commit[i][Q-1], Time_prepare[k][i])
 		}
-
 	}
 
 	res := make([]int, N)
