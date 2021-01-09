@@ -1694,7 +1694,7 @@ func (pbft *PBFT) Stop() {
 	//}
 	pt := make(map[int]int)
 	for l:=0; l<pbft.succLine.Leng; l++ {
-		pt[l] = pbft.cdedata.CalculateConsensusDelay(l, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]/LeaderLease
+		pt[l] = pbft.cdedata.CalculateConsensusDelay(l, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
 	}
 	//for h:=100; h<=len(pbft.leaderlog); h++ {
 	//	pconsensusdelay := pt[pbft.leaderlog[h]]
