@@ -739,11 +739,19 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 	inversehashdelay := make(map[int]int)
 	for _, i := range cdedata.Peers {
 		// inform instance i to test itself
-		singlemmsg := cdedata.InformTestInstance(i) // block, until receives the test result with signature
-		inverseproposedelay[i] = singlemmsg.Proposedelay
-		inversevalidatedelay[i] = singlemmsg.Validatedelay
-		inversewritedelay[i] = singlemmsg.Writedelay
-		inversehashdelay[i] = singlemmsg.Hashdelay
+		for {
+			singlemmsg := cdedata.InformTestInstance(i) // block, until receives the test result with signature
+			if singlemmsg.Validatedelay<600 {
+				// test until it is satisfied
+				inverseproposedelay[i] = singlemmsg.Proposedelay
+				inversevalidatedelay[i] = singlemmsg.Validatedelay
+				inversewritedelay[i] = singlemmsg.Writedelay
+				inversehashdelay[i] = singlemmsg.Hashdelay
+				break
+			} else {
+				time.Sleep(time.Millisecond * 20)
+			}
+		}
 		time.Sleep(time.Millisecond * 20)
 	}
 	imrmsg := NewInverseMeasurementResultMsg(cdedata.Id, cdedata.Round, cdedata.Peers, inverseproposedelay,
