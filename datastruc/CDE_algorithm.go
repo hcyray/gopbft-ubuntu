@@ -856,6 +856,7 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 				Time_recv_prepare[i][j] = Time_recv_pre_prepare[k][j]+votedelay[j][i]
 			}
 			sort.Ints(Time_recv_prepare[i])
+
 		}
 
 		for i:=0; i<N; i++ {
