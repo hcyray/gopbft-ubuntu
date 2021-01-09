@@ -832,11 +832,7 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 
 	for k:=0; k<5; k++ {
 		for i:=0; i<N; i++ {
-			if O_set[i]>0 {
-				Time_recv_pre_prepare[i] += blockdelay[l][i] + validatedelay[l][i] + O_set[i]
-			} else {
-				Time_recv_pre_prepare[i] += blockdelay[l][i] + validatedelay[l][i]
-			}
+			Time_recv_pre_prepare[i] = Takemax(blockdelay[l][i]+validatedelay[l][i], O_set[i])
 		}
 
 		for i:=0; i<N; i++ {
@@ -847,7 +843,7 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 		}
 
 		for i:=0; i<N; i++ {
-			Time_prepare[i] = Time_recv_prepare[i][Q-1]
+			Time_prepare[i] = Takemax(Time_recv_prepare[i][Q-1], Time_recv_pre_prepare[i])
 		}
 
 		for i:=0; i<N; i++ {
@@ -858,14 +854,13 @@ func (cdedata *CDEdata) CalculateConsensusDelay(l, N, Q int) []int {
 		}
 
 		for i:=0; i<N; i++ {
-			Time_commit[i] = Time_recv_commit[i][Q-1]
+			Time_commit[i] = Takemax(Time_recv_commit[i][Q-1], Time_prepare[i])
 		}
 
 		for i:=0; i<N; i++ {
 			O_set[i] = Time_commit[i] - Time_commit[l]
 		}
 	}
-
 	return Time_commit
 }
 
@@ -910,11 +905,7 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 
 	for k:=0; k<5; k++ {
 		for i:=0; i<N; i++ {
-			if O_set[i]>0 {
-				Time_recv_pre_prepare[i] += blockdelay[l][i] + validatedelay[l][i] + O_set[i]
-			} else {
-				Time_recv_pre_prepare[i] += blockdelay[l][i] + validatedelay[l][i]
-			}
+			Time_recv_pre_prepare[i] = Takemax(blockdelay[l][i]+validatedelay[l][i], O_set[i])
 		}
 		for i:=0; i<N; i++ {
 			Time_recv_prepare[i] = make([]int, N)
@@ -931,7 +922,7 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 		}
 
 		for i:=0; i<N; i++ {
-			Time_prepare[i] = Time_recv_prepare[i][Q-1]
+			Time_prepare[i] = Takemax(Time_recv_prepare[i][Q-1], Time_recv_pre_prepare[i])
 		}
 
 		for i:=0; i<N; i++ {
@@ -942,10 +933,7 @@ func (cdedata *CDEdata) CalculateConsensusDelayForNewJointx(l, N, Q int, jtx Joi
 		}
 
 		for i:=0; i<N; i++ {
-			Time_commit[i] = Time_recv_commit[i][Q-1]
-		}
-
-		for i:=0; i<N; i++ {
+			Time_commit[i] = Takemax(Time_recv_commit[i][Q-1], Time_prepare[i])
 			O_set[i] = Time_commit[i] - Time_commit[l]
 		}
 	}

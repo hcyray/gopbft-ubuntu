@@ -9,7 +9,7 @@ const LeaderLease = 5
 const JOININGTHRES = 1000
 
 const BlockVolume = 2048
-const CheckPointInterv = 10
+const CheckPointInterv = 20
 
 
 const (
