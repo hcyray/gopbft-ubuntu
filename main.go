@@ -131,7 +131,7 @@ func main() {
 			for i:=0; i<instanceoneachserver; i++ {
 				instanceid := i+instanceoneachserver*localid
 				theserver := server.CreateLateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
-				starttime := 80+10*(localid-initialserver)
+				starttime := 90+10*(localid-initialserver)
 				go theserver.LateStart(ck.Clientpubkstrs, starttime) // new nodes join serially
 				fmt.Println("server", instanceid, "starts, it is a late server, will start at", starttime, "s")
 			}
