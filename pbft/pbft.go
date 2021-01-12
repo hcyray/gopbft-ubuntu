@@ -1673,7 +1673,7 @@ func (pbft *PBFT) broadcastMeasurementResult(mrmsg datastruc.MeasurementResultMs
 //}
 
 func EvaluateCapacity(resselfasleader []int, resnewasleader []int, selfid int, newid int) bool {
-	return resselfasleader[newid]<JOININGTHRES*LeaderLease && resnewasleader[selfid]<JOININGTHRES*LeaderLease
+	return resselfasleader[newid]<JOININGTHRES && resnewasleader[selfid]<JOININGTHRES
 }
 
 func (pbft *PBFT) computeTps() {
