@@ -805,7 +805,7 @@ func (pbft *PBFT) UpdateQuorumSize(n int) {
 	z := float64((n + f + 1))/2.0
 	q := int(math.Ceil(z))
 	pbft.quorumsize = q
-	//fmt.Println("instance", pbft.Id, "updates quorum size, the total number is", n, "quorum size is", q)
+	fmt.Println("instance", pbft.Id, "updates quorum size, the total number is", n, "quorum size is", q)
 }
 
 func CalculateQuorumSize(n int) int {
@@ -1183,6 +1183,7 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				}
 				pbft.reconfighappen = true
 				pbft.currentHeight += 1
+				pbft.cdedata.Round=10 // turn off this, do not retest.
 			} else if len(pbft.curblock.JoinTxList)>0 {
 				pbft.MsgBuff.UpdateBlockPoolAfterCommitBlock(pbft.curblock)
 				pbft.MsgBuff.UpdateJoinLeaveTxSetAfterCommitBlock(pbft.curblock)

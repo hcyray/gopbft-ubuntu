@@ -1,6 +1,6 @@
 package pbft
 
-const ConsensusTimer = 4000
+const ConsensusTimer = 2000
 const InauguratTimer = 1000
 const MonitorTimer = 1000
 const ScanInterval = 2
