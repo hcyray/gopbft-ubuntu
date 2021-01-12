@@ -372,3 +372,11 @@ func (msgbuf *MessageBuffer) UpdateBalance(accb map[string]int) {
 	}
 }
 
+func (msgbuf *MessageBuffer) DeleteWeakJoinRequest() {
+	msgbuf.Msgbuffmu.Lock()
+	defer msgbuf.Msgbuffmu.Unlock()
+
+	// actually, the join-tx buffer is cleared
+	// todo, need further refine
+	msgbuf.JoinLeavetxSet.JTxset = []JoinTx{}
+}

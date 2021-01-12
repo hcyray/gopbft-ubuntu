@@ -55,6 +55,7 @@ type PBFT struct {
 	isleader bool
 	leaderlease int
 	reconfighappen bool
+	isconsensjointx bool
 	curleaderlease int
 	curleaderPubKeystr string
 
@@ -529,6 +530,7 @@ func (pbft *PBFT) Run() {
 					// calculate the consensus delay after new node joining if there exists some join-tx
 					if pbft.curblock.Blockhead.Kind=="configblock" {
 						if len(pbft.curblock.JoinTxList) > 0 {
+							pbft.isconsensjointx = true
 							jtx := pbft.curblock.JoinTxList[0]
 							startt := time.Now()
 							q := CalculateQuorumSize(len(pbft.members)+1)
@@ -542,12 +544,10 @@ func (pbft *PBFT) Run() {
 								fmt.Println("The new instance", jtx.Id, "may have enough capacity calculation costs: ", elaps, "ms")
 							} else {
 								fmt.Println("The new instance may not have enough capacity, waiting for view-change")
-								time.Sleep(time.Millisecond * ConsensusTimer) // block here until view change,
-								//todo, delete the join-tx, in case it is proposed again
-								pbft.MsgBuff.Msgbuffmu.Lock()
-								pbft.MsgBuff.JoinLeavetxSet.JTxset = []datastruc.JoinTx{}
 								fmt.Println("instance", pbft.Id, "deletes a join-tx, the requester is", jtx.Id, "at", time.Since(pbft.starttime).Seconds(), "s")
-								pbft.MsgBuff.Msgbuffmu.Unlock()
+								pbft.isconsensjointx = false
+								pbft.MsgBuff.DeleteWeakJoinRequest() // delete the join-tx, to avoid consensus for it again
+								time.Sleep(time.Millisecond * ConsensusTimer) // block here until view change,
 							}
 						}
 					}
@@ -649,7 +649,6 @@ func (pbft *PBFT) Run() {
 						go pbft.broadcastNewViewWithBlock(pbft.vernumber, pbft.viewnumber, vcset, bloc)
 					}
 				}
-
 			}
 			thever := pbft.vernumber
 			theview := pbft.viewnumber
@@ -1061,6 +1060,10 @@ func (pbft *PBFT) resetVariForViewChange() {
 	pbft.curblockhash = [32]byte{}
 	pbft.curblock = &datastruc.Block{}
 	pbft.cdeupdateflag = true
+	if pbft.isconsensjointx {
+		pbft.isconsensjointx = false
+		pbft.MsgBuff.DeleteWeakJoinRequest()
+	}
 }
 
 func (pbft *PBFT) resetVariForViewChangeAfterReconfig() {
