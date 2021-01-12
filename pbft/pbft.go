@@ -379,7 +379,7 @@ func (pbft *PBFT) Run() {
 		//	pbft.Stop()
 		//}
 		elapsedtime := time.Since(pbft.starttime).Seconds()
-		if pbft.isleaving && !pbft.sentleavingtx && elapsedtime>Phaselen*4 {
+		if pbft.isleaving && !pbft.sentleavingtx && elapsedtime>15 {
 			// mechanism2, broadcast leaving request
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
