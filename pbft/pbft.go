@@ -1191,6 +1191,10 @@ func (pbft *PBFT) CommitCurConsensOb() {
 				pbft.cdedata.PrintResult()
 				fmt.Println("~~~~~~~~~~~~~~~newcdedata in commitcurconsensob before adding new replica~~~~~~~~~~~~~~~~~\n")
 				pbft.cdedata.AddNewInstanceData(pbft.curblock.JoinTxList[0])
+				for i := range pbft.cdedata.Peers {
+					pbft.cdedata.Sanitizationflag[i] = 0
+				}
+				fmt.Println("set sanitization flag to 0")
 				fmt.Println("\n~~~~~~~~~~~~~~~~newcdedata in commitcurconsensob after adding new replica~~~~~~~~~~~~~~~~~")
 				pbft.cdedata.PrintResult()
 				fmt.Println("~~~~~~~~~~~~~~~~newcdedata in commitcurconsensob after adding new replica~~~~~~~~~~~~~~~~~\n")

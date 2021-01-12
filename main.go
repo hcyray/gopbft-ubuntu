@@ -115,7 +115,7 @@ func main() {
 		clientnumber := 32
 		instanceoneachserver := 1
 		initialserver := 4
-		lateserver := 3 // mechanism1
+		lateserver := 2 // mechanism1
 		totalserver := initialserver + lateserver
 		// read client pubkeys
 		ck := ReadClientKeys(os.Args[2])
@@ -131,7 +131,7 @@ func main() {
 			for i:=0; i<instanceoneachserver; i++ {
 				instanceid := i+instanceoneachserver*localid
 				theserver := server.CreateLateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
-				starttime := phaselen*(localid-initialserver+1)
+				starttime := phaselen*(localid-initialserver+1) + phaselen
 				go theserver.LateStart(ck.Clientpubkstrs, starttime) // new nodes join serially
 				fmt.Println("server", instanceid, "starts, it is a late server, will start at", starttime, "s")
 			}
