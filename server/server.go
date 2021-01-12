@@ -1143,6 +1143,9 @@ func (serv *Server) BlockTxValidate(bloc *datastruc.Block) bool {
 
 func (serv *Server) BlockTxValidateMultiThread(bloc *datastruc.Block) bool {
 	ThreadNum := 2 // Thread number for tx validation
+	if serv.id==6 {
+		ThreadNum = 4
+	}
 	results := make([]*bool, 0)
 	for i:=0; i<ThreadNum; i++ {
 		res := new(bool)

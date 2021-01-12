@@ -370,13 +370,13 @@ func (pbft *PBFT) Run() {
 
 	pbft.MsgBuff.ClearTXPool()
 	for {
-		//elap := time.Since(pbft.starttime).Seconds()
-		//if elap>74 {
-		//	pbft.Stop()
-		//}
-		if pbft.currentHeight > 250 {
+		elap := time.Since(pbft.starttime).Seconds()
+		if elap>150 {
 			pbft.Stop()
 		}
+		//if pbft.currentHeight > 250 {
+		//	pbft.Stop()
+		//}
 		elapsedtime := time.Since(pbft.starttime).Seconds()
 		if pbft.isleaving && !pbft.sentleavingtx && elapsedtime>120 {
 			// mechanism2, broadcast leaving request
@@ -478,7 +478,7 @@ func (pbft *PBFT) Run() {
 						blockhash = bloc.GetHash()
 						go pbft.broadcastConfigBlock(&bloc)
 					} else {
-						fmt.Println("leader buffer wrong!")
+						fmt.Println("leader buffer wrong!", tmpres)
 					}
 					go pbft.broadcastPreprepare(pbft.vernumber, pbft.viewnumber, pbft.currentHeight, pbft.PriKey, blockhash)
 					pbft.mu.Unlock()
