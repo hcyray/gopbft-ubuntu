@@ -994,7 +994,7 @@ func (pbft *PBFT) scanNewView(ver, view int, leaderpubkey string) {
 							return
 						}
 					} else {
-						log.Panic("instance", pbft.Id, "corner case happens")
+						log.Panic("instance ", pbft.Id, " corner case happens")
 					}
 				}
 			}
