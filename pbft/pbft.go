@@ -1700,17 +1700,17 @@ func (pbft *PBFT) Stop() {
 	//for h:=1; h<100; h++ {
 	//	pbft.predictedconsensustimelog[h] = 2000
 	//}
-	pt := make(map[int]int)
-	for l:=0; l<pbft.succLine.Leng; l++ {
-		pt[l] = pbft.cdedata.CalculateConsensusDelay(l, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
-	}
+	//pt := make(map[int]int)
+	//for l:=0; l<pbft.succLine.Leng; l++ {
+	//	pt[l] = pbft.cdedata.CalculateConsensusDelay(l, pbft.succLine.Leng, pbft.quorumsize)[pbft.Id]
+	//}
 	//for h:=100; h<=len(pbft.leaderlog); h++ {
 	//	pconsensusdelay := pt[pbft.leaderlog[h]]
 	//	pbft.predictedconsensustimelog[h] = pconsensusdelay // turnoff this when testing mechanism2
 	//}
-	for h,l:=range pbft.leaderlog {
-		pbft.predictedconsensustimelog[h] = pt[l]
-	}
+	//for h,l:=range pbft.leaderlog {
+	//	pbft.predictedconsensustimelog[h] = pt[l]
+	//}
 
 	fmt.Println("end-------------------------------")
 	fmt.Println("instance", pbft.Id, "blocks here permanentally, test ends time", time.Since(pbft.starttime).Seconds(), "s")
