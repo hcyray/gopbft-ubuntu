@@ -8,10 +8,10 @@ const ThreadExit = 5
 const LeaderLease = 5
 const JOININGTHRES = 680
 
-const BlockVolume = 2048
+const BlockVolume = 1024
 const CheckPointInterv = 10
 
-const Phaselen = 50
+const Phaselen = 40
 
 
 const (
