@@ -1052,6 +1052,7 @@ func (pbft *PBFT) resetVariForViewChange() {
 	// consensus status change?
 	pbft.succLine.RotateLeader()
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
+	fmt.Println("ver", pbft.vernumber, "view", pbft.viewnumber, " leader is", pbft.succLine.CurLeader.Member.Id)
 	if pbft.PubKeystr == pbft.curleaderPubKeystr {
 		pbft.isleader = true
 	} else {
@@ -1072,6 +1073,7 @@ func (pbft *PBFT) resetVariForViewChangeAfterReconfig() {
 	pbft.viewnumber = 0
 	pbft.currentHeight += 1
 	pbft.curleaderPubKeystr = pbft.succLine.CurLeader.Member.PubKey
+	fmt.Println("ver", pbft.vernumber, "view", pbft.viewnumber, " leader is", pbft.succLine.CurLeader.Member.Id)
 	if pbft.PubKeystr == pbft.curleaderPubKeystr {
 		pbft.isleader = true
 	} else {
