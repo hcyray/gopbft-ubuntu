@@ -372,7 +372,7 @@ func (pbft *PBFT) Run() {
 	pbft.MsgBuff.ClearTXPool()
 	for {
 		elap := time.Since(pbft.starttime).Seconds()
-		if elap>Phaselen*5 {
+		if elap>Phaselen*5+2 {
 			pbft.Stop()
 		}
 		//if pbft.currentHeight > 250 {
