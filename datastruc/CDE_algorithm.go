@@ -741,7 +741,7 @@ func (cdedata *CDEdata) CollectDelayDataForNew(txbatch []Transaction) JoinTx {
 		// inform instance i to test itself
 		for {
 			singlemmsg := cdedata.InformTestInstance(i) // block, until receives the test result with signature
-			if singlemmsg.Validatedelay<600 {
+			if singlemmsg.Validatedelay<900 {
 				// test until it is satisfied
 				inverseproposedelay[i] = singlemmsg.Proposedelay
 				inversevalidatedelay[i] = singlemmsg.Validatedelay
