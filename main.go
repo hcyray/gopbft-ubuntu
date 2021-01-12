@@ -78,7 +78,7 @@ func ReadClientKeys(fn string)  client.ClienKeys {
 }
 
 func main() {
-	phaselen := 30
+	phaselen := 50
 	var tmp string
 	tmp = "main"
 
