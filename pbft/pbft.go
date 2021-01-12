@@ -1415,7 +1415,7 @@ func (pbft *PBFT) broadcastCommit(ver, view, n int, digest [32]byte) {
 
 func (pbft *PBFT) broadcastViewChange(ver int, view int, ltxset []datastruc.LeaveTx, plock datastruc.PreparedLock,
 	clock datastruc.CommitedLock, pubkey string, prvkey *ecdsa.PrivateKey) {
-	//ltxset = []datastruc.LeaveTx{} // mechanism2
+	ltxset = []datastruc.LeaveTx{} // mechanism2
 	var vcmsg datastruc.ViewChangeMsg
 
 	if clock.LockedHeight >0 {
