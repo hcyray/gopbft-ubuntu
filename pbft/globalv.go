@@ -11,7 +11,7 @@ const JOININGTHRES = 680
 const BlockVolume = 1024
 const CheckPointInterv = 10
 
-const Phaselen = 40
+const Phaselen = 30
 
 
 const (
