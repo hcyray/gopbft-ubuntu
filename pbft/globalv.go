@@ -6,10 +6,10 @@ const MonitorTimer = 1000
 const ScanInterval = 2
 const ThreadExit = 5
 const LeaderLease = 5
-const JOININGTHRES = 700
+const JOININGTHRES = 680
 
 const BlockVolume = 2048
-const CheckPointInterv = 5
+const CheckPointInterv = 10
 
 const Phaselen = 40
 
