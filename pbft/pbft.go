@@ -543,6 +543,10 @@ func (pbft *PBFT) Run() {
 								fmt.Println("The new instance may not have enough capacity, waiting for view-change")
 								time.Sleep(time.Millisecond * ConsensusTimer) // block here until view change,
 								//todo, delete the join-tx, in case it is proposed again
+								pbft.MsgBuff.Msgbuffmu.Lock()
+								pbft.MsgBuff.JoinLeavetxSet.JTxset = []datastruc.JoinTx{}
+								fmt.Println("instance", pbft.Id, "deletes a join-tx, the requester is", jtx.Id, "at", time.Since(pbft.starttime).Seconds(), "s")
+								pbft.MsgBuff.Msgbuffmu.Unlock()
 							}
 						}
 					}
