@@ -468,8 +468,7 @@ func (pbft *PBFT) Run() {
 							go pbft.broadcastTxBlock(&bloc)
 							//time.Sleep(time.Millisecond * MonitorTimer)
 						}
-					} else if tmpres=="jointxexists" && pbft.currentHeight-pbft.persis.checkpointheight<=5 &&
-						pbft.currentHeight>=100 {
+					} else if tmpres=="jointxexists" && pbft.currentHeight-pbft.persis.checkpointheight<=5 {
 						thejointx := pbft.MsgBuff.ReadJoinTx()[0]
 						fmt.Println("leader", pbft.Id, "has join-tx in its buffer, packing config-block for instance", thejointx.Id, "joining at height", pbft.currentHeight)
 						peers := datastruc.GenerateNewConfigForJoin(pbft.succLine.ConverToList(), thejointx)
