@@ -78,7 +78,7 @@ func ReadClientKeys(fn string)  client.ClienKeys {
 }
 
 func main() {
-
+	phaselen := 40
 	var tmp string
 	tmp = "main"
 
@@ -131,7 +131,7 @@ func main() {
 			for i:=0; i<instanceoneachserver; i++ {
 				instanceid := i+instanceoneachserver*localid
 				theserver := server.CreateLateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
-				starttime := 50+50*(localid-initialserver)
+				starttime := phaselen+phaselen*(localid-initialserver)
 				go theserver.LateStart(ck.Clientpubkstrs, starttime) // new nodes join serially
 				fmt.Println("server", instanceid, "starts, it is a late server, will start at", starttime, "s")
 			}
@@ -144,7 +144,7 @@ func main() {
 				fmt.Println("the ", i, "client starts")
 			}
 		}
-		time.Sleep(time.Second * 255)
+		time.Sleep(time.Second * time.Duration(5+5*phaselen))
 	} else {
 		fmt.Printf("tmp is ", tmp)
 	}

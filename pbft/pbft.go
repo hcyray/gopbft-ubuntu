@@ -371,14 +371,14 @@ func (pbft *PBFT) Run() {
 	pbft.MsgBuff.ClearTXPool()
 	for {
 		elap := time.Since(pbft.starttime).Seconds()
-		if elap>50*5 {
+		if elap>Phaselen*5 {
 			pbft.Stop()
 		}
 		//if pbft.currentHeight > 250 {
 		//	pbft.Stop()
 		//}
 		elapsedtime := time.Since(pbft.starttime).Seconds()
-		if pbft.isleaving && !pbft.sentleavingtx && elapsedtime>50*4 {
+		if pbft.isleaving && !pbft.sentleavingtx && elapsedtime>Phaselen*4 {
 			// mechanism2, broadcast leaving request
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true

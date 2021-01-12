@@ -11,6 +11,8 @@ const JOININGTHRES = 700
 const BlockVolume = 2048
 const CheckPointInterv = 5
 
+const Phaselen = 40
+
 
 const (
 	stat_consensus = iota
