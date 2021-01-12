@@ -538,7 +538,7 @@ func (pbft *PBFT) Run() {
 							elaps := time.Since(startt).Milliseconds()
 							res := EvaluateCapacity(res1, res2, pbft.Id, jtx.Id)
 							if res {
-								fmt.Println("The new instance may have enough capacity calculation costs: ", elaps, "ms")
+								fmt.Println("The new instance", jtx.Id, "may have enough capacity calculation costs: ", elaps, "ms")
 							} else {
 								fmt.Println("The new instance may not have enough capacity, waiting for view-change")
 								time.Sleep(time.Millisecond * ConsensusTimer) // block here until view change,
