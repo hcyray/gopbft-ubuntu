@@ -144,8 +144,8 @@ func main() {
 				fmt.Println("the ", i, "client starts")
 			}
 		}
-		//time.Sleep(time.Second * time.Duration(5+5*phaselen))
-		time.Sleep(time.Second * 30)
+		time.Sleep(time.Second * time.Duration(5+5*phaselen))
+		//time.Sleep(time.Second * 30)
 	} else {
 		fmt.Printf("tmp is ", tmp)
 	}
