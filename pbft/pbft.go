@@ -119,7 +119,9 @@ type PBFT struct {
 	inauguratetimelog []int
 
 	tps []int
+	timeacctxlog map[float64]int // time->acctx
 	leaverequeststarttime time.Time
+
 
 	cdedata *datastruc.CDEdata
 	cdeupdateflag bool
@@ -186,10 +188,10 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	}
 
 
-	//if pbft.Id==0 {
-	//	pbft.isleaving = true
-	//	fmt.Println("instance", pbft.Id, "will leave the system after a while")
-	//} // mechanism2 set leaving node
+	if pbft.Id==0 {
+		pbft.isleaving = true
+		fmt.Println("instance", pbft.Id, "will leave the system after a while")
+	} // mechanism2 set leaving node
 
 	pbft.cdedata = datastruc.CreateCDEdata(pbft.Id, pbft.IpPortAddr, pbft.members, sendCh, broadCh, cdetestrecvch, cderesponserecvch, RecvInformTestCh, recvsinglemeasurementCh, pbft.PubKeystr, pbft.PriKey, clientpubkeystr)
 
@@ -217,6 +219,7 @@ func (pbft *PBFT) initializeMapChan() {
 	pbft.consensustimelog = make(map[int]int)
 	pbft.predictedconsensustimelog = make(map[int]int)
 	pbft.leaderlog = make(map[int]int)
+	pbft.timeacctxlog = make(map[float64]int)
 }
 
 func (pbft *PBFT) initializeAccountBalance(clientpubkeystr map[int]string) {
@@ -374,7 +377,8 @@ func (pbft *PBFT) Run() {
 		if pbft.currentHeight > 250 {
 			pbft.Stop()
 		}
-		if pbft.isleaving && !pbft.sentleavingtx && pbft.currentHeight>=32 && false {
+		elapsedtime := time.Since(pbft.starttime).Seconds()
+		if pbft.isleaving && !pbft.sentleavingtx && elapsedtime>120 {
 			// mechanism2, broadcast leaving request
 			go pbft.broadcastLeavingTx()
 			pbft.sentleavingtx = true
@@ -394,10 +398,11 @@ func (pbft *PBFT) Run() {
 					pbft.leaderlease -= 1
 				} else {
 					// update delay data before sending the first block
-					if pbft.cdeupdateflag && pbft.cdedata.Round<=2 && pbft.currentHeight>=10 && pbft.currentHeight<=100 {
+					if pbft.cdeupdateflag && pbft.cdedata.Round<=3 {
 						// mechanism1
 						// cdedata.Round initial value is 1
 						// invoke a CDE dalay data update
+						// && pbft.currentHeight>=10 && pbft.currentHeight<=100
 						start:=time.Now()
 						fmt.Println("instance", pbft.Id, "starts updating its delay data at round", pbft.cdedata.Round, "before driving consensus at height", pbft.currentHeight)
 						thetxs := pbft.MsgBuff.ReadTxBatch(BlockVolume)
@@ -1081,6 +1086,8 @@ func (pbft *PBFT) CommitCurConsensOb() {
 	if pbft.curblock.Blockhead.Kind=="txblock" {
 		if pbft.persis.executedheight[pbft.currentHeight] == false {
 			pbft.acctx += len(pbft.curblock.TransactionList)
+			elapsedtime := time.Since(pbft.starttime).Seconds()
+			pbft.timeacctxlog[elapsedtime] = pbft.acctx
 			pbft.updateaccountbalance()
 			pbft.MsgBuff.UpdateBalance(pbft.accountbalance)
 
@@ -1710,7 +1717,7 @@ func (pbft *PBFT) Stop() {
 	fmt.Println("tps starttime is", pbft.tpsstarttime.Sub(pbft.starttime).Seconds(), "s, total processed tx is", pbft.acctx,
 		"total elapsed time is", time.Since(pbft.tpsstarttime).Seconds(), "s, average tps is",
 		float64(pbft.acctx)/float64(time.Since(pbft.tpsstarttime).Seconds()))
-	fmt.Println("tps =", pbft.tps)
+	fmt.Println("tps =", pbft.timeacctxlog)
 	fmt.Println("leader =", pbft.leaderlog)
 	fmt.Println("consensustime =", pbft.consensustimelog)
 	fmt.Println("predictedconsensustime =", pbft.predictedconsensustimelog)
@@ -1718,9 +1725,9 @@ func (pbft *PBFT) Stop() {
 	fmt.Println("viewchagnetime =", pbft.viewchangetimelog)
 	fmt.Println("inauguratetime =", pbft.inauguratetimelog)
 	//pbft.cdedata.Sanitization()
-	fmt.Println("\n~~~~~~~~~~~~~~~~cdedata in stop~~~~~~~~~~~~~~~~~~~~~~~~~")
-	pbft.cdedata.PrintResult()
-	fmt.Println("~~~~~~~~~~~~~~~~cdedata in stop~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+	//fmt.Println("\n~~~~~~~~~~~~~~~~cdedata in stop~~~~~~~~~~~~~~~~~~~~~~~~~")
+	//pbft.cdedata.PrintResult()
+	//fmt.Println("~~~~~~~~~~~~~~~~cdedata in stop~~~~~~~~~~~~~~~~~~~~~~~~~\n")
 
 	time.Sleep(time.Second * 100)
 }

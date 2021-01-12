@@ -1069,6 +1069,9 @@ func (cdedata *CDEdata) AddNewInstanceData(jtx JoinTx) {
 	cdedata.WriteDelayMatrix[newid][newid] = 0
 	cdedata.HashDelayMatrix[newid][newid] = 0
 
+	cdedata.Round = 1
+	fmt.Println("reset cdedata round to 1!")
+
 }
 
 func (cdedata *CDEdata) GeneratePureDelayData() CDEPureDelayData {
