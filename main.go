@@ -2,8 +2,8 @@ package main
 
 import (
 	"./client"
-	"./server"
 	"./datastruc"
+	"./server"
 	"bufio"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -33,7 +33,7 @@ func ReadAllIps(fn string) []string {
 	fmt.Println("read all ips")
 
 	file, err := os.Open(fn)
-	if err!=nil {
+	if err != nil {
 		log.Panic("error")
 	}
 	res := make([]string, 0)
@@ -50,7 +50,7 @@ func ReadAllIps(fn string) []string {
 
 func DetermineId(allips []string, localip string) int {
 	for i, ip := range allips {
-		if ip==localip {
+		if ip == localip {
 			return i
 		}
 	}
@@ -59,17 +59,17 @@ func DetermineId(allips []string, localip string) int {
 
 func RecordClientKeys(clk *client.ClienKeys) {
 	file, err := os.OpenFile("clientkeys", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
-	if err!=nil {
+	if err != nil {
 		fmt.Println("create clientkey file error")
 	}
 	enc := gob.NewEncoder(file)
 	err = enc.Encode(clk.GetSerialize())
-	if err!=nil {
+	if err != nil {
 		fmt.Println("write config to file error")
 	}
 }
 
-func ReadClientKeys(fn string)  client.ClienKeys {
+func ReadClientKeys(fn string) client.ClienKeys {
 	ck := client.ClienKeys{}
 
 	ck.GetDeserializeFromFile(fn)
@@ -82,12 +82,12 @@ func main() {
 	var tmp string
 	tmp = "main"
 
-	if tmp=="clientkey" {
+	if tmp == "clientkey" {
 		// ***************************************generate client keys and save
 		ck := client.ClienKeys{}
 		ck.Clienprivks = make(map[int]string)
 		ck.Clientpubkstrs = make(map[int]string)
-		for i:=0; i<20000; i++ {
+		for i := 0; i < 20000; i++ {
 			privateKey, err := ecdsa.GenerateKey(elliptic.P256(), crand.Reader)
 			if err != nil {
 				log.Fatalln(err)
@@ -98,7 +98,7 @@ func main() {
 		}
 		RecordClientKeys(&ck)
 		// ***************************************generate client keys and save
-	} else if tmp=="main" {
+	} else if tmp == "main" {
 		fmt.Println("add account_hash_generation_time, backup")
 		fmt.Println("Get the cluster IPs from", os.Args[1])
 		fmt.Println("Get client keys from", os.Args[2])
@@ -112,24 +112,24 @@ func main() {
 		localid := DetermineId(allips, localip)
 		fmt.Println("local id is", localid, "\n")
 
-		clientnumber := 32
+		clientnumber := 1
 		instanceoneachserver := 1
-		initialserver := 4
-		lateserver := 2 // mechanism1
+		initialserver := 2
+		lateserver := 1 // mechanism1
 		totalserver := initialserver + lateserver
 		// read client pubkeys
 		ck := ReadClientKeys(os.Args[2])
-		if localid<initialserver {
+		if localid < initialserver {
 			// invoke two server
-			for i:=0; i<instanceoneachserver; i++ {
-				instanceid := i+instanceoneachserver*localid
+			for i := 0; i < instanceoneachserver; i++ {
+				instanceid := i + instanceoneachserver*localid
 				theserver := server.CreateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
 				go theserver.Start()
 				fmt.Println("server", instanceid, "starts")
 			}
-		} else if localid>=initialserver && localid<totalserver {
-			for i:=0; i<instanceoneachserver; i++ {
-				instanceid := i+instanceoneachserver*localid
+		} else if localid >= initialserver && localid < totalserver {
+			for i := 0; i < instanceoneachserver; i++ {
+				instanceid := i + instanceoneachserver*localid
 				theserver := server.CreateLateServer(instanceid, localip, ck.Clientpubkstrs, allips[0:initialserver], instanceoneachserver)
 				starttime := phaselen*(localid-initialserver+1) + phaselen
 				go theserver.LateStart(ck.Clientpubkstrs, starttime) // new nodes join serially
@@ -137,7 +137,7 @@ func main() {
 			}
 		} else {
 			//invoke clients
-			for i:=0; i<clientnumber; i++ {
+			for i := 0; i < clientnumber; i++ {
 				privatekey := datastruc.DecodePrivate(ck.Clienprivks[i])
 				theclient := client.CreateClient(i, totalserver*instanceoneachserver, privatekey, allips[0:totalserver], instanceoneachserver)
 				go theclient.Run()
