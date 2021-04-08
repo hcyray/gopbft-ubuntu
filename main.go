@@ -100,11 +100,11 @@ func main() {
 		// ***************************************generate client keys and save
 	} else if tmp == "main" {
 		fmt.Println("add account_hash_generation_time, backup")
-		fmt.Println("Get the cluster IPs from", os.Args[1])
-		fmt.Println("Get client keys from", os.Args[2])
+		fmt.Println("Get the cluster IPs from IpAddr.txt")
+		fmt.Println("Get client keys from clientkeys")
 		localip := GetOutboundIP().String()
 		fmt.Println("local ip: ", localip)
-		allips := ReadAllIps(os.Args[1])
+		allips := ReadAllIps("IpAddr.txt")
 		fmt.Println("all ips: ")
 		for _, x := range allips {
 			fmt.Println(x)
@@ -113,12 +113,12 @@ func main() {
 		fmt.Println("local id is", localid, "\n")
 
 		clientnumber := 1
-		instanceoneachserver := 1
+		instanceoneachserver := 2
 		initialserver := 2
 		lateserver := 1 // mechanism1
 		totalserver := initialserver + lateserver
 		// read client pubkeys
-		ck := ReadClientKeys(os.Args[2])
+		ck := ReadClientKeys("clientkeys")
 		if localid < initialserver {
 			// invoke two server
 			for i := 0; i < instanceoneachserver; i++ {
