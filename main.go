@@ -113,7 +113,7 @@ func main() {
 		fmt.Println("local id is", localid, "\n")
 
 		clientnumber := 1
-		instanceoneachserver := 2
+		instanceoneachserver := 1
 		initialserver := 2
 		lateserver := 1 // mechanism1
 		totalserver := initialserver + lateserver
