@@ -18,26 +18,26 @@ import (
 )
 
 type ClienKeys struct {
-	Clienprivks map[int]string
+	Clienprivks    map[int]string
 	Clientpubkstrs map[int]string
 }
 
 type Client struct {
-	id int
-	miners []int
-	minerIPAddress      map[int]string
+	id             int
+	miners         []int
+	minerIPAddress map[int]string
 
-	sendtxCh chan datastruc.Datatosend
+	sendtxCh      chan datastruc.Datatosend
 	sendtxtooneCh []chan datastruc.Datatosend
 
-	nodePubKey *ecdsa.PublicKey
-	nodePrvKey *ecdsa.PrivateKey
-	nodePubkeystr string
-	nodePrvkeystr string
+	nodePubKey     *ecdsa.PublicKey
+	nodePrvKey     *ecdsa.PrivateKey
+	nodePubkeystr  string
+	nodePrvkeystr  string
 	nodeaccountstr string // a base64 string
 
 	sendvolume int
-	starttime time.Time
+	starttime  time.Time
 }
 
 func (clk *ClienKeys) GetSerialize() []byte {
@@ -56,12 +56,12 @@ func (clk *ClienKeys) GetDeserializeFromFile(fn string) {
 
 	var conten []byte
 	file, err := os.Open(fn)
-	if err!=nil {
+	if err != nil {
 		fmt.Println("open clientkey file error")
 	}
 	dec := gob.NewDecoder(file)
 	err = dec.Decode(&conten)
-	if err!=nil {
+	if err != nil {
 		fmt.Println("read clientkey file error")
 	}
 	var buff bytes.Buffer
@@ -69,7 +69,7 @@ func (clk *ClienKeys) GetDeserializeFromFile(fn string) {
 	gob.Register(elliptic.P256())
 	decc := gob.NewDecoder(&buff)
 	err = decc.Decode(clk)
-	if err!=nil {
+	if err != nil {
 		fmt.Println("serialized client key decoding error")
 	}
 }
@@ -81,9 +81,9 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []
 	client.miners = make([]int, 0)
 	client.minerIPAddress = make(map[int]string)
 	total := servernum * inseach
-	for i:=0; i<total; i++ {
+	for i := 0; i < total; i++ {
 		client.miners = append(client.miners, i)
-		order := i/inseach
+		order := i / inseach
 		client.minerIPAddress[i] = allips[order] + ":4" + datastruc.GenerateTwoBitId(i) + "1"
 	}
 	//client.generateServerOrderIp(servernum)
@@ -91,10 +91,9 @@ func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []
 	fmt.Println("client ", id, "will send tx to the following address", client.minerIPAddress)
 	client.sendtxCh = make(chan datastruc.Datatosend)
 	client.sendtxtooneCh = make([]chan datastruc.Datatosend, total)
-	for i:=0; i<total; i++ {
+	for i := 0; i < total; i++ {
 		client.sendtxtooneCh[i] = make(chan datastruc.Datatosend)
 	}
-
 
 	publicKey := &privateKey.PublicKey
 	client.nodePrvKey = privateKey
@@ -114,10 +113,10 @@ func (client *Client) Run() {
 	time.Sleep(time.Second * 4)
 	go client.sendloop()
 	val := rand.Intn(400)
-	time.Sleep(time.Millisecond*time.Duration(val))
+	time.Sleep(time.Millisecond * time.Duration(val))
 
-	rand.Seed(time.Now().UTC().UnixNano()+int64(client.id))
-	for i:=0; i<40000; i++ {
+	rand.Seed(time.Now().UTC().UnixNano() + int64(client.id))
+	for i := 0; i < 40000; i++ {
 		rannum := rand.Uint64()
 		ok, newtx := datastruc.MintNewTransaction(rannum, client.nodeaccountstr, client.nodePrvKey)
 		//fmt.Println("analysing tx:")
@@ -129,14 +128,14 @@ func (client *Client) Run() {
 		//fmt.Println("tx sig", newtx.Sig, "length:", unsafe.Sizeof(newtx.Sig))
 		if ok {
 			client.BroadcastMintedTransaction(newtx, client.id, client.miners)
-			if i%1000==0 {
+			if i%1000 == 0 {
 				//fmt.Println("tx", i, "timestamp is", newtx.Timestamp)
 				elaps := time.Since(client.starttime).Seconds()
 				fmt.Println("client", client.id, "sends", i, "txs in", elaps, "s")
 			}
 		}
-		if i%5==0 {
-			time.Sleep(time.Millisecond*50) // 25ms seems good, 30ms also good for test.
+		if i%5 == 0 {
+			time.Sleep(time.Millisecond * 50) // 25ms seems good, 30ms also good for test.
 		}
 		//val := rand.Intn(2) + 1
 		//val := 10000
@@ -146,14 +145,14 @@ func (client *Client) Run() {
 }
 
 func (client *Client) sendloop() {
-	for i:=0; i<len(client.minerIPAddress); i++ {
+	for i := 0; i < len(client.minerIPAddress); i++ {
 		go client.sendtooneloop(i)
 	}
 
 	for {
 		select {
 		case datatosend := <-client.sendtxCh:
-			for i:=0; i<len(client.sendtxtooneCh); i++ {
+			for i := 0; i < len(client.sendtxtooneCh); i++ {
 				client.sendtxtooneCh[i] <- datatosend
 			}
 		}
@@ -168,7 +167,7 @@ func (client *Client) sendtooneloop(destid int) {
 		conn, err := net.Dial("tcp", destip)
 		if err != nil {
 			fmt.Println("connect failed, will retry later\n", err.Error())
-			if trytime<=3 {
+			if trytime <= 3 {
 				fmt.Println("will re connect soon, time:", time.Since(client.starttime).Seconds(), "s")
 				t := rand.Intn(1000)
 				time.Sleep(time.Millisecond * time.Duration(t))
@@ -244,7 +243,7 @@ func sendData(data []byte, addr string, id int) {
 		defer conn.Close()
 
 		_, err = conn.Write(data)
-		if err!=nil {
+		if err != nil {
 			fmt.Println("send error")
 			log.Panic(err)
 		}
