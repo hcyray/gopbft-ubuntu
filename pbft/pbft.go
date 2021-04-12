@@ -185,7 +185,7 @@ func CreatePBFTInstance(id int, ipaddr string, total int, clientpubkeystr map[in
 	}
 
 	if pbft.Id == 0 {
-		pbft.isleaving = true
+		//pbft.isleaving = true
 		fmt.Println("instance", pbft.Id, "will leave the system after a while")
 	} // mechanism2 set leaving node
 
