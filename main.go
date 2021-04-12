@@ -114,7 +114,7 @@ func main() {
 
 		clientnumber := 1
 		instanceoneachserver := 1
-		initialserver := 3
+		initialserver := 4
 		lateserver := 0 // mechanism1
 		totalserver := initialserver + lateserver
 		// read client pubkeys
