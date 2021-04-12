@@ -19,47 +19,45 @@ import (
 	"time"
 )
 
-
 type Server struct {
-	mu sync.Mutex
+	mu           sync.Mutex
 	decoderrortx int
-	sigwrongtx int
-	repeattx int
-	starttime time.Time
+	sigwrongtx   int
+	repeattx     int
+	starttime    time.Time
 
-	id int
-	ipportaddr string
+	id                   int
+	ipportaddr           string
 	localallipsforserver []string // receives servers' messages from these ports
 	localallipsforclient []string // receives clients' messages from these ports
 
-	totalserver int
-	memberIds []int
+	totalserver  int
+	memberIds    []int
 	remoteallips map[int]string // ip addresses this server will send message to
 
-	msgbuff datastruc.MessageBuffer
-	pbft *pbft.PBFT
+	msgbuff           datastruc.MessageBuffer
+	pbft              *pbft.PBFT
 	clientacctopukstr map[string]string
 
-	sendCh chan datastruc.DatatosendWithIp
-	broadcastCh chan datastruc.Datatosend
-	memberidchangeCh chan datastruc.DataMemberChange
-	censorshipmonitorCh chan [32]byte
+	sendCh               chan datastruc.DatatosendWithIp
+	broadcastCh          chan datastruc.Datatosend
+	memberidchangeCh     chan datastruc.DataMemberChange
+	censorshipmonitorCh  chan [32]byte
 	statetransferqueryCh chan datastruc.QueryStateTransMsg
 	statetransferreplyCh chan datastruc.ReplyStateTransMsg
-	cdetestrecvCh chan datastruc.DataReceived
-	cderesponserecvCh chan datastruc.DataReceived
+	cdetestrecvCh        chan datastruc.DataReceived
+	cderesponserecvCh    chan datastruc.DataReceived
 
-	RecvInformTestCh chan datastruc.RequestTestMsg
+	RecvInformTestCh        chan datastruc.RequestTestMsg
 	recvsinglemeasurementCh chan datastruc.SingleMeasurementAToB
 
 	stopCh chan bool
 
-	recvconfigCh chan datastruc.ReadConfigReply
-	bytesended int
-	byterecvfserver int
-	byterecvfclient int
+	recvconfigCh      chan datastruc.ReadConfigReply
+	bytesended        int
+	byterecvfserver   int
+	byterecvfclient   int
 	blockvalidatetime map[int]int
-
 }
 
 func CreateServer(id int, localip string, clientpukstr map[int]string, serverips []string, inseach int) *Server {
@@ -69,7 +67,7 @@ func CreateServer(id int, localip string, clientpukstr map[int]string, serverips
 	serv.id = id
 	serv.ipportaddr = localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
 	serv.totalserver = len(serverips) * inseach
-	for i:=0; i<serv.totalserver; i++ {
+	for i := 0; i < serv.totalserver; i++ {
 		serv.memberIds = append(serv.memberIds, i)
 	}
 	serv.InitializeMapandChan()
@@ -80,7 +78,6 @@ func CreateServer(id int, localip string, clientpukstr map[int]string, serverips
 	serv.msgbuff = datastruc.MessageBuffer{}
 	serv.msgbuff.Initialize()
 
-
 	for _, v := range clientpukstr {
 		hv := sha256.Sum256([]byte(v))
 		acc := b64.StdEncoding.EncodeToString(hv[:])
@@ -90,7 +87,7 @@ func CreateServer(id int, localip string, clientpukstr map[int]string, serverips
 	serv.pbft = pbft.CreatePBFTInstance(id, serv.ipportaddr, serv.totalserver, clientpukstr, &serv.msgbuff, serv.starttime,
 		serv.sendCh, serv.broadcastCh, serv.memberidchangeCh,
 		serv.censorshipmonitorCh, serv.statetransferqueryCh, serv.statetransferreplyCh, serv.cdetestrecvCh,
-		serv.cderesponserecvCh,	serv.RecvInformTestCh, serv.recvsinglemeasurementCh, serv.stopCh)
+		serv.cderesponserecvCh, serv.RecvInformTestCh, serv.recvsinglemeasurementCh, serv.stopCh)
 	return serv
 }
 
@@ -135,7 +132,7 @@ func (serv *Server) InitializeMapandChan() {
 	serv.recvsinglemeasurementCh = make(chan datastruc.SingleMeasurementAToB)
 	serv.recvconfigCh = make(chan datastruc.ReadConfigReply)
 	serv.stopCh = make(chan bool)
-	serv.blockvalidatetime= make(map[int]int)
+	serv.blockvalidatetime = make(map[int]int)
 }
 
 func (serv *Server) Start() {
@@ -154,7 +151,7 @@ func (serv *Server) LateStart(clientkeys map[int]string, sleeptime int) {
 	fmt.Println("the late server", serv.id, "reads config from some remote peer:")
 	peerlist := serv.ReadConfigFromRemote()
 	fmt.Println("server", serv.id, "readConfigFromRemote completes, peerlist: ", peerlist)
-	serv.totalserver = len(peerlist)+1
+	serv.totalserver = len(peerlist) + 1
 	for _, v := range peerlist {
 		serv.memberIds = append(serv.memberIds, v.Id)
 		serv.remoteallips[v.Id] = v.IpPortAddr
@@ -194,19 +191,19 @@ func (serv *Server) ModefyVariByPBFT() {
 		select {
 		case data := <-serv.memberidchangeCh:
 			serv.mu.Lock()
-			if data.Kind=="join" {
+			if data.Kind == "join" {
 				serv.memberIds = append(serv.memberIds, data.Id)
 				serv.remoteallips[data.Id] = data.IpPortAddr
-				fmt.Println("server", serv.id,"adds instance", data.Id, "'s ip, now has", len(serv.memberIds), "remote address to communicate")
-			} else if data.Kind=="leave" {
+				fmt.Println("server", serv.id, "adds instance", data.Id, "'s ip, now has", len(serv.memberIds), "remote address to communicate")
+			} else if data.Kind == "leave" {
 				tmp := make([]int, 0)
-				for i:=0; i<len(serv.memberIds); i++ {
-					if serv.memberIds[i]!=data.Id {
+				for i := 0; i < len(serv.memberIds); i++ {
+					if serv.memberIds[i] != data.Id {
 						tmp = append(tmp, serv.memberIds[i])
 					}
 				}
 				serv.memberIds = tmp
-				fmt.Println("server", serv.id,"delete an instance's ip, now has", len(serv.memberIds), "remote address to communicate")
+				fmt.Println("server", serv.id, "delete an instance's ip, now has", len(serv.memberIds), "remote address to communicate")
 			} else {
 				fmt.Println("server", serv.id, "got wrong type when changing state!")
 			}
@@ -344,14 +341,14 @@ func (serv *Server) ListenLocalForClient(localipport string) {
 
 func (serv *Server) BroadcastLoop() {
 	// send data according to id, this only applies to closed members in server class.
-	theloop:
+theloop:
 	for {
 		select {
 		case data := <-serv.broadcastCh:
 			for _, i := range data.Destorder {
 				request := append(datastruc.CommandToBytes(data.MsgType), data.Msg...)
 				serv.mu.Lock()
-				if serv.remoteallips[i]!="" {
+				if serv.remoteallips[i] != "" {
 					go sendData(request, serv.remoteallips[i])
 					serv.bytesended += len(request)
 				} else {
@@ -360,7 +357,7 @@ func (serv *Server) BroadcastLoop() {
 				serv.mu.Unlock()
 			}
 		case <-serv.stopCh:
-			fmt.Println("server",serv.id, "stops its broadcasting loop, total Bytes send:", serv.bytesended/(1024),
+			fmt.Println("server", serv.id, "stops its broadcasting loop, total Bytes send:", serv.bytesended/(1024),
 				"KB, total Bytes received from servers:", serv.byterecvfserver/1024, "KB, total Bytes received from clients:",
 				serv.byterecvfclient/1024, "KB, total tx with decoding error is", serv.decoderrortx)
 			fmt.Println("block validation time:", serv.blockvalidatetime)
@@ -371,17 +368,17 @@ func (serv *Server) BroadcastLoop() {
 
 func (serv *Server) SendLoop() {
 	// send data according to ip, this applies to those information from new instances.
-	theloop:
+theloop:
 	for {
 		select {
-		case data :=<- serv.sendCh:
-			for _,destip := range data.DestIp {
+		case data := <-serv.sendCh:
+			for _, destip := range data.DestIp {
 				request := append(datastruc.CommandToBytes(data.MsgType), data.Msg...)
 				go sendData(request, destip)
 				serv.bytesended += len(request)
 			}
 		case <-serv.stopCh:
-			fmt.Println("server",serv.id, "stops its sending loop")
+			fmt.Println("server", serv.id, "stops its sending loop")
 			break theloop
 		}
 	}
@@ -391,7 +388,7 @@ func generatelistenserverips(id int, localip string) []string {
 	res := []string{}
 	theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + "0"
 	res = append(res, theip)
-	fmt.Println("server",id, "will listen on", res, "to receive from servers")
+	fmt.Println("server", id, "will listen on", res, "to receive from servers")
 	return res
 }
 
@@ -399,14 +396,14 @@ func generatelistenclientips(id int, localip string) []string {
 	res := []string{}
 	theip := localip + ":4" + datastruc.GenerateTwoBitId(id) + "1"
 	res = append(res, theip)
-	fmt.Println("server",id, "will listen on", res, "to receive from clients")
+	fmt.Println("server", id, "will listen on", res, "to receive from clients")
 	return res
 }
 
 func generateremoteallips(memberIds []int, serverips []string, inseach int) map[int]string {
 	// generate those ips this server will send messages to
 	res := make(map[int]string)
-	for _,i := range memberIds {
+	for _, i := range memberIds {
 		var theip string
 		//if id<10 {
 		//	theip = ipprefix + strconv.Itoa(i)
@@ -414,7 +411,7 @@ func generateremoteallips(memberIds []int, serverips []string, inseach int) map[
 		//	theip = ipprefix + strconv.Itoa(i)
 		//}
 		var order int
-		order = i/inseach
+		order = i / inseach
 		theip = serverips[order] + ":4" + datastruc.GenerateTwoBitId(i) + "0"
 		res[i] = theip
 	}
@@ -467,7 +464,6 @@ func generateremoteallips(memberIds []int, serverips []string, inseach int) map[
 //	serv.mu.Unlock()
 //}
 
-
 func sendData(data []byte, addr string) {
 
 	conn, err := net.Dial(protocol, addr)
@@ -477,7 +473,7 @@ func sendData(data []byte, addr string) {
 		defer conn.Close()
 
 		_, err = conn.Write(data)
-		if err!=nil {
+		if err != nil {
 			fmt.Println("send error")
 			log.Panic(err)
 		}
@@ -498,7 +494,7 @@ func (serv *Server) handleclienttx(conn net.Conn) {
 	for {
 		n, err := conn.Read(readbuf[0:])
 		serv.byterecvfclient += n
-		if n==0 {
+		if n == 0 {
 			continue
 		}
 		//fmt.Println("server read buffer ", n, "bytes, total bytes received is ", serv.recvvolume)
@@ -576,7 +572,6 @@ func (serv *Server) handleLeaveTx(conten []byte) {
 		fmt.Println("leavetx decoding error")
 	}
 
-
 	if !leavetx.Verify() {
 		fmt.Println("server", serv.id, "receives unvalid leave-tx", leavetx)
 		return
@@ -600,7 +595,7 @@ func (serv *Server) handleIdPortPubkey(conten []byte) {
 	if err != nil {
 		fmt.Println("addrpubkey decoding error")
 	}
-	//fmt.Println("server", serv.id, "receives a ipportpubkey msg")
+	fmt.Println("server", serv.id, "receives a ipportpubkey msg")
 	serv.msgbuff.Msgbuffmu.Lock()
 	serv.msgbuff.InitialConfig = append(serv.msgbuff.InitialConfig, peerid)
 	serv.msgbuff.Msgbuffmu.Unlock()
@@ -617,7 +612,7 @@ func (serv *Server) handleTransaction(request []byte) {
 	err := dec.Decode(&tx)
 	if err != nil {
 		serv.decoderrortx += 1
-		if serv.decoderrortx%1000==0 {
+		if serv.decoderrortx%1000 == 0 {
 			fmt.Println("server", serv.id, "tx decoding error time:", serv.decoderrortx, "at time", time.Since(serv.starttime), "s")
 		}
 		return
@@ -625,7 +620,7 @@ func (serv *Server) handleTransaction(request []byte) {
 	serv.msgbuff.Msgbuffmu.Lock()
 	if _, ok := serv.msgbuff.TxPool[tx.GetHash()]; ok {
 		serv.repeattx += 1
-		if serv.repeattx%1000==0 {
+		if serv.repeattx%1000 == 0 {
 			fmt.Println("server", serv.id, "repeat tx time:", serv.repeattx)
 		}
 		serv.msgbuff.Msgbuffmu.Unlock()
@@ -644,7 +639,7 @@ func (serv *Server) handleTransaction(request []byte) {
 		serv.msgbuff.Msgbuffmu.Unlock()
 	} else {
 		serv.sigwrongtx += 1
-		if serv.sigwrongtx%1000==0 {
+		if serv.sigwrongtx%1000 == 0 {
 			fmt.Println("server", serv.id, "receives a tx with wrong signature time:", serv.sigwrongtx)
 		}
 	}
@@ -669,7 +664,7 @@ func (serv *Server) handleBlock(content []byte) {
 	}
 
 	starttime := time.Now()
-	if bloc.Blockhead.Kind=="txblock" {
+	if bloc.Blockhead.Kind == "txblock" {
 		//res := serv.BlockTxValidateMultiThread(&bloc)
 		res := serv.BlockTxValidateMultiThread(&bloc)
 		//res := true
@@ -677,7 +672,7 @@ func (serv *Server) handleBlock(content []byte) {
 			fmt.Println("The received block contains unvalid mint-tx")
 			return
 		}
-	} else if bloc.Blockhead.Kind=="configblock" {
+	} else if bloc.Blockhead.Kind == "configblock" {
 		// todo, verify the signature for join-tx and leave-tx
 		for _, jtx := range bloc.JoinTxList {
 			if !jtx.Verify() {
@@ -696,10 +691,9 @@ func (serv *Server) handleBlock(content []byte) {
 		return
 	}
 
-
 	serv.msgbuff.Msgbuffmu.Lock()
 	serv.msgbuff.BlockPool = append(serv.msgbuff.BlockPool, bloc)
-	fmt.Println("server", serv.id, "receives a block at height", bloc.Blockhead.Height, "from instance", bloc.Blockhead.CreatorId ," with tx number", len(bloc.TransactionList))
+	fmt.Println("server", serv.id, "receives a block at height", bloc.Blockhead.Height, "from instance", bloc.Blockhead.CreatorId, " with tx number", len(bloc.TransactionList))
 	//fmt.Println("server", serv.id, "receives a block with", len(bloc.TransactionList), "txs in it")
 	elapsed := time.Since(starttime).Milliseconds()
 	serv.blockvalidatetime[bloc.Blockhead.Height] = int(elapsed)
@@ -731,7 +725,6 @@ func (serv *Server) handleConfirmedBlock(content []byte) {
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
-
 func (serv *Server) handleCheckpointMsg(content []byte) {
 	var buff bytes.Buffer
 	var ckpm datastruc.CheckPointMsg
@@ -749,8 +742,6 @@ func (serv *Server) handleCheckpointMsg(content []byte) {
 	serv.msgbuff.CheckpointVote[h] = append(serv.msgbuff.CheckpointVote[h], ckpm)
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
-
-
 
 func (serv *Server) handlePreprepareMsg(content []byte) {
 	var buff bytes.Buffer
@@ -796,7 +787,7 @@ func (serv *Server) handlePrepareMsg(content []byte) {
 	serv.msgbuff.Msgbuffmu.Lock()
 	theterm := datastruc.Term{preparemsg.Ver, preparemsg.View}
 	theorder := preparemsg.Order
-	if _, ok := serv.msgbuff.PrepareVote[theterm]; ! ok {
+	if _, ok := serv.msgbuff.PrepareVote[theterm]; !ok {
 		serv.msgbuff.PrepareVote[theterm] = make(map[int][]datastruc.PrepareMsg)
 	}
 	//serv.msgbuff.PrepareVote[theterm][theorder] = append(serv.msgbuff.PrepareVote[theterm][theorder], preparemsg)
@@ -851,18 +842,18 @@ func (serv *Server) handleCommitMsg(content []byte) {
 	serv.msgbuff.Msgbuffmu.Unlock()
 }
 
-func (serv *Server) handleViewChangeMsg (conten []byte) {
+func (serv *Server) handleViewChangeMsg(conten []byte) {
 	var buff bytes.Buffer
 	var vcmsg datastruc.ViewChangeMsg
 	buff.Write(conten)
 
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(&vcmsg)
-	if err!=nil {
+	if err != nil {
 		log.Panic(err)
 	}
 
-	datatoverify := []byte(string(vcmsg.Ver) + "," + string(vcmsg.View) + "," + string(vcmsg.SenderId) + "," +string(vcmsg.Lockheight))
+	datatoverify := []byte(string(vcmsg.Ver) + "," + string(vcmsg.View) + "," + string(vcmsg.SenderId) + "," + string(vcmsg.Lockheight))
 	pub := datastruc.DecodePublic(vcmsg.Pubkey)
 	if !vcmsg.Sig.Verify(datatoverify[:], pub) {
 		fmt.Println("serve", serv.id, "receives a view-change msg, but the signature is wrong!")
@@ -883,14 +874,13 @@ func (serv *Server) handleViewChangeMsg (conten []byte) {
 
 func (serv *Server) handleNewViewMsg(conten []byte) {
 
-
 	var buff bytes.Buffer
 	var nvmsg datastruc.NewViewMsg
 	buff.Write(conten)
 
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(&nvmsg)
-	if err!=nil {
+	if err != nil {
 		log.Panic(err)
 	}
 
@@ -905,16 +895,16 @@ func (serv *Server) handleNewViewMsg(conten []byte) {
 		return
 	}
 
-	if nvmsg.Kind=="p" {
+	if nvmsg.Kind == "p" {
 		fmt.Println("server", serv.id, "received new-view msg in ver", nvmsg.Ver, "view", nvmsg.View, "with a prepare-lock at height", nvmsg.Lockheight)
-	} else if nvmsg.Kind=="c" {
+	} else if nvmsg.Kind == "c" {
 		fmt.Println("server", serv.id, "received new-view msg in ver", nvmsg.Ver, "view", nvmsg.View, "with a commit-lock at height", nvmsg.Lockheight)
 	}
 
 	theterm := datastruc.Term{nvmsg.Ver, nvmsg.View}
 	serv.msgbuff.Msgbuffmu.Lock()
 	serv.msgbuff.Newviewlog[theterm] = nvmsg
-	if nvmsg.Bloc.Blockhead.Height>0 {
+	if nvmsg.Bloc.Blockhead.Height > 0 {
 		serv.msgbuff.BlockPool = append(serv.msgbuff.BlockPool, nvmsg.Bloc)
 		thepreprepare := nvmsg.PPMsgSet[0]
 		theprog := datastruc.Progres{thepreprepare.Ver, thepreprepare.View, thepreprepare.Order}
@@ -929,7 +919,7 @@ func (serv *Server) handleMeasurementRes(content []byte) {
 	buff.Write(content)
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(&meamresmsg)
-	if err!=nil {
+	if err != nil {
 		log.Panic(err)
 	}
 
@@ -946,7 +936,7 @@ func (serv *Server) handleSingleMeasurement(content []byte) {
 	buff.Write(content)
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(&smmsg)
-	if err!=nil {
+	if err != nil {
 		log.Panic(err)
 	}
 
@@ -959,7 +949,7 @@ func (serv *Server) handleStateTransferQuery(content []byte) {
 	buff.Write(content)
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(&qstmsg)
-	if err!=nil {
+	if err != nil {
 		log.Panic(err)
 	}
 
@@ -972,7 +962,7 @@ func (serv *Server) handleStateTransferQuery(content []byte) {
 	}
 
 	// tell pbft instance
-	serv.statetransferqueryCh<-qstmsg
+	serv.statetransferqueryCh <- qstmsg
 }
 
 func (serv *Server) handleStateTransferReply(content []byte) {
@@ -981,7 +971,7 @@ func (serv *Server) handleStateTransferReply(content []byte) {
 	buff.Write(content)
 	dec := gob.NewDecoder(&buff)
 	err := dec.Decode(&rstmsg)
-	if err!=nil {
+	if err != nil {
 		log.Panic(err)
 	}
 
@@ -992,7 +982,7 @@ func (serv *Server) handleStateTransferReply(content []byte) {
 	}
 
 	// tell pbft instance
-	serv.statetransferreplyCh<-rstmsg
+	serv.statetransferreplyCh <- rstmsg
 }
 
 func (serv *Server) handleProposeTest(conten []byte) {
@@ -1124,7 +1114,7 @@ func (serv *Server) BlockTxValidate(bloc *datastruc.Block) bool {
 	serv.msgbuff.Msgbuffmu.Unlock()
 
 	for _, tx := range bloc.TransactionList {
-		if currbalance[tx.Source]>= tx.Value {
+		if currbalance[tx.Source] >= tx.Value {
 			if !tx.Verify(serv.clientacctopukstr[tx.Source]) {
 				validateres = false
 				fmt.Println("block contains some tx with unvalid signature")
@@ -1143,11 +1133,11 @@ func (serv *Server) BlockTxValidate(bloc *datastruc.Block) bool {
 
 func (serv *Server) BlockTxValidateMultiThread(bloc *datastruc.Block) bool {
 	ThreadNum := 2 // Thread number for tx validation
-	if serv.id==6 {
+	if serv.id == 6 {
 		ThreadNum = 4
 	}
 	results := make([]*bool, 0)
-	for i:=0; i<ThreadNum; i++ {
+	for i := 0; i < ThreadNum; i++ {
 		res := new(bool)
 		*res = true
 		results = append(results, res)
@@ -1156,11 +1146,11 @@ func (serv *Server) BlockTxValidateMultiThread(bloc *datastruc.Block) bool {
 	wg := new(sync.WaitGroup)
 	wg.Add(ThreadNum)
 	startpos := 0
-	distance := len(bloc.TransactionList)/ThreadNum
-	for i:=0; i<ThreadNum; i++ {
+	distance := len(bloc.TransactionList) / ThreadNum
+	for i := 0; i < ThreadNum; i++ {
 		txbatch := make([]datastruc.Transaction, 0)
-		if i<ThreadNum-1 {
-			txbatch = bloc.TransactionList[startpos:(startpos+distance)]
+		if i < ThreadNum-1 {
+			txbatch = bloc.TransactionList[startpos:(startpos + distance)]
 		} else {
 			txbatch = bloc.TransactionList[startpos:len(bloc.TransactionList)]
 		}
@@ -1170,7 +1160,7 @@ func (serv *Server) BlockTxValidateMultiThread(bloc *datastruc.Block) bool {
 	wg.Wait()
 
 	validateres := true
-	for i:=0; i<ThreadNum; i++ {
+	for i := 0; i < ThreadNum; i++ {
 		if !(*results[i]) {
 			validateres = false
 		}
@@ -1197,7 +1187,7 @@ func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
 	var buff bytes.Buffer
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(rcr)
-	if err!=nil {
+	if err != nil {
 		log.Panic("readconfig request encode error")
 	}
 	content := buff.Bytes()
@@ -1206,9 +1196,8 @@ func (serv *Server) ReadConfigFromRemote() []datastruc.PeerIdentity {
 	serv.sendCh <- datatosend
 	fmt.Println("server", serv.id, "send read config request to", destip, "waiting for reply, time", time.Since(serv.starttime).Seconds(), "s")
 
-
 	// block, until receiving "replyconfigreply"
-	reply :=<-serv.recvconfigCh
+	reply := <-serv.recvconfigCh
 	fmt.Println("server", serv.id, "receives read config reply signal from channel")
 	return reply.Config
 }
@@ -1230,7 +1219,7 @@ func (serv *Server) handleReadConfigRequest(content []byte) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	err = enc.Encode(reply)
-	if err!=nil {
+	if err != nil {
 		log.Panic("readconfig reply encode error")
 	}
 	conten := buf.Bytes()
@@ -1245,7 +1234,7 @@ func (serv *Server) handleReadConfigReply(conten []byte) {
 	buf.Write(conten)
 	dec := gob.NewDecoder(&buf)
 	err := dec.Decode(&reply)
-	if err!=nil {
+	if err != nil {
 		fmt.Println("config reply decoding error")
 	}
 	serv.recvconfigCh <- reply
