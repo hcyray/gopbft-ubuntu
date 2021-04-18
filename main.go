@@ -45,6 +45,7 @@ func ReadAllIps(fn string) []string {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+	file.Close()
 	return res
 }
 
