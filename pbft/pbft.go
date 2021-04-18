@@ -237,6 +237,7 @@ func (pbft *PBFT) InitialSetup() {
 	// peer discovery & build leader succession line
 	go pbft.broadcastPubkey()
 	theconfig := pbft.scanInitialConfig(pbft.InitialTotalPeer)
+	fmt.Println("scan over")
 	pbft.curConfigure = []datastruc.PeerIdentity{}
 	for i := 0; i < pbft.InitialTotalPeer; i++ {
 		datastruc.ConstructConfigure(&pbft.curConfigure, theconfig[i])
