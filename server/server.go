@@ -214,21 +214,21 @@ func (serv *Server) ModefyVariByPBFT() {
 
 func (serv *Server) ListenLocalForServer(localipport string) {
 	listener, err := net.Listen(protocol, localipport)
-	defer listener.Close()
+
 	if err != nil {
 		fmt.Printf("net.Listen() runs wrongly :%v\n", err)
 		return
 	}
-
+	defer listener.Close()
 	for true {
 		conn, err := listener.Accept()
-		defer conn.Close()
+
 		if err != nil {
 			fmt.Printf("listener.Accept() runs wrongly in ListenLocalForServer:%v\n", err)
 			fmt.Println("time: ", time.Since(serv.starttime).Seconds(), "s")
 			return
 		}
-
+		defer conn.Close()
 		request, err := ioutil.ReadAll(conn)
 		commanType := datastruc.BytesToCommand(request[:commandLength])
 		//fmt.Println("the message type is ", commanType)
@@ -319,21 +319,21 @@ func (serv *Server) ListenLocalForServer(localipport string) {
 
 func (serv *Server) ListenLocalForClient(localipport string) {
 	listener, err := net.Listen(protocol, localipport)
-	defer listener.Close()
+
 	if err != nil {
 		fmt.Printf("net.Listen() runs wrongly :%v\n", err)
 		return
 	}
-
+	defer listener.Close()
 	for true {
 		conn, err := listener.Accept()
-		defer conn.Close()
+
 		fmt.Println("server accepts a new tcp connection dial\n")
 		if err != nil {
 			fmt.Printf("listener.Accept() runs wrongly in ListenLocalForClient:%v\n", err)
 			return
 		}
-
+		defer conn.Close()
 		go serv.handleclienttx(conn)
 
 	}
@@ -468,11 +468,11 @@ func generateremoteallips(memberIds []int, serverips []string, inseach int) map[
 func sendData(data []byte, addr string) {
 
 	conn, err := net.Dial(protocol, addr)
-	defer conn.Close()
+
 	if err != nil {
 		fmt.Printf("%s is not available\n", addr)
 	} else {
-
+		defer conn.Close()
 		_, err = conn.Write(data)
 		if err != nil {
 			fmt.Println("send error")

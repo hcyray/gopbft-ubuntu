@@ -165,7 +165,7 @@ func (client *Client) sendtooneloop(destid int) {
 
 		destip := client.minerIPAddress[destid]
 		conn, err := net.Dial("tcp", destip)
-		defer conn.Close()
+
 		if err != nil {
 			fmt.Println("connect failed, will retry later\n", err.Error())
 			if trytime <= 3 {
@@ -178,6 +178,7 @@ func (client *Client) sendtooneloop(destid int) {
 				time.Sleep(time.Second * 40)
 			}
 		} else {
+			defer conn.Close()
 		innerloop:
 			for {
 				select {
@@ -237,12 +238,12 @@ func commandToBytes(command string) []byte {
 
 func sendData(data []byte, addr string, id int) {
 	conn, err := net.Dial(protocol, addr)
-	defer conn.Close()
+
 	if err != nil {
 		fmt.Println("client", id, ":", addr, "is not available")
 		//fmt.Printf("%s is not available\n", addr)
 	} else {
-
+		defer conn.Close()
 		_, err = conn.Write(data)
 		if err != nil {
 			fmt.Println("send error")
