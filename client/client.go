@@ -72,7 +72,6 @@ func (clk *ClienKeys) GetDeserializeFromFile(fn string) {
 	if err != nil {
 		fmt.Println("serialized client key decoding error")
 	}
-	file.Close()
 }
 
 func CreateClient(id int, servernum int, privateKey *ecdsa.PrivateKey, allips []string, inseach int) *Client {
