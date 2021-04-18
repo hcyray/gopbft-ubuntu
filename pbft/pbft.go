@@ -1257,7 +1257,7 @@ func (pbft *PBFT) broadcastPubkey() {
 	pbft.MsgBuff.Msgbuffmu.Unlock()
 
 	datatosend := datastruc.Datatosend{pbft.membersexceptme, "idportpubkey", content}
-
+	fmt.Println("broadcastPubkey:")
 	pbft.broadcdataCh <- datatosend
 }
 
