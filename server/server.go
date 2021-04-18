@@ -349,7 +349,6 @@ theloop:
 
 				request := append(datastruc.CommandToBytes(data.MsgType), data.Msg...)
 				serv.mu.Lock()
-				fmt.Println("broadcast ip:", serv.remoteallips[i])
 				if serv.remoteallips[i] != "" {
 					sendData(request, serv.remoteallips[i])
 					serv.bytesended += len(request)
