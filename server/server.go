@@ -349,7 +349,7 @@ theloop:
 				request := append(datastruc.CommandToBytes(data.MsgType), data.Msg...)
 				serv.mu.Lock()
 				if serv.remoteallips[i] != "" {
-					go sendData(request, serv.remoteallips[i])
+					sendData(request, serv.remoteallips[i])
 					serv.bytesended += len(request)
 				} else {
 					fmt.Println("not valid destination ip, the dest id is", i)
@@ -374,7 +374,7 @@ theloop:
 		case data := <-serv.sendCh:
 			for _, destip := range data.DestIp {
 				request := append(datastruc.CommandToBytes(data.MsgType), data.Msg...)
-				go sendData(request, destip)
+				sendData(request, destip)
 				serv.bytesended += len(request)
 			}
 		case <-serv.stopCh:
